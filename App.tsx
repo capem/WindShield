@@ -45,7 +45,7 @@ const mapCsvRowToTurbine = (row: Record<string, string>): Turbine => {
     return {
         id: `T ${String(row['Turbine ID']).padStart(3, '0')}`,
         status: statusMap[(row['Status'] || '').toLowerCase()] || TurbineStatus.Offline,
-        maxPower: getNumber('MaxPower(MW)') || 4.0,
+        maxPower: getNumber('MaxPower(MW)') || 2.3,
         activePower: getNumber('ActivePower(MW)'),
         reactivePower: getNumber('ReactivePower(MVar)'),
         windSpeed: getNumber('WindSpeed(m/s)'),
@@ -83,7 +83,7 @@ const generateTurbineData = (id: number): Turbine => {
         TurbineStatus.Available, TurbineStatus.Stopped, TurbineStatus.Offline
     ];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const maxPower = 4.0;
+    const maxPower = 2.3; // SWT-2.3-101 model
     let activePower: number | null = null, 
         windSpeed: number | null = null, 
         rpm: number | null = null, 
@@ -92,22 +92,35 @@ const generateTurbineData = (id: number): Turbine => {
         direction: number | null = null;
 
     if (status === TurbineStatus.Producing) {
-        activePower = Math.random() * 3.8 + 0.2;
-        windSpeed = activePower * 2.5 + Math.random() * 2;
-        rpm = activePower * 3.5 + Math.random();
-        temperature = 10 + Math.random() * 10;
+        activePower = Math.random() * 2.2 + 0.1; // Range 0.1 to 2.3
+        const powerRatio = activePower / maxPower;
+
+        // Realistic wind speed based on power output (3.5 m/s cut-in, 12.5 m/s nominal)
+        windSpeed = 3.5 + Math.pow(powerRatio, 0.7) * (12.5 - 3.5); 
+        windSpeed += (Math.random() - 0.5) * 0.5; // Add some noise
+        if (windSpeed > 25) windSpeed = 25; // Cap at cut-out speed
+
+        // Realistic RPM based on power output (6-16 rpm range)
+        rpm = 6 + powerRatio * (16 - 6);
+        rpm += (Math.random() - 0.5) * 0.5; // Add some noise
+        if (rpm > 16) rpm = 16;
+        if (rpm < 6) rpm = 6;
+        
+        temperature = 10 + Math.random() * 15;
         reactivePower = activePower * 0.1;
         direction = Math.floor(Math.random() * 360);
+
     } else if (status === TurbineStatus.Available) {
         activePower = 0.0;
-        windSpeed = Math.random() * 6;
+        windSpeed = Math.random() * 3.5; // Wind speed below cut-in
         rpm = 0;
         temperature = 10 + Math.random() * 8;
         reactivePower = 0.0;
         direction = Math.floor(Math.random() * 360);
     } else if (status === TurbineStatus.Stopped) {
         activePower = 0.0;
-        windSpeed = Math.random() * 3;
+        // Could be high wind (above cut-out 25m/s) or very low wind
+        windSpeed = Math.random() > 0.5 ? Math.random() * 3 : 25 + Math.random() * 5;
         rpm = 0;
         temperature = 10 + Math.random() * 8;
         reactivePower = 0.0;
@@ -118,7 +131,7 @@ const generateTurbineData = (id: number): Turbine => {
         id: `T ${String(id).padStart(3, '0')}`,
         status,
         maxPower,
-        activePower: activePower !== null ? parseFloat(activePower.toFixed(1)) : null,
+        activePower: activePower !== null ? parseFloat(activePower.toFixed(2)) : null,
         reactivePower: reactivePower !== null ? parseFloat(reactivePower.toFixed(1)) : null,
         windSpeed: windSpeed !== null ? parseFloat(windSpeed.toFixed(1)) : null,
         direction,
@@ -260,7 +273,7 @@ function App() {
                 const idStr = `T ${String(id).padStart(3, '0')}`;
                 const found = latestTurbineData.find(t => t.id === idStr);
                 return found || {
-                    id: idStr, status: TurbineStatus.Offline, maxPower: 4.0, activePower: null,
+                    id: idStr, status: TurbineStatus.Offline, maxPower: 2.3, activePower: null,
                     reactivePower: null, windSpeed: null, direction: null, temperature: null, rpm: null
                 };
             });

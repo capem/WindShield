@@ -97,13 +97,19 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
         const factor = Math.sin((i / dataPoints) * Math.PI * 2 - Math.PI / 2) * 0.4 + 0.6; // Simulate daily cycle
         const randomFluctuation = 1 + (Math.random() - 0.5) * 0.2;
         
-        const p = Math.max(0, (turbine.activePower ?? 0) * factor * randomFluctuation);
+        const p = Math.max(0, Math.min(turbine.maxPower, (turbine.activePower ?? 0) * factor * randomFluctuation));
         power.push(p);
 
-        const w = Math.max(0, (turbine.windSpeed ?? 0) * factor * randomFluctuation);
+        const w = Math.max(0, Math.min(25, (turbine.windSpeed ?? 0) * factor * randomFluctuation)); // Cap at cut-out speed
         wind.push(w);
 
-        const r = Math.max(0, (turbine.rpm ?? 0) * factor * randomFluctuation);
+        let r = 0;
+        if (p > 0.1) { // Only have RPM if producing power
+            const powerRatio = p / turbine.maxPower;
+            r = 6 + powerRatio * (16 - 6); // Base RPM on generated power for consistency
+            r *= randomFluctuation;
+        }
+        r = Math.max(0, Math.min(16, r)); // Cap RPM between 0 and 16
         rpm.push(r);
     }
     return { power, wind, rpm };
