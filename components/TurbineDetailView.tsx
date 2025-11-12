@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Turbine, TurbineStatus } from '../types';
-import { getTurbineStatusDescription } from '../services/geminiService';
 
 interface TurbineDetailViewProps {
   turbine: Turbine;
@@ -106,38 +105,6 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
 };
 
 const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }) => {
-    const [aiStatus, setAiStatus] = useState<string>('Generating analysis...');
-    const [isLoadingAi, setIsLoadingAi] = useState(true);
-    
-    useEffect(() => {
-        const fetchStatus = async () => {
-            if (turbine.status === TurbineStatus.Producing && turbine.rpm !== null && turbine.temperature !== null && turbine.activePower !== null) {
-                setIsLoadingAi(true);
-                try {
-                    const description = await getTurbineStatusDescription(turbine.rpm, turbine.temperature, turbine.activePower);
-                    setAiStatus(description);
-                } catch (error) {
-                    setAiStatus("Could not retrieve AI analysis.");
-                } finally {
-                    setIsLoadingAi(false);
-                }
-            } else {
-                let statusMessage = "Turbine is not producing. No data available for analysis.";
-                if (turbine.status === TurbineStatus.Offline) {
-                    statusMessage = "Turbine is offline. No data available for analysis.";
-                } else if (turbine.status === TurbineStatus.Available) {
-                    statusMessage = "Turbine is available but not producing. No data for analysis.";
-                } else if (turbine.status === TurbineStatus.Stopped) {
-                    statusMessage = "Turbine is stopped. No data for analysis.";
-                }
-                setAiStatus(statusMessage);
-                setIsLoadingAi(false);
-            }
-        };
-
-        fetchStatus();
-    }, [turbine]);
-
     const historicalData = useMemo(() => generateHistoricalData(turbine), [turbine]);
 
     const config = statusConfig[turbine.status];
@@ -176,21 +143,6 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
                 <MetricCard title="Direction" value={turbine.direction !== null ? `${turbine.direction}°` : '—'} icon={<i className="fa-solid fa-compass"></i>} color="text-teal-500" />
                 <MetricCard title="Temperature" value={turbine.temperature !== null ? `${turbine.temperature}°C` : '—'} icon={<i className="fa-solid fa-temperature-half"></i>} color="text-orange-500" />
                 <MetricCard title="RPM" value={turbine.rpm !== null ? `${turbine.rpm}` : '—'} icon={<i className="fa-solid fa-arrows-spin"></i>} color="text-indigo-500" />
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                 <h3 className="font-semibold text-gray-700 mb-2">AI-Powered Status Analysis</h3>
-                 <div className={`p-4 rounded-md ${isLoadingAi ? 'bg-gray-50' : 'bg-violet-50'}`}>
-                    {isLoadingAi ? (
-                        <div className="flex items-center gap-3">
-                             <div className="w-5 h-5 border-2 border-dashed rounded-full animate-spin border-violet-500"></div>
-                            <p className="text-gray-500 italic">{aiStatus}</p>
-                        </div>
-                    ) : (
-                        <p className="text-gray-800">{aiStatus}</p>
-                    )}
-                 </div>
-                 <p className="text-xs text-right text-gray-400 mt-2">Powered by Gemini</p>
             </div>
             
             <div>
