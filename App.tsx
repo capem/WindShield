@@ -1,11 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Turbine, TurbineStatus } from './types';
 import TurbineCard from './components/TurbineCard';
 import TurbineDetailView from './components/TurbineDetailView';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 
-// --- NEW WIND FARM LAYOUT & MOCK DATA GENERATION ---
+// --- CSV PARSING & DATA MAPPING UTILITIES ---
+
+const parseCSV = (text: string): Record<string, string>[] => {
+    try {
+        const lines = text.trim().split(/\r\n|\n/);
+        if (lines.length < 2) return [];
+
+        const headers = lines[0].split(',').map(h => h.trim());
+        const data = lines.slice(1).map(line => {
+            const values = line.split(',').map(v => v.trim());
+            if (values.length === headers.length) {
+                return headers.reduce((obj, header, index) => {
+                    obj[header] = values[index];
+                    return obj;
+                }, {} as Record<string, string>);
+            }
+            return null;
+        }).filter((row): row is Record<string, string> => row !== null);
+        
+        return data;
+    } catch (error) {
+        console.error("Error parsing CSV:", error);
+        return [];
+    }
+};
+
+const mapCsvRowToTurbine = (row: Record<string, string>): Turbine => {
+    const statusMap: { [key: string]: TurbineStatus } = {
+        'producing': TurbineStatus.Producing,
+        'available': TurbineStatus.Available,
+        'offline': TurbineStatus.Offline,
+        'stopped': TurbineStatus.Stopped,
+    };
+    const getNumber = (key: string): number | null => {
+        const val = parseFloat(row[key]);
+        return isNaN(val) ? null : val;
+    };
+    return {
+        id: `T ${String(row['Turbine ID']).padStart(3, '0')}`,
+        status: statusMap[(row['Status'] || '').toLowerCase()] || TurbineStatus.Offline,
+        maxPower: getNumber('MaxPower(MW)') || 4.0,
+        activePower: getNumber('ActivePower(MW)'),
+        reactivePower: getNumber('ReactivePower(MVar)'),
+        windSpeed: getNumber('WindSpeed(m/s)'),
+        direction: getNumber('Direction(°)'),
+        temperature: getNumber('Temperature(°C)'),
+        rpm: getNumber('RPM'),
+    };
+};
+
+
+// --- WIND FARM LAYOUT & MOCK DATA GENERATION ---
 
 const layout = {
   "North Zone": [
@@ -152,6 +203,9 @@ function App() {
     const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
     const [isCompactView, setIsCompactView] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+    const [allHistoricalData, setAllHistoricalData] = useState<Record<string, any[]> | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -170,7 +224,59 @@ function App() {
         setIsSidebarCollapsed(!isSidebarCollapsed);
     }
 
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target?.result as string;
+            const parsedData = parseCSV(text);
+            if (parsedData.length === 0) {
+                alert("Could not parse CSV file. Please ensure it has headers and is formatted correctly.");
+                return;
+            }
+
+            const dataByTurbine = parsedData.reduce((acc, row) => {
+                if (row['Turbine ID']) {
+                    const turbineId = `T ${String(row['Turbine ID']).padStart(3, '0')}`;
+                    if (!acc[turbineId]) acc[turbineId] = [];
+                    acc[turbineId].push(row);
+                }
+                return acc;
+            }, {} as Record<string, any[]>);
+
+            Object.values(dataByTurbine).forEach(rows => {
+                rows.sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime());
+            });
+
+            const latestTurbineData = Object.values(dataByTurbine).map(rows => mapCsvRowToTurbine(rows[0]));
+
+            const finalTurbines = allTurbineIds.map(id => {
+                const idStr = `T ${String(id).padStart(3, '0')}`;
+                const found = latestTurbineData.find(t => t.id === idStr);
+                return found || {
+                    id: idStr, status: TurbineStatus.Offline, maxPower: 4.0, activePower: null,
+                    reactivePower: null, windSpeed: null, direction: null, temperature: null, rpm: null
+                };
+            });
+
+            setTurbines(finalTurbines);
+            setAllHistoricalData(dataByTurbine);
+            setUploadedFileName(file.name);
+        };
+        reader.onerror = () => alert("Error reading file.");
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+
+
     const selectedTurbine = turbines.find(t => t.id === selectedTurbineId);
+    const historicalDataForSelectedTurbine = selectedTurbineId && allHistoricalData ? allHistoricalData[selectedTurbineId] : undefined;
 
     // --- COHERENT DATA CALCULATIONS ---
     const onlineTurbines = turbines.filter(t => t.status !== TurbineStatus.Offline);
@@ -226,10 +332,15 @@ function App() {
         <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
             <Sidebar isCollapsed={isSidebarCollapsed} />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header onToggleSidebar={handleToggleSidebar} />
+                <Header onToggleSidebar={handleToggleSidebar} onUploadClick={handleUploadClick} />
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
                 <main className="flex-1 p-6 overflow-y-auto">
                     {selectedTurbine ? (
-                        <TurbineDetailView turbine={selectedTurbine} onBack={handleCloseDetailView} />
+                        <TurbineDetailView 
+                          turbine={selectedTurbine} 
+                          onBack={handleCloseDetailView} 
+                          historicalData={historicalDataForSelectedTurbine}
+                        />
                     ) : (
                         <>
                             <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
@@ -243,7 +354,10 @@ function App() {
                             <div className="bg-white rounded-lg shadow-sm p-4 mt-6">
                                 <div className="pb-4 mb-4 border-b border-gray-200 flex justify-between items-center text-sm">
                                     <span className="font-semibold text-gray-700">
-                                        {formattedDate} at {formattedTime}
+                                        {uploadedFileName
+                                            ? <>Displaying data from <span className="text-violet-600 font-bold">{uploadedFileName}</span></>
+                                            : <>{formattedDate} at {formattedTime}</>
+                                        }
                                     </span>
                                     <div className="flex items-center gap-6">
                                         <label htmlFor="compact-toggle" className="flex items-center cursor-pointer">

@@ -4,6 +4,7 @@ import { Turbine, TurbineStatus } from '../types';
 interface TurbineDetailViewProps {
   turbine: Turbine;
   onBack: () => void;
+  historicalData?: any[];
 }
 
 const statusConfig = {
@@ -30,12 +31,16 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     const width = 300;
     const height = 100;
 
-    if (!data || data.length === 0) return null;
+    if (!data || data.length === 0) return (
+        <div className="bg-white rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px]">
+             <p className="text-gray-500">No historical data available.</p>
+        </div>
+    );
 
     const maxDataVal = maxVal > 0 ? maxVal : Math.max(...data) > 0 ? Math.max(...data) : 1;
 
     const points = data.map((val, i) => {
-        const x = (i / (data.length - 1)) * width;
+        const x = data.length > 1 ? (i / (data.length - 1)) * width : width / 2;
         const y = height - (val / maxDataVal) * height;
         return `${x},${y}`;
     }).join(' ');
@@ -104,8 +109,18 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
     return { power, wind, rpm };
 };
 
-const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }) => {
-    const historicalData = useMemo(() => generateHistoricalData(turbine), [turbine]);
+const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, historicalData }) => {
+    const chartData = useMemo(() => {
+        if (historicalData && historicalData.length > 0) {
+            const reversedData = [...historicalData].reverse();
+            return {
+                power: reversedData.map(d => parseFloat(d['ActivePower(MW)']) || 0),
+                wind: reversedData.map(d => parseFloat(d['WindSpeed(m/s)']) || 0),
+                rpm: reversedData.map(d => parseFloat(d['RPM']) || 0),
+            };
+        }
+        return generateHistoricalData(turbine);
+    }, [turbine, historicalData]);
 
     const config = statusConfig[turbine.status];
     const powerPercentage = turbine.activePower !== null ? (turbine.activePower / turbine.maxPower) * 100 : 0;
@@ -148,9 +163,9 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
             <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Historical Performance (Last 24h)</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <HistoricalChart title="Power Output" data={historicalData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
-                    <HistoricalChart title="Wind Speed" data={historicalData.wind} unit="m/s" color="#ec4899" maxVal={30} />
-                    <HistoricalChart title="Rotor Speed" data={historicalData.rpm} unit="RPM" color="#6366f1" maxVal={20} />
+                    <HistoricalChart title="Power Output" data={chartData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
+                    <HistoricalChart title="Wind Speed" data={chartData.wind} unit="m/s" color="#ec4899" maxVal={30} />
+                    <HistoricalChart title="Rotor Speed" data={chartData.rpm} unit="RPM" color="#6366f1" maxVal={20} />
                 </div>
             </div>
         </div>
