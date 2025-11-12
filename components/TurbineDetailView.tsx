@@ -79,6 +79,11 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     );
 };
 
+const SWT_2_3_101_SPECS = {
+    RPM_RANGE: { min: 6, max: 16 },
+    WIND_SPEED_CUT_OUT: 25,
+};
+
 const generateHistoricalData = (turbine: Turbine): { power: number[], wind: number[], rpm: number[] } => {
     const dataPoints = 24;
     const power: number[] = [];
@@ -100,16 +105,16 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
         const p = Math.max(0, Math.min(turbine.maxPower, (turbine.activePower ?? 0) * factor * randomFluctuation));
         power.push(p);
 
-        const w = Math.max(0, Math.min(25, (turbine.windSpeed ?? 0) * factor * randomFluctuation)); // Cap at cut-out speed
+        const w = Math.max(0, Math.min(SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT, (turbine.windSpeed ?? 0) * factor * randomFluctuation)); // Cap at cut-out speed
         wind.push(w);
 
         let r = 0;
         if (p > 0.1) { // Only have RPM if producing power
             const powerRatio = p / turbine.maxPower;
-            r = 6 + powerRatio * (16 - 6); // Base RPM on generated power for consistency
+            r = SWT_2_3_101_SPECS.RPM_RANGE.min + powerRatio * (SWT_2_3_101_SPECS.RPM_RANGE.max - SWT_2_3_101_SPECS.RPM_RANGE.min); // Base RPM on generated power for consistency
             r *= randomFluctuation;
         }
-        r = Math.max(0, Math.min(16, r)); // Cap RPM between 0 and 16
+        r = Math.max(0, Math.min(SWT_2_3_101_SPECS.RPM_RANGE.max, r)); // Cap RPM between 0 and max
         rpm.push(r);
     }
     return { power, wind, rpm };
@@ -171,7 +176,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <HistoricalChart title="Power Output" data={chartData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
                     <HistoricalChart title="Wind Speed" data={chartData.wind} unit="m/s" color="#ec4899" maxVal={30} />
-                    <HistoricalChart title="Rotor Speed" data={chartData.rpm} unit="RPM" color="#6366f1" maxVal={20} />
+                    <HistoricalChart title="Rotor Speed" data={chartData.rpm} unit="RPM" color="#6366f1" maxVal={SWT_2_3_101_SPECS.RPM_RANGE.max + 4} />
                 </div>
             </div>
         </div>

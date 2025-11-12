@@ -77,13 +77,21 @@ const layout = {
   ],
 };
 
+const SWT_2_3_101_SPECS = {
+    MAX_POWER: 2.3, // MW
+    RPM_RANGE: { min: 6, max: 16 },
+    WIND_SPEED_CUT_IN: 3.5, // m/s (average of 3-4)
+    WIND_SPEED_NOMINAL: 12.5, // m/s (average of 12-13)
+    WIND_SPEED_CUT_OUT: 25, // m/s
+};
+
 const generateTurbineData = (id: number): Turbine => {
     const statuses = [
         TurbineStatus.Producing, TurbineStatus.Producing, TurbineStatus.Producing, TurbineStatus.Producing,
         TurbineStatus.Available, TurbineStatus.Stopped, TurbineStatus.Offline
     ];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const maxPower = 2.3; // SWT-2.3-101 model
+    const maxPower = SWT_2_3_101_SPECS.MAX_POWER;
     let activePower: number | null = null, 
         windSpeed: number | null = null, 
         rpm: number | null = null, 
@@ -92,19 +100,19 @@ const generateTurbineData = (id: number): Turbine => {
         direction: number | null = null;
 
     if (status === TurbineStatus.Producing) {
-        activePower = Math.random() * 2.2 + 0.1; // Range 0.1 to 2.3
+        activePower = Math.random() * (maxPower - 0.1) + 0.1; // Range 0.1 to 2.3
         const powerRatio = activePower / maxPower;
 
-        // Realistic wind speed based on power output (3.5 m/s cut-in, 12.5 m/s nominal)
-        windSpeed = 3.5 + Math.pow(powerRatio, 0.7) * (12.5 - 3.5); 
+        // Realistic wind speed based on power output
+        windSpeed = SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN + Math.pow(powerRatio, 0.7) * (SWT_2_3_101_SPECS.WIND_SPEED_NOMINAL - SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN); 
         windSpeed += (Math.random() - 0.5) * 0.5; // Add some noise
-        if (windSpeed > 25) windSpeed = 25; // Cap at cut-out speed
+        if (windSpeed > SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT) windSpeed = SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT; // Cap at cut-out speed
 
-        // Realistic RPM based on power output (6-16 rpm range)
-        rpm = 6 + powerRatio * (16 - 6);
+        // Realistic RPM based on power output
+        rpm = SWT_2_3_101_SPECS.RPM_RANGE.min + powerRatio * (SWT_2_3_101_SPECS.RPM_RANGE.max - SWT_2_3_101_SPECS.RPM_RANGE.min);
         rpm += (Math.random() - 0.5) * 0.5; // Add some noise
-        if (rpm > 16) rpm = 16;
-        if (rpm < 6) rpm = 6;
+        if (rpm > SWT_2_3_101_SPECS.RPM_RANGE.max) rpm = SWT_2_3_101_SPECS.RPM_RANGE.max;
+        if (rpm < SWT_2_3_101_SPECS.RPM_RANGE.min) rpm = SWT_2_3_101_SPECS.RPM_RANGE.min;
         
         temperature = 10 + Math.random() * 15;
         reactivePower = activePower * 0.1;
@@ -112,15 +120,15 @@ const generateTurbineData = (id: number): Turbine => {
 
     } else if (status === TurbineStatus.Available) {
         activePower = 0.0;
-        windSpeed = Math.random() * 3.5; // Wind speed below cut-in
+        windSpeed = Math.random() * SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN; // Wind speed below cut-in
         rpm = 0;
         temperature = 10 + Math.random() * 8;
         reactivePower = 0.0;
         direction = Math.floor(Math.random() * 360);
     } else if (status === TurbineStatus.Stopped) {
         activePower = 0.0;
-        // Could be high wind (above cut-out 25m/s) or very low wind
-        windSpeed = Math.random() > 0.5 ? Math.random() * 3 : 25 + Math.random() * 5;
+        // Could be high wind (above cut-out) or very low wind
+        windSpeed = Math.random() > 0.5 ? Math.random() * (SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN - 1) : SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT + Math.random() * 5;
         rpm = 0;
         temperature = 10 + Math.random() * 8;
         reactivePower = 0.0;
