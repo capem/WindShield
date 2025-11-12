@@ -2,15 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Turbine, TurbineStatus } from '../types';
 import { getTurbineStatusDescription } from '../services/geminiService';
 
-// --- SVG ICONS ---
-const Icon = ({ path, className = 'w-8 h-8' }: { path: string, className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d={path} /></svg>;
-const BackIcon = () => <Icon path="M15 19l-7-7 7-7" className="w-5 h-5" />;
-const LightningIcon = ({ className = 'w-8 h-8' }) => <Icon path="M13 10V3L4 14h7v7l9-11h-7z" className={className} />;
-const WindIcon = ({ className = 'w-8 h-8' }) => <Icon path="M4 4v.01M4 8v.01M4 12v.01M4 16v.01M4 20v.01M8 4v.01M8 8v.01M8 12v.01M8 16v.01M8 20v.01M12 4v.01M12 8v.01M12 12v.01M12 16v.01M12 20v.01M16 4v.01M16 8v.01M16 12v.01M16 16v.01M16 20v.01M20 4v.01M20 8v.01M20 12v.01M20 16v.01M20 20v.01" className={className} />;
-const CompassIcon = ({ className = 'w-8 h-8' }) => <Icon path="M9 19V6l1-4 3 2 3-2 1 4v13l-4-3-4 3zM9 6h6" className={className} />;
-const RpmIcon = ({ className = 'w-8 h-8' }) => <Icon path="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" className={className} />;
-const ThermometerIcon = ({ className = 'w-8 h-8' }) => <Icon path="M9 13.5a3 3 0 013-3h0a3 3 0 013 3v6a3 3 0 01-3 3h0a3 3 0 01-3-3v-6zm3-3V3m0 18v-2" className={className} />;
-
 interface TurbineDetailViewProps {
   turbine: Turbine;
   onBack: () => void;
@@ -20,12 +11,13 @@ const statusConfig = {
     [TurbineStatus.Producing]: { text: 'Producing', textColor: 'text-green-700', bgColor: 'bg-green-100', borderColor: 'border-green-500' },
     [TurbineStatus.Available]: { text: 'Available', textColor: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-500' },
     [TurbineStatus.Offline]: { text: 'Offline', textColor: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-500' },
+    [TurbineStatus.Stopped]: { text: 'Stopped', textColor: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-500' },
 };
 
 const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
     <div className="bg-white rounded-lg p-4 shadow-sm flex items-center gap-4">
         <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-600', '-100').replace('-500', '-100')}`}>
-            <div className={color}>{icon}</div>
+            <div className={`${color} text-2xl w-8 h-8 flex items-center justify-center`}>{icon}</div>
         </div>
         <div>
             <p className="text-sm text-gray-500">{title}</p>
@@ -51,7 +43,15 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
                     setIsLoadingAi(false);
                 }
             } else {
-                setAiStatus(turbine.status === TurbineStatus.Offline ? "Turbine is offline. No data available for analysis." : "Turbine is available but not producing. No data for analysis.");
+                let statusMessage = "Turbine is not producing. No data available for analysis.";
+                if (turbine.status === TurbineStatus.Offline) {
+                    statusMessage = "Turbine is offline. No data available for analysis.";
+                } else if (turbine.status === TurbineStatus.Available) {
+                    statusMessage = "Turbine is available but not producing. No data for analysis.";
+                } else if (turbine.status === TurbineStatus.Stopped) {
+                    statusMessage = "Turbine is stopped. No data for analysis.";
+                }
+                setAiStatus(statusMessage);
                 setIsLoadingAi(false);
             }
         };
@@ -65,7 +65,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
     return (
         <div className="animate-fade-in">
             <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 mb-4">
-                <BackIcon />
+                <i className="fa-solid fa-arrow-left"></i>
                 Back to Dashboard
             </button>
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -90,11 +90,11 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-6">
-                <MetricCard title="Reactive Power" value={turbine.reactivePower !== null ? `${turbine.reactivePower} MVar` : '—'} icon={<LightningIcon />} color="text-blue-500" />
-                <MetricCard title="Wind Speed" value={turbine.windSpeed !== null ? `${turbine.windSpeed} m/s` : '—'} icon={<WindIcon />} color="text-pink-500" />
-                <MetricCard title="Direction" value={turbine.direction !== null ? `${turbine.direction}°` : '—'} icon={<CompassIcon />} color="text-teal-500" />
-                <MetricCard title="Temperature" value={turbine.temperature !== null ? `${turbine.temperature}°C` : '—'} icon={<ThermometerIcon />} color="text-orange-500" />
-                <MetricCard title="RPM" value={turbine.rpm !== null ? `${turbine.rpm}` : '—'} icon={<RpmIcon />} color="text-indigo-500" />
+                <MetricCard title="Reactive Power" value={turbine.reactivePower !== null ? `${turbine.reactivePower} MVar` : '—'} icon={<i className="fa-solid fa-bolt-lightning"></i>} color="text-blue-500" />
+                <MetricCard title="Wind Speed" value={turbine.windSpeed !== null ? `${turbine.windSpeed} m/s` : '—'} icon={<i className="fa-solid fa-wind"></i>} color="text-pink-500" />
+                <MetricCard title="Direction" value={turbine.direction !== null ? `${turbine.direction}°` : '—'} icon={<i className="fa-solid fa-compass"></i>} color="text-teal-500" />
+                <MetricCard title="Temperature" value={turbine.temperature !== null ? `${turbine.temperature}°C` : '—'} icon={<i className="fa-solid fa-temperature-half"></i>} color="text-orange-500" />
+                <MetricCard title="RPM" value={turbine.rpm !== null ? `${turbine.rpm}` : '—'} icon={<i className="fa-solid fa-arrows-spin"></i>} color="text-indigo-500" />
             </div>
 
             <div className="bg-white rounded-lg shadow-sm p-6">

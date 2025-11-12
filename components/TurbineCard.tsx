@@ -11,6 +11,7 @@ const AnimatedTurbineIcon: React.FC<{ status: TurbineStatus; activePower: number
         [TurbineStatus.Producing]: 'text-green-500',
         [TurbineStatus.Available]: 'text-blue-500',
         [TurbineStatus.Offline]: 'text-red-400',
+        [TurbineStatus.Stopped]: 'text-yellow-500',
     }[status];
 
     let animationStyle: React.CSSProperties = {};
@@ -50,6 +51,7 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick }) => {
         [TurbineStatus.Producing]: { text: 'Producing', textColor: 'text-green-700', bgColor: 'bg-green-100', borderColor: 'border-green-500' },
         [TurbineStatus.Available]: { text: 'Available', textColor: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-500' },
         [TurbineStatus.Offline]: { text: 'Offline', textColor: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-500' },
+        [TurbineStatus.Stopped]: { text: 'Stopped', textColor: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-500' },
     };
 
     const config = statusConfig[turbine.status];

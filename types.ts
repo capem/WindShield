@@ -2,6 +2,7 @@ export enum TurbineStatus {
   Producing = 'producing',
   Available = 'available',
   Offline = 'offline',
+  Stopped = 'stopped',
 }
 
 export interface Turbine {
