@@ -1,0 +1,5 @@
+{
+  "name": "Turbine Grid Monitor",
+  "description": "A futuristic dashboard for monitoring a grid of industrial turbines, with AI-powered status updates.",
+  "requestFramePermissions": []
+}
