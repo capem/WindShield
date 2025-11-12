@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Turbine, TurbineStatus } from './types';
 import TurbineCard from './components/TurbineCard';
 import TurbineDetailView from './components/TurbineDetailView';
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
 
 // --- NEW WIND FARM LAYOUT & MOCK DATA GENERATION ---
 
@@ -80,36 +82,6 @@ const initialTurbines: Turbine[] = allTurbineIds.map(generateTurbineData);
 
 // --- UI COMPONENTS ---
 
-const Sidebar = () => (
-    <aside className="w-64 bg-white shadow-md flex-shrink-0">
-        <div className="p-6 text-2xl font-bold text-gray-800">168X40</div>
-        <nav className="mt-6 px-4">
-            <a href="#" className="flex items-center gap-4 px-4 py-3 text-violet-600 bg-violet-50 rounded-lg">
-                <i className="fa-solid fa-table-cells-large"></i>
-                <span className="font-semibold">Dashboard</span>
-            </a>
-        </nav>
-    </aside>
-);
-
-const Header = () => (
-    <header className="bg-white h-16 flex items-center justify-between px-6 border-b border-gray-200">
-        <div className="flex items-center gap-4">
-            <button className="text-gray-600"><i className="fa-solid fa-bars"></i></button>
-            <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i className="fa-solid fa-magnifying-glass"></i></span>
-                <input type="search" placeholder="Search" className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500" />
-            </div>
-        </div>
-        <div className="flex items-center gap-4 text-gray-600">
-            <button><i className="fa-solid fa-sun"></i></button>
-            <button><i className="fa-solid fa-moon"></i></button>
-            <button><i className="fa-solid fa-bell"></i></button>
-            <button><i className="fa-solid fa-user"></i></button>
-        </div>
-    </header>
-);
-
 const iconColorMap: { [key: string]: string } = {
     'text-violet-600': 'bg-gradient-to-br from-violet-50 to-violet-200',
     'text-cyan-500': 'bg-gradient-to-br from-cyan-50 to-cyan-200',
@@ -179,6 +151,7 @@ function App() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
     const [isCompactView, setIsCompactView] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -192,6 +165,10 @@ function App() {
     const handleCloseDetailView = () => {
         setSelectedTurbineId(null);
     };
+
+    const handleToggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
 
     const selectedTurbine = turbines.find(t => t.id === selectedTurbineId);
 
@@ -247,9 +224,9 @@ function App() {
     
     return (
         <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
-            <Sidebar />
+            <Sidebar isCollapsed={isSidebarCollapsed} />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header />
+                <Header onToggleSidebar={handleToggleSidebar} />
                 <main className="flex-1 p-6 overflow-y-auto">
                     {selectedTurbine ? (
                         <TurbineDetailView turbine={selectedTurbine} onBack={handleCloseDetailView} />

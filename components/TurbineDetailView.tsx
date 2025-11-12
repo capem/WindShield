@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Turbine, TurbineStatus } from '../types';
 import { getTurbineStatusDescription } from '../services/geminiService';
 
@@ -25,6 +25,85 @@ const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode
         </div>
     </div>
 );
+
+
+const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; color: string; maxVal: number }> = ({ title, data, unit, color, maxVal }) => {
+    const width = 300;
+    const height = 100;
+
+    if (!data || data.length === 0) return null;
+
+    const maxDataVal = maxVal > 0 ? maxVal : Math.max(...data) > 0 ? Math.max(...data) : 1;
+
+    const points = data.map((val, i) => {
+        const x = (i / (data.length - 1)) * width;
+        const y = height - (val / maxDataVal) * height;
+        return `${x},${y}`;
+    }).join(' ');
+
+    const areaPath = `M${points} L${width},${height} L0,${height} Z`;
+    const linePath = `M${points}`;
+
+    const gradientId = `gradient-${color.replace(/\s/g, '-')}`;
+
+    return (
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex justify-between items-baseline mb-2">
+                <h4 className="font-semibold text-gray-700">{title}</h4>
+                <p className="text-sm font-bold" style={{ color: color }}>
+                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-gray-500">{unit}</span>
+                </p>
+            </div>
+            <div className="relative">
+                <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+                            <stop offset="100%" stopColor={color} stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path d={areaPath} fill={`url(#${gradientId})`} />
+                    <path d={linePath} fill="none" stroke={color} strokeWidth="2" />
+                </svg>
+                <div className="absolute top-0 left-0 text-xs text-gray-400">{maxDataVal.toFixed(0)}</div>
+                <div className="absolute bottom-0 left-0 text-xs text-gray-400">0</div>
+                <div className="absolute bottom-0 right-0 text-xs text-gray-400">Now</div>
+                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-gray-400">12h ago</div>
+                <div className="absolute bottom-0 left-0 text-xs text-gray-400">24h ago</div>
+            </div>
+        </div>
+    );
+};
+
+const generateHistoricalData = (turbine: Turbine): { power: number[], wind: number[], rpm: number[] } => {
+    const dataPoints = 24;
+    const power: number[] = [];
+    const wind: number[] = [];
+    const rpm: number[] = [];
+
+    if (turbine.status !== TurbineStatus.Producing) {
+        return {
+            power: Array(dataPoints).fill(0),
+            wind: Array(dataPoints).fill(turbine.windSpeed ?? 0),
+            rpm: Array(dataPoints).fill(0),
+        };
+    }
+    
+    for (let i = 0; i < dataPoints; i++) {
+        const factor = Math.sin((i / dataPoints) * Math.PI * 2 - Math.PI / 2) * 0.4 + 0.6; // Simulate daily cycle
+        const randomFluctuation = 1 + (Math.random() - 0.5) * 0.2;
+        
+        const p = Math.max(0, (turbine.activePower ?? 0) * factor * randomFluctuation);
+        power.push(p);
+
+        const w = Math.max(0, (turbine.windSpeed ?? 0) * factor * randomFluctuation);
+        wind.push(w);
+
+        const r = Math.max(0, (turbine.rpm ?? 0) * factor * randomFluctuation);
+        rpm.push(r);
+    }
+    return { power, wind, rpm };
+};
 
 const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }) => {
     const [aiStatus, setAiStatus] = useState<string>('Generating analysis...');
@@ -58,6 +137,8 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
 
         fetchStatus();
     }, [turbine]);
+
+    const historicalData = useMemo(() => generateHistoricalData(turbine), [turbine]);
 
     const config = statusConfig[turbine.status];
     const powerPercentage = turbine.activePower !== null ? (turbine.activePower / turbine.maxPower) * 100 : 0;
@@ -97,7 +178,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
                 <MetricCard title="RPM" value={turbine.rpm !== null ? `${turbine.rpm}` : '—'} icon={<i className="fa-solid fa-arrows-spin"></i>} color="text-indigo-500" />
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                  <h3 className="font-semibold text-gray-700 mb-2">AI-Powered Status Analysis</h3>
                  <div className={`p-4 rounded-md ${isLoadingAi ? 'bg-gray-50' : 'bg-violet-50'}`}>
                     {isLoadingAi ? (
@@ -110,6 +191,15 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack }
                     )}
                  </div>
                  <p className="text-xs text-right text-gray-400 mt-2">Powered by Gemini</p>
+            </div>
+            
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Historical Performance (Last 24h)</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <HistoricalChart title="Power Output" data={historicalData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
+                    <HistoricalChart title="Wind Speed" data={historicalData.wind} unit="m/s" color="#ec4899" maxVal={30} />
+                    <HistoricalChart title="Rotor Speed" data={historicalData.rpm} unit="RPM" color="#6366f1" maxVal={20} />
+                </div>
             </div>
         </div>
     );
