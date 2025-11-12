@@ -51,6 +51,15 @@ const Header = () => (
     </header>
 );
 
+const iconColorMap: { [key: string]: string } = {
+    'text-violet-600': 'bg-gradient-to-br from-violet-50 to-violet-200',
+    'text-cyan-500': 'bg-gradient-to-br from-cyan-50 to-cyan-200',
+    'text-purple-600': 'bg-gradient-to-br from-purple-50 to-purple-200',
+    'text-green-600': 'bg-gradient-to-br from-green-50 to-green-200',
+    'text-pink-500': 'bg-gradient-to-br from-pink-50 to-pink-200',
+    'text-orange-500': 'bg-gradient-to-br from-orange-50 to-orange-200',
+};
+
 const SummaryCard: React.FC<{
     title: string;
     value: string;
@@ -58,15 +67,15 @@ const SummaryCard: React.FC<{
     icon: React.ReactNode;
     color: string;
 }> = ({ title, value, unit, icon, color }) => (
-    <div className="bg-white p-4 rounded-lg shadow-sm flex items-start justify-between">
+    <div className="bg-white p-4 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         <div>
             <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-2xl font-bold text-gray-800">
-                {value} <span className="text-lg font-medium text-gray-600">{unit}</span>
+            <p className="text-3xl font-bold text-gray-900 mt-1">
+                {value} <span className="text-xl font-medium text-gray-500">{unit}</span>
             </p>
         </div>
-        <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('-600', '-100').replace('-500', '-100')}`}>
-            <div className={`${color} text-xl w-6 h-6 flex items-center justify-center`}>{icon}</div>
+        <div className={`p-3 rounded-lg ${iconColorMap[color] || 'bg-gray-100'}`}>
+            <div className={`${color} text-2xl w-7 h-7 flex items-center justify-center`}>{icon}</div>
         </div>
     </div>
 );
@@ -77,8 +86,9 @@ const TurbineStatusSummaryCard: React.FC<{
         available: number;
         stopped: number;
         offline: number;
-    }
-}> = ({ counts }) => {
+    };
+    className?: string;
+}> = ({ counts, className }) => {
     const statusItems = [
         { name: 'Producing', count: counts.producing, icon: <i className="fa-solid fa-circle-check"></i>, color: 'text-green-500' },
         { name: 'Available', count: counts.available, icon: <i className="fa-solid fa-circle-info"></i>, color: 'text-blue-500' },
@@ -87,16 +97,16 @@ const TurbineStatusSummaryCard: React.FC<{
     ];
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-500 font-semibold mb-3">Turbine Status</p>
-            <div className="space-y-2">
+        <div className={`bg-white p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
+            <p className="text-sm text-gray-500 font-medium mb-3">Turbine Status</p>
+            <div className="flex-grow flex flex-col justify-around">
                 {statusItems.map(item => (
-                    <div key={item.name} className="flex justify-between items-center text-sm">
-                        <div className={`flex items-center gap-2 font-medium ${item.color}`}>
-                            {item.icon}
-                            <span>{item.name}</span>
+                    <div key={item.name} className="flex justify-between items-center">
+                        <div className={`flex items-center gap-3 font-medium ${item.color}`}>
+                             <span className="text-lg w-5 text-center">{item.icon}</span>
+                            <span className="text-sm text-gray-700 font-semibold">{item.name}</span>
                         </div>
-                        <span className="font-bold text-gray-800">{item.count}</span>
+                        <span className="font-bold text-lg text-gray-800">{item.count}</span>
                     </div>
                 ))}
             </div>
@@ -155,14 +165,14 @@ function App() {
         ? onlineTurbinesWithTemp.reduce((sum, t) => sum + t.temperature!, 0) / onlineTurbinesWithTemp.length
         : 0;
 
-    const summaryData = [
+    const summaryDataTop = [
         { title: 'Active Power', value: totalActivePower.toFixed(1), unit: 'MW', icon: <i className="fa-solid fa-bolt"></i>, color: 'text-violet-600' },
         { title: 'Reactive Power', value: totalReactivePower.toFixed(1), unit: 'MVar', icon: <i className="fa-solid fa-bolt-lightning"></i>, color: 'text-cyan-500' },
         { title: 'Load Factor', value: loadFactor.toFixed(1), unit: '%', icon: <i className="fa-solid fa-gauge-high"></i>, color: 'text-purple-600' },
         { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-solar-panel"></i>, color: 'text-green-600' },
     ];
      
-    const summaryData2 = [
+    const summaryDataBottom = [
          { title: 'Average Wind Speed', value: averageWindSpeed.toFixed(1), unit: 'm/s', icon: <i className="fa-solid fa-wind"></i>, color: 'text-pink-500' },
          { title: 'Average Temperature', value: averageTemperature.toFixed(0), unit: '°C', icon: <i className="fa-solid fa-temperature-half"></i>, color: 'text-orange-500' },
     ];
@@ -176,7 +186,7 @@ function App() {
     const formattedTime = currentTime.toLocaleTimeString('fr-FR');
     
     return (
-        <div className="flex h-screen bg-gray-100 text-gray-800 font-sans">
+        <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header />
@@ -185,15 +195,15 @@ function App() {
                         <TurbineDetailView turbine={selectedTurbine} onBack={handleCloseDetailView} />
                     ) : (
                         <>
-                            <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 my-6">
-                                {summaryData.map((data, index) => <SummaryCard key={data.title + index} {...data} />)}
+                            <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {summaryDataTop.map((data) => <SummaryCard key={data.title} {...data} />)}
+                                {summaryDataBottom.map((data) => <SummaryCard key={data.title} {...data} />)}
+                                <TurbineStatusSummaryCard counts={turbineStatusCounts} className="sm:col-span-2 lg:col-span-2" />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
-                                {summaryData2.map((data, index) => <SummaryCard key={data.title + index} {...data} />)}
-                                <TurbineStatusSummaryCard counts={turbineStatusCounts} />
-                            </div>
-                            <div className="bg-white rounded-lg shadow-sm p-4">
+
+                            <div className="bg-white rounded-lg shadow-sm p-4 mt-6">
                                 <div className="pb-4 mb-4 border-b border-gray-200 flex justify-between items-center text-sm">
                                     <span className="font-semibold text-gray-700">
                                         {formattedDate} at {formattedTime}
