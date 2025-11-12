@@ -3,21 +3,80 @@ import { Turbine, TurbineStatus } from './types';
 import TurbineCard from './components/TurbineCard';
 import TurbineDetailView from './components/TurbineDetailView';
 
-// --- MOCK DATA ---
-const initialTurbines: Turbine[] = [
-    { id: 'T 001', status: TurbineStatus.Producing, activePower: 3.6, maxPower: 4.0, reactivePower: 0.3, windSpeed: 9.4, direction: 99, temperature: 15, rpm: 14.8 },
-    { id: 'T 002', status: TurbineStatus.Producing, activePower: 2.4, maxPower: 4.0, reactivePower: 0.2, windSpeed: 6.9, direction: 87, temperature: 14, rpm: 11.2 },
-    { id: 'T 003', status: TurbineStatus.Producing, activePower: 4.0, maxPower: 4.0, reactivePower: 0.4, windSpeed: 11.4, direction: 117, temperature: 16, rpm: 15.0 },
-    { id: 'T 004', status: TurbineStatus.Producing, activePower: 2.2, maxPower: 4.0, reactivePower: 0.2, windSpeed: 6.9, direction: 128, temperature: 14, rpm: 10.9 },
-    { id: 'T 005', status: TurbineStatus.Available, activePower: 0.0, maxPower: 4.0, reactivePower: 0.0, windSpeed: 5.4, direction: 88, temperature: 12, rpm: 0 },
-    { id: 'T 006', status: TurbineStatus.Producing, activePower: 2.0, maxPower: 4.0, reactivePower: 0.1, windSpeed: 7.6, direction: 90, temperature: 15, rpm: 11.5 },
-    { id: 'T 007', status: TurbineStatus.Offline, activePower: null, maxPower: 4.0, reactivePower: null, windSpeed: null, direction: null, temperature: null, rpm: null },
-    { id: 'T 008', status: TurbineStatus.Producing, activePower: 3.4, maxPower: 4.0, reactivePower: 0.3, windSpeed: 9.9, direction: 145, temperature: 16, rpm: 14.2 },
-    { id: 'T 009', status: TurbineStatus.Producing, activePower: 1.1, maxPower: 4.0, reactivePower: 0.2, windSpeed: 7.1, direction: 135, temperature: 13, rpm: 8.5 },
-    { id: 'T 010', status: TurbineStatus.Producing, activePower: 3.8, maxPower: 4.0, reactivePower: 0.5, windSpeed: 10.2, direction: 162, temperature: 17, rpm: 14.9 },
-    { id: 'T 011', status: TurbineStatus.Producing, activePower: 2.5, maxPower: 4.0, reactivePower: 0.2, windSpeed: 5.4, direction: 164, temperature: 14, rpm: 11.3 },
-    { id: 'T 012', status: TurbineStatus.Stopped, activePower: 0.0, maxPower: 4.0, reactivePower: 0.0, windSpeed: 3.1, direction: 159, temperature: 11, rpm: 0 },
-];
+// --- NEW WIND FARM LAYOUT & MOCK DATA GENERATION ---
+
+const layout = {
+  "North Zone": [
+    { name: "Line 12", ids: Array.from({ length: 18 }, (_, i) => i + 1) },
+    { name: "Line 11", ids: Array.from({ length: 18 }, (_, i) => 36 - i) },
+    { name: "Line 10", ids: Array.from({ length: 18 }, (_, i) => i + 37) },
+    { name: "Line 9", ids: Array.from({ length: 19 }, (_, i) => 73 - i) },
+    { name: "Line 8", ids: Array.from({ length: 14 }, (_, i) => i + 74) },
+  ],
+  "Tah Zone": [
+    { name: "Line 7", ids: Array.from({ length: 7 }, (_, i) => 94 - i) },
+    { name: "Line 6", ids: Array.from({ length: 6 }, (_, i) => i + 95) },
+    { name: "Line 5", ids: Array.from({ length: 6 }, (_, i) => 106 - i) },
+    { name: "Line 4", ids: Array.from({ length: 6 }, (_, i) => i + 107) },
+    { name: "Line 3", ids: Array.from({ length: 6 }, (_, i) => 118 - i) },
+    { name: "Line 2", ids: Array.from({ length: 7 }, (_, i) => i + 119) },
+    { name: "Line 1", ids: Array.from({ length: 6 }, (_, i) => 131 - i) },
+  ],
+};
+
+const generateTurbineData = (id: number): Turbine => {
+    const statuses = [
+        TurbineStatus.Producing, TurbineStatus.Producing, TurbineStatus.Producing, TurbineStatus.Producing,
+        TurbineStatus.Available, TurbineStatus.Stopped, TurbineStatus.Offline
+    ];
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const maxPower = 4.0;
+    let activePower: number | null = null, 
+        windSpeed: number | null = null, 
+        rpm: number | null = null, 
+        temperature: number | null = null, 
+        reactivePower: number | null = null, 
+        direction: number | null = null;
+
+    if (status === TurbineStatus.Producing) {
+        activePower = Math.random() * 3.8 + 0.2;
+        windSpeed = activePower * 2.5 + Math.random() * 2;
+        rpm = activePower * 3.5 + Math.random();
+        temperature = 10 + Math.random() * 10;
+        reactivePower = activePower * 0.1;
+        direction = Math.floor(Math.random() * 360);
+    } else if (status === TurbineStatus.Available) {
+        activePower = 0.0;
+        windSpeed = Math.random() * 6;
+        rpm = 0;
+        temperature = 10 + Math.random() * 8;
+        reactivePower = 0.0;
+        direction = Math.floor(Math.random() * 360);
+    } else if (status === TurbineStatus.Stopped) {
+        activePower = 0.0;
+        windSpeed = Math.random() * 3;
+        rpm = 0;
+        temperature = 10 + Math.random() * 8;
+        reactivePower = 0.0;
+        direction = Math.floor(Math.random() * 360);
+    }
+    
+    return {
+        id: `T ${String(id).padStart(3, '0')}`,
+        status,
+        maxPower,
+        activePower: activePower !== null ? parseFloat(activePower.toFixed(1)) : null,
+        reactivePower: reactivePower !== null ? parseFloat(reactivePower.toFixed(1)) : null,
+        windSpeed: windSpeed !== null ? parseFloat(windSpeed.toFixed(1)) : null,
+        direction,
+        temperature: temperature !== null ? Math.round(temperature) : null,
+        rpm: rpm !== null ? parseFloat(rpm.toFixed(1)) : null,
+    };
+};
+
+const allTurbineIds = Object.values(layout).flatMap(zone => zone.flatMap(line => line.ids));
+const initialTurbines: Turbine[] = allTurbineIds.map(generateTurbineData);
+
 
 // --- UI COMPONENTS ---
 
@@ -119,6 +178,7 @@ function App() {
     const [turbines, setTurbines] = useState<Turbine[]>(initialTurbines);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
+    const [isCompactView, setIsCompactView] = useState(false);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -208,14 +268,53 @@ function App() {
                                     <span className="font-semibold text-gray-700">
                                         {formattedDate} at {formattedTime}
                                     </span>
-                                    <span className="text-gray-500">
-                                        Last updated: {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                    </span>
+                                    <div className="flex items-center gap-6">
+                                        <label htmlFor="compact-toggle" className="flex items-center cursor-pointer">
+                                            <span className="mr-2 text-gray-600 font-medium">Compact view</span>
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    id="compact-toggle"
+                                                    className="sr-only"
+                                                    checked={isCompactView}
+                                                    onChange={() => setIsCompactView(!isCompactView)}
+                                                />
+                                                <div className={`block w-10 h-6 rounded-full transition-colors ${isCompactView ? 'bg-violet-500' : 'bg-gray-200'}`}></div>
+                                                <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ease-in-out ${isCompactView ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                            </div>
+                                        </label>
+                                        <span className="text-gray-500">
+                                            Last updated: {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                                {turbines.map(turbine => (
-                                        <TurbineCard key={turbine.id} turbine={turbine} onClick={() => handleSelectTurbine(turbine.id)} />
-                                ))}
+                                <div className="space-y-8">
+                                    {Object.entries(layout).map(([zoneName, lines]) => (
+                                        <div key={zoneName}>
+                                            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-violet-200">{zoneName}</h2>
+                                            <div className="space-y-6">
+                                                {lines.map(line => {
+                                                    const lineTurbines = line.ids.map(id => 
+                                                        turbines.find(t => t.id === `T ${String(id).padStart(3, '0')}`)
+                                                    ).filter((t): t is Turbine => !!t);
+
+                                                    return (
+                                                        <div key={line.name}>
+                                                            <h3 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">{line.name}</h3>
+                                                            <div 
+                                                                className="grid gap-4"
+                                                                style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isCompactView ? '10rem' : '12rem'}, 1fr))` }}
+                                                            >
+                                                                {lineTurbines.map(turbine => (
+                                                                    <TurbineCard key={turbine.id} turbine={turbine} onClick={() => handleSelectTurbine(turbine.id)} isCompact={isCompactView} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </>
