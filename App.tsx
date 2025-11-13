@@ -305,11 +305,25 @@ function App() {
     };
     
     const handleAcknowledgeAlarm = (alarmId: string) => {
-        setAlarms(prevAlarms =>
-            prevAlarms.map(alarm =>
-                alarm.id === alarmId ? { ...alarm, acknowledged: true } : alarm
-            )
-        );
+        setAlarms(currentAlarms => {
+            const alarmIndex = currentAlarms.findIndex(alarm => alarm.id === alarmId);
+    
+            // If alarm not found or already acknowledged, do nothing.
+            if (alarmIndex === -1 || currentAlarms[alarmIndex].acknowledged) {
+                return currentAlarms;
+            }
+    
+            // Create a new array to maintain immutability
+            const newAlarms = [...currentAlarms];
+            
+            // Create a new object for the acknowledged alarm
+            newAlarms[alarmIndex] = {
+                ...currentAlarms[alarmIndex],
+                acknowledged: true,
+            };
+    
+            return newAlarms;
+        });
     };
 
     const handleToggleSidebar = () => {
