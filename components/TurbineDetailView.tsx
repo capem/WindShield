@@ -16,6 +16,105 @@ const statusConfig = {
     [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/50' },
 };
 
+const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ power, nominalMaxPower }) => {
+    // Constants for gauge geometry and appearance
+    const GAUGE_MAX_POWER_FACTOR = 1.15;
+    const GAUGE_RADIUS = 80;
+    const GAUGE_WIDTH = 18;
+    const VIEW_BOX_WIDTH = 200;
+    const VIEW_BOX_HEIGHT = 120; // Adjusted for labels
+    const CX = VIEW_BOX_WIDTH / 2;
+    const CY = VIEW_BOX_HEIGHT - 20; // Pivot point at bottom center
+
+    const gaugeMax = nominalMaxPower * GAUGE_MAX_POWER_FACTOR;
+    const clampedPower = Math.max(0, Math.min(power, gaugeMax));
+    const powerPercentage = nominalMaxPower > 0 ? (power / nominalMaxPower) * 100 : 0;
+
+    // Angle calculation (-90 is left, 0 is top, 90 is right)
+    const getAngle = (value: number) => (value / gaugeMax) * 180 - 90;
+
+    const needleAngle = getAngle(clampedPower);
+    const nominalMaxAngle = getAngle(nominalMaxPower);
+
+    const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
+        const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+        return {
+            x: centerX + radius * Math.cos(angleInRadians),
+            y: centerY + radius * Math.sin(angleInRadians),
+        };
+    };
+
+    const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
+        const start = polarToCartesian(x, y, radius, endAngle);
+        const end = polarToCartesian(x, y, radius, startAngle);
+        const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+        return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+    };
+
+    const powerValueColor = power > nominalMaxPower ? 'text-amber-500' : 'text-green-500';
+    const majorTicksValues = [0, 0.5, 1.0, 1.5, 2.0, 2.5];
+
+    return (
+        <div className="relative w-full max-w-sm mx-auto">
+            <svg viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`} className="w-full">
+                <defs>
+                    <linearGradient id="gaugeGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#10b981" /> <stop offset="100%" stopColor="#34d399" />
+                    </linearGradient>
+                    <linearGradient id="gaugeAmberGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#f59e0b" /> <stop offset="100%" stopColor="#fbbf24" />
+                    </linearGradient>
+                    <radialGradient id="hubGradient">
+                        <stop offset="0%" stopColor="#e5e7eb" /> <stop offset="100%" stopColor="#9ca3af" />
+                    </radialGradient>
+                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+                        <feOffset in="blur" dx="1" dy="1" result="offsetBlur"/>
+                        <feMerge>
+                            <feMergeNode in="offsetBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                {/* Gauge Background Arc */}
+                <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-gray-200 dark:stroke-gray-700" fill="none" />
+                
+                {/* Gauge Value Arcs */}
+                <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, nominalMaxAngle)} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeGreenGradient)" fill="none" />
+                <path d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, 90)} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeAmberGradient)" fill="none" />
+                
+                {/* Ticks and Labels */}
+                {majorTicksValues.map(value => {
+                    if (value > gaugeMax) return null;
+                    const angle = getAngle(value);
+                    const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 12, angle);
+                    return (
+                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[9px] font-semibold fill-gray-500 dark:fill-gray-400">
+                            {value.toFixed(1)}
+                        </text>
+                    );
+                })}
+                
+                {/* Needle */}
+                <g transform={`rotate(${needleAngle} ${CX} ${CY})`} style={{ transition: 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }}>
+                    <path d={`M ${CX - 2} ${CY} L ${CX} ${CY - GAUGE_RADIUS + 5} L ${CX + 2} ${CY} Z`} className="fill-gray-800 dark:fill-gray-200" filter="url(#shadow)" />
+                </g>
+                <circle cx={CX} cy={CY} r="8" fill="url(#hubGradient)" className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="0.5"/>
+                <circle cx={CX} cy={CY} r="4" className="fill-gray-700 dark:fill-gray-300" />
+            </svg>
+            <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                <p className={`text-5xl font-bold ${powerValueColor}`} style={{ textShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                    {power.toFixed(2)}
+                    <span className="text-xl font-medium text-gray-500 dark:text-gray-400 ml-2">MW</span>
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mt-1">{powerPercentage.toFixed(0)}% of nominal</p>
+            </div>
+        </div>
+    );
+};
+
+
 const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex items-center gap-4">
         <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-600', '-100').replace('-500', '-100')} dark:bg-opacity-10`}>
@@ -220,7 +319,6 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
     }, [turbine, historicalData]);
 
     const config = statusConfig[turbine.status];
-    const powerPercentage = turbine.activePower !== null ? (turbine.activePower / turbine.maxPower) * 100 : 0;
 
     return (
         <div className="animate-fade-in">
@@ -239,13 +337,12 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                    <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Active Power Output</h3>
-                    <p className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{turbine.activePower?.toFixed(2) ?? 'N/A'} <span className="text-xl font-medium text-gray-500 dark:text-gray-400">MW</span></p>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                        <div className="bg-green-600 h-2.5 rounded-full" style={{ width: `${powerPercentage}%` }}></div>
-                    </div>
-                    <p className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">{powerPercentage.toFixed(0)}% of max power ({turbine.maxPower} MW)</p>
+                 <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 text-center">Active Power Output</h3>
+                    <PowerGauge
+                        power={turbine.activePower ?? 0}
+                        nominalMaxPower={turbine.maxPower}
+                    />
                 </div>
             </div>
 
