@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Turbine, TurbineStatus, Alarm, AlarmSeverity } from '../types';
 
 interface TurbineDetailViewProps {
@@ -17,20 +17,18 @@ const statusConfig = {
 };
 
 const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ power, nominalMaxPower }) => {
-    // Constants for gauge geometry and appearance
     const GAUGE_MAX_POWER_FACTOR = 1.15;
-    const GAUGE_RADIUS = 80;
-    const GAUGE_WIDTH = 18;
+    const GAUGE_RADIUS = 85;
+    const GAUGE_WIDTH = 22;
     const VIEW_BOX_WIDTH = 200;
-    const VIEW_BOX_HEIGHT = 120; // Adjusted for labels
+    const VIEW_BOX_HEIGHT = 125;
     const CX = VIEW_BOX_WIDTH / 2;
-    const CY = VIEW_BOX_HEIGHT - 20; // Pivot point at bottom center
+    const CY = VIEW_BOX_HEIGHT - 20;
 
     const gaugeMax = nominalMaxPower * GAUGE_MAX_POWER_FACTOR;
     const clampedPower = Math.max(0, Math.min(power, gaugeMax));
     const powerPercentage = nominalMaxPower > 0 ? (power / nominalMaxPower) * 100 : 0;
 
-    // Angle calculation (-90 is left, 0 is top, 90 is right)
     const getAngle = (value: number) => (value / gaugeMax) * 180 - 90;
 
     const needleAngle = getAngle(clampedPower);
@@ -56,7 +54,7 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
 
     return (
         <div className="relative w-full max-w-sm mx-auto">
-            <svg viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`} className="w-full">
+            <svg viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`} className="w-full overflow-visible">
                 <defs>
                     <linearGradient id="gaugeGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#10b981" /> <stop offset="100%" stopColor="#34d399" />
@@ -65,32 +63,41 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                         <stop offset="0%" stopColor="#f59e0b" /> <stop offset="100%" stopColor="#fbbf24" />
                     </linearGradient>
                     <radialGradient id="hubGradient">
-                        <stop offset="0%" stopColor="#e5e7eb" /> <stop offset="100%" stopColor="#9ca3af" />
+                        <stop offset="0%" stopColor="#f9fafb" />
+                        <stop offset="100%" stopColor="#d1d5db" />
                     </radialGradient>
-                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
-                        <feOffset in="blur" dx="1" dy="1" result="offsetBlur"/>
+                    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000" floodOpacity="0.1" />
+                    </filter>
+                     <filter id="text-glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                         <feMerge>
-                            <feMergeNode in="offsetBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
                         </feMerge>
                     </filter>
                 </defs>
+                
+                <g filter="url(#shadow)">
+                    {/* Gauge Background Arc */}
+                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-slate-200 dark:stroke-slate-700" fill="none" />
+                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} stroke="black" strokeOpacity="0.05" fill="none" style={{mixBlendMode: 'multiply'}} />
 
-                {/* Gauge Background Arc */}
-                <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-gray-200 dark:stroke-gray-700" fill="none" />
-                
-                {/* Gauge Value Arcs */}
-                <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, nominalMaxAngle)} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeGreenGradient)" fill="none" />
-                <path d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, 90)} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeAmberGradient)" fill="none" />
-                
+
+                    {/* Gauge Value Arcs */}
+                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, Math.min(needleAngle, nominalMaxAngle))} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeGreenGradient)" fill="none" style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }} />
+                    {clampedPower > nominalMaxPower && (
+                        <path d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, needleAngle)} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeAmberGradient)" fill="none" style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }}/>
+                    )}
+                </g>
+
                 {/* Ticks and Labels */}
                 {majorTicksValues.map(value => {
                     if (value > gaugeMax) return null;
                     const angle = getAngle(value);
                     const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 12, angle);
                     return (
-                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[9px] font-semibold fill-gray-500 dark:fill-gray-400">
+                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[9px] font-semibold fill-slate-500 dark:fill-slate-400">
                             {value.toFixed(1)}
                         </text>
                     );
@@ -98,17 +105,17 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                 
                 {/* Needle */}
                 <g transform={`rotate(${needleAngle} ${CX} ${CY})`} style={{ transition: 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }}>
-                    <path d={`M ${CX - 2} ${CY} L ${CX} ${CY - GAUGE_RADIUS + 5} L ${CX + 2} ${CY} Z`} className="fill-gray-800 dark:fill-gray-200" filter="url(#shadow)" />
+                    <path d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH/2 - 2} L ${CX} ${CY - 8}`} className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" strokeLinecap="round" filter="url(#shadow)"/>
                 </g>
-                <circle cx={CX} cy={CY} r="8" fill="url(#hubGradient)" className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="0.5"/>
-                <circle cx={CX} cy={CY} r="4" className="fill-gray-700 dark:fill-gray-300" />
+                <circle cx={CX} cy={CY} r="8" fill="url(#hubGradient)" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="0.5"/>
+                <circle cx={CX} cy={CY} r="4" className="fill-slate-700 dark:fill-slate-300" />
             </svg>
             <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                <p className={`text-5xl font-bold ${powerValueColor}`} style={{ textShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <p className={`text-5xl font-bold ${powerValueColor}`} style={{ textShadow: `0 0 15px var(--tw-shadow-color)` }} >
                     {power.toFixed(2)}
-                    <span className="text-xl font-medium text-gray-500 dark:text-gray-400 ml-2">MW</span>
+                    <span className="text-xl font-medium text-slate-500 dark:text-slate-400 ml-2">MW</span>
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mt-1">{powerPercentage.toFixed(0)}% of nominal</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold mt-1">{powerPercentage.toFixed(0)}% of nominal</p>
             </div>
         </div>
     );
@@ -116,25 +123,25 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
 
 
 const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex items-center gap-4">
-        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-600', '-100').replace('-500', '-100')} dark:bg-opacity-10`}>
+    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-500', '-100')} dark:bg-opacity-10`}>
             <div className={`${color} text-2xl w-8 h-8 flex items-center justify-center`}>{icon}</div>
         </div>
         <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-            <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+            <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
         </div>
     </div>
 );
 
-
 const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; color: string; maxVal: number }> = ({ title, data, unit, color, maxVal }) => {
     const width = 300;
     const height = 100;
+    const [hoverData, setHoverData] = useState<{ x: number; y: number; value: number; index: number } | null>(null);
 
     if (!data || data.length === 0) return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px]">
-             <p className="text-gray-500 dark:text-gray-400">No historical data available.</p>
+        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px]">
+             <p className="text-slate-500 dark:text-slate-400">No historical data available.</p>
         </div>
     );
 
@@ -151,12 +158,26 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
 
     const gradientId = `gradient-${color.replace(/\s/g, '-')}`;
 
+    const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const index = Math.round((x / rect.width) * (data.length - 1));
+        const value = data[index];
+        const pointX = (index / (data.length - 1)) * width;
+        const pointY = height - (value / maxDataVal) * height;
+        setHoverData({ x: pointX, y: pointY, value, index });
+    };
+
+    const handleMouseLeave = () => {
+        setHoverData(null);
+    };
+
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
             <div className="flex justify-between items-baseline mb-2">
-                <h4 className="font-semibold text-gray-700 dark:text-gray-300">{title}</h4>
+                <h4 className="font-semibold text-slate-700 dark:text-slate-300">{title}</h4>
                 <p className="text-sm font-bold" style={{ color: color }}>
-                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-gray-500 dark:text-gray-400">{unit}</span>
+                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-slate-500 dark:text-slate-400">{unit}</span>
                 </p>
             </div>
             <div className="relative">
@@ -169,16 +190,37 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
                     </defs>
                     <path d={areaPath} fill={`url(#${gradientId})`} />
                     <path d={linePath} fill="none" stroke={color} strokeWidth="2" />
+                    <rect width={width} height={height} fill="transparent" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} />
+                    {hoverData && (
+                        <g>
+                            <line x1={hoverData.x} y1="0" x2={hoverData.x} y2={height} stroke={color} strokeWidth="1" strokeDasharray="3,3" />
+                            <circle cx={hoverData.x} cy={hoverData.y} r="4" fill="white" stroke={color} strokeWidth="2" />
+                        </g>
+                    )}
                 </svg>
-                <div className="absolute top-0 left-0 text-xs text-gray-400">{maxDataVal.toFixed(0)}</div>
-                <div className="absolute bottom-0 left-0 text-xs text-gray-400">0</div>
-                <div className="absolute bottom-0 right-0 text-xs text-gray-400">Now</div>
-                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-gray-400">12h ago</div>
-                <div className="absolute bottom-0 left-0 text-xs text-gray-400">24h ago</div>
+                 {hoverData && (
+                    <div 
+                        className="absolute p-2 text-xs bg-slate-800 text-white rounded-md shadow-lg pointer-events-none transition-opacity"
+                        style={{
+                            left: `${hoverData.x}px`,
+                            top: `${hoverData.y}px`,
+                            transform: `translate(-50%, -120%) translateX(${hoverData.x / width > 0.5 ? '-20px' : '20px'})`,
+                        }}
+                    >
+                       <p className="font-bold">{hoverData.value.toFixed(2)} {unit}</p>
+                       <p className="text-slate-300">~{24 - hoverData.index}h ago</p>
+                    </div>
+                )}
+                <div className="absolute top-0 left-0 text-xs text-slate-400">{maxDataVal.toFixed(0)}</div>
+                <div className="absolute bottom-0 left-0 text-xs text-slate-400">0</div>
+                <div className="absolute -bottom-4 right-0 text-xs text-slate-400">Now</div>
+                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-xs text-slate-400">12h ago</div>
+                <div className="absolute -bottom-4 left-0 text-xs text-slate-400">24h ago</div>
             </div>
         </div>
     );
 };
+
 
 const SWT_2_3_101_SPECS = {
     RPM_RANGE: { min: 6, max: 16 },
@@ -222,12 +264,71 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
 };
 
 const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => void }> = ({ alarms, onAcknowledge }) => {
-    const sortedAlarms = [...alarms].sort((a, b) => {
-        if (!a.timeOff && b.timeOff) return -1; // Active alarms first
-        if (a.timeOff && !b.timeOff) return 1;
-        return b.timeOn.getTime() - a.timeOn.getTime(); // Then by most recent
-    });
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+    
+    const sortedAlarms = useMemo(() => {
+        const sortableAlarms = [...alarms];
+        
+        const severityOrder = { [AlarmSeverity.Critical]: 1, [AlarmSeverity.Warning]: 2, [AlarmSeverity.Info]: 3 };
 
+        if (sortConfig !== null) {
+            sortableAlarms.sort((a, b) => {
+                let aVal: any, bVal: any;
+                
+                switch(sortConfig.key) {
+                    case 'severity':
+                        aVal = severityOrder[a.severity];
+                        bVal = severityOrder[b.severity];
+                        break;
+                    case 'description':
+                        aVal = a.description;
+                        bVal = b.description;
+                        break;
+                    case 'timeOn':
+                        aVal = a.timeOn.getTime();
+                        bVal = b.timeOn.getTime();
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        } else {
+             sortableAlarms.sort((a, b) => {
+                if (!a.timeOff && b.timeOff) return -1; // Active alarms first
+                if (a.timeOff && !b.timeOff) return 1;
+                return b.timeOn.getTime() - a.timeOn.getTime(); // Then by most recent
+            });
+        }
+        return sortableAlarms;
+    }, [alarms, sortConfig]);
+
+    const requestSort = (key: string) => {
+        if (sortConfig && sortConfig.key === key) {
+            // If same key, toggle direction or remove sort
+            if(sortConfig.direction === 'desc') {
+                setSortConfig(null); // Return to default sort
+            } else {
+                setSortConfig({ key, direction: 'desc' });
+            }
+        } else {
+            setSortConfig({ key, direction: 'asc' });
+        }
+    };
+
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) {
+            return <i className="fa-solid fa-sort sort-icon ml-2"></i>;
+        }
+        if (sortConfig.direction === 'asc') {
+            return <i className="fa-solid fa-sort-up sort-icon active ml-2"></i>;
+        }
+        return <i className="fa-solid fa-sort-down sort-icon active ml-2"></i>;
+    };
+    
     const severityConfig = {
         [AlarmSeverity.Critical]: { icon: 'fa-triangle-exclamation', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
         [AlarmSeverity.Warning]: { icon: 'fa-triangle-exclamation', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
@@ -245,20 +346,20 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
 
     if (alarms.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm text-center">
-                <p className="text-gray-500 dark:text-gray-400">No alarms recorded for this turbine.</p>
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm text-center">
+                <p className="text-slate-500 dark:text-slate-400">No alarms recorded for this turbine.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-            <table className="w-full text-sm text-left text-gray-600 dark:text-gray-400">
-                <thead className="bg-gray-50 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-300 uppercase">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden">
+            <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
+                <thead className="bg-slate-50 dark:bg-slate-700 text-xs text-slate-700 dark:text-slate-300 uppercase">
                     <tr>
-                        <th scope="col" className="px-6 py-3">Severity</th>
-                        <th scope="col" className="px-6 py-3">Description</th>
-                        <th scope="col" className="px-6 py-3">Start Time</th>
+                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('severity')}>Severity {getSortIcon('severity')}</th>
+                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('description')}>Description {getSortIcon('description')}</th>
+                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('timeOn')}>Start Time {getSortIcon('timeOn')}</th>
                         <th scope="col" className="px-6 py-3">Duration</th>
                         <th scope="col" className="px-6 py-3">Status</th>
                         <th scope="col" className="px-6 py-3 text-right">Action</th>
@@ -269,14 +370,14 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                         const config = severityConfig[alarm.severity];
                         const isActive = !alarm.timeOff;
                         return (
-                            <tr key={alarm.id} className={`border-b dark:border-gray-700 ${isActive ? config.bg : 'bg-white dark:bg-gray-800'}`}>
+                            <tr key={alarm.id} className={`border-b dark:border-slate-700 ${isActive ? config.bg : 'bg-white dark:bg-slate-800'}`}>
                                 <td className="px-6 py-4 font-medium">
                                     <div className={`flex items-center gap-2 ${config.color}`}>
                                         <i className={`fa-solid ${config.icon}`}></i>
                                         <span>{alarm.severity}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-gray-800 dark:text-gray-200">{alarm.description}</td>
+                                <td className="px-6 py-4 text-slate-800 dark:text-slate-200">{alarm.description}</td>
                                 <td className="px-6 py-4">{alarm.timeOn.toLocaleString()}</td>
                                 <td className="px-6 py-4">{formatDuration(alarm.timeOn, alarm.timeOff)}</td>
                                 <td className="px-6 py-4">
@@ -285,7 +386,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                                             {alarm.acknowledged ? 'Active (Ack)' : 'Active (New)'}
                                         </span>
                                     ) : (
-                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">Resolved</span>
+                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">Resolved</span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
@@ -322,23 +423,23 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
 
     return (
         <div className="animate-fade-in">
-            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-4">
+            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white mb-4">
                 <i className="fa-solid fa-arrow-left"></i>
                 Back to Dashboard
             </button>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 mb-6">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Turbine {turbine.id}</h1>
-                        <p className="text-gray-500 dark:text-gray-400">Detailed operational metrics and status.</p>
+                        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Turbine {turbine.id}</h1>
+                        <p className="text-slate-500 dark:text-slate-400">Detailed operational metrics and status.</p>
                     </div>
                     <span className={`text-sm font-semibold px-3 py-1 rounded-full ${config.classes}`}>{config.text}</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                 <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 text-center">Active Power Output</h3>
+                 <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2 text-center">Active Power Output</h3>
                     <PowerGauge
                         power={turbine.activePower ?? 0}
                         nominalMaxPower={turbine.maxPower}
@@ -355,7 +456,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             </div>
             
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Historical Performance (Last 24h)</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Historical Performance (Last 24h)</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <HistoricalChart title="Power Output" data={chartData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
                     <HistoricalChart title="Wind Speed" data={chartData.wind} unit="m/s" color="#ec4899" maxVal={30} />
@@ -364,7 +465,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             </div>
 
             <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Alarm History & Status</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Alarm History & Status</h2>
                 <AlarmHistory alarms={alarms} onAcknowledge={onAcknowledgeAlarm} />
             </div>
         </div>
