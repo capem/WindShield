@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface SidebarProps {
     isCollapsed: boolean;
+    activeItem: string;
+    onNavigate: (itemId: string) => void;
 }
 
 const menuItems = [
@@ -13,12 +15,10 @@ const menuItems = [
 ];
 
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
-    const [activeItem, setActiveItem] = useState('dashboard');
-
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, activeItem, onNavigate }) => {
     return (
-        <aside className={`bg-white shadow-md flex-shrink-0 flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
-            <div className={`p-6 text-2xl font-bold text-gray-800 transition-all duration-300 text-center ${isCollapsed ? 'py-4' : ''}`}>
+        <aside className={`bg-white dark:bg-gray-800 shadow-md flex-shrink-0 flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+            <div className={`p-6 text-2xl font-bold text-gray-800 dark:text-gray-100 transition-all duration-300 text-center ${isCollapsed ? 'py-4' : ''}`}>
                 {isCollapsed ? (
                     <i className="fa-solid fa-wind text-violet-600"></i>
                 ) : (
@@ -32,12 +32,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                         href="#"
                         onClick={(e) => {
                             e.preventDefault();
-                            setActiveItem(item.id)
+                            onNavigate(item.id);
                         }}
                         className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group ${
                             activeItem === item.id
-                                ? 'bg-violet-50 text-violet-600'
-                                : 'text-gray-600 hover:bg-gray-100'
+                                ? 'bg-violet-50 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400'
+                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
                         aria-label={item.label}
                     >

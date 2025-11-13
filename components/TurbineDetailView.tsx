@@ -10,20 +10,20 @@ interface TurbineDetailViewProps {
 }
 
 const statusConfig = {
-    [TurbineStatus.Producing]: { text: 'Producing', textColor: 'text-green-700', bgColor: 'bg-green-100', borderColor: 'border-green-500' },
-    [TurbineStatus.Available]: { text: 'Available', textColor: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-500' },
-    [TurbineStatus.Offline]: { text: 'Offline', textColor: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-500' },
-    [TurbineStatus.Stopped]: { text: 'Stopped', textColor: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-500' },
+    [TurbineStatus.Producing]: { text: 'Producing', classes: 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50' },
+    [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50' },
+    [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50' },
+    [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/50' },
 };
 
 const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white rounded-lg p-4 shadow-sm flex items-center gap-4">
-        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-600', '-100').replace('-500', '-100')}`}>
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex items-center gap-4">
+        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-600', '-100').replace('-500', '-100')} dark:bg-opacity-10`}>
             <div className={`${color} text-2xl w-8 h-8 flex items-center justify-center`}>{icon}</div>
         </div>
         <div>
-            <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-xl font-bold text-gray-800">{value}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+            <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
         </div>
     </div>
 );
@@ -34,8 +34,8 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     const height = 100;
 
     if (!data || data.length === 0) return (
-        <div className="bg-white rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px]">
-             <p className="text-gray-500">No historical data available.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px]">
+             <p className="text-gray-500 dark:text-gray-400">No historical data available.</p>
         </div>
     );
 
@@ -53,11 +53,11 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     const gradientId = `gradient-${color.replace(/\s/g, '-')}`;
 
     return (
-        <div className="bg-white rounded-lg p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
             <div className="flex justify-between items-baseline mb-2">
-                <h4 className="font-semibold text-gray-700">{title}</h4>
+                <h4 className="font-semibold text-gray-700 dark:text-gray-300">{title}</h4>
                 <p className="text-sm font-bold" style={{ color: color }}>
-                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-gray-500">{unit}</span>
+                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-gray-500 dark:text-gray-400">{unit}</span>
                 </p>
             </div>
             <div className="relative">
@@ -130,9 +130,9 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
     });
 
     const severityConfig = {
-        [AlarmSeverity.Critical]: { icon: 'fa-triangle-exclamation', color: 'text-red-500', bg: 'bg-red-50' },
-        [AlarmSeverity.Warning]: { icon: 'fa-triangle-exclamation', color: 'text-yellow-500', bg: 'bg-yellow-50' },
-        [AlarmSeverity.Info]: { icon: 'fa-circle-info', color: 'text-blue-500', bg: 'bg-blue-50' },
+        [AlarmSeverity.Critical]: { icon: 'fa-triangle-exclamation', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
+        [AlarmSeverity.Warning]: { icon: 'fa-triangle-exclamation', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+        [AlarmSeverity.Info]: { icon: 'fa-circle-info', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
     };
 
     const formatDuration = (start: Date, end: Date | null): string => {
@@ -146,16 +146,16 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
 
     if (alarms.length === 0) {
         return (
-            <div className="bg-white rounded-lg p-6 shadow-sm text-center">
-                <p className="text-gray-500">No alarms recorded for this turbine.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm text-center">
+                <p className="text-gray-500 dark:text-gray-400">No alarms recorded for this turbine.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table className="w-full text-sm text-left text-gray-600">
-                <thead className="bg-gray-50 text-xs text-gray-700 uppercase">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <table className="w-full text-sm text-left text-gray-600 dark:text-gray-400">
+                <thead className="bg-gray-50 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-300 uppercase">
                     <tr>
                         <th scope="col" className="px-6 py-3">Severity</th>
                         <th scope="col" className="px-6 py-3">Description</th>
@@ -170,28 +170,28 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                         const config = severityConfig[alarm.severity];
                         const isActive = !alarm.timeOff;
                         return (
-                            <tr key={alarm.id} className={`border-b ${isActive ? config.bg : 'bg-white'}`}>
+                            <tr key={alarm.id} className={`border-b dark:border-gray-700 ${isActive ? config.bg : 'bg-white dark:bg-gray-800'}`}>
                                 <td className="px-6 py-4 font-medium">
                                     <div className={`flex items-center gap-2 ${config.color}`}>
                                         <i className={`fa-solid ${config.icon}`}></i>
                                         <span>{alarm.severity}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-gray-800">{alarm.description}</td>
+                                <td className="px-6 py-4 text-gray-800 dark:text-gray-200">{alarm.description}</td>
                                 <td className="px-6 py-4">{alarm.timeOn.toLocaleString()}</td>
                                 <td className="px-6 py-4">{formatDuration(alarm.timeOn, alarm.timeOff)}</td>
                                 <td className="px-6 py-4">
                                     {isActive ? (
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${alarm.acknowledged ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${alarm.acknowledged ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
                                             {alarm.acknowledged ? 'Active (Ack)' : 'Active (New)'}
                                         </span>
                                     ) : (
-                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">Resolved</span>
+                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">Resolved</span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     {isActive && !alarm.acknowledged && (
-                                        <button onClick={() => onAcknowledge(alarm.id)} className="font-medium text-violet-600 hover:text-violet-800 bg-violet-100 hover:bg-violet-200 px-3 py-1 rounded-md transition">
+                                        <button onClick={() => onAcknowledge(alarm.id)} className="font-medium text-violet-600 hover:text-violet-800 bg-violet-100 hover:bg-violet-200 dark:text-violet-400 dark:bg-violet-900/50 dark:hover:bg-violet-900 px-3 py-1 rounded-md transition">
                                             Acknowledge
                                         </button>
                                     )}
@@ -224,28 +224,28 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
 
     return (
         <div className="animate-fade-in">
-            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 mb-4">
+            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-4">
                 <i className="fa-solid fa-arrow-left"></i>
                 Back to Dashboard
             </button>
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800">Turbine {turbine.id}</h1>
-                        <p className="text-gray-500">Detailed operational metrics and status.</p>
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Turbine {turbine.id}</h1>
+                        <p className="text-gray-500 dark:text-gray-400">Detailed operational metrics and status.</p>
                     </div>
-                    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${config.bgColor} ${config.textColor}`}>{config.text}</span>
+                    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${config.classes}`}>{config.text}</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                <div className="md:col-span-2 lg:col-span-3 bg-white rounded-lg p-6 shadow-sm">
-                    <h3 className="font-semibold text-gray-700 mb-1">Active Power Output</h3>
-                    <p className="text-3xl font-bold text-gray-800 mb-2">{turbine.activePower?.toFixed(2) ?? 'N/A'} <span className="text-xl font-medium text-gray-500">MW</span></p>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                    <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Active Power Output</h3>
+                    <p className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{turbine.activePower?.toFixed(2) ?? 'N/A'} <span className="text-xl font-medium text-gray-500 dark:text-gray-400">MW</span></p>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                         <div className="bg-green-600 h-2.5 rounded-full" style={{ width: `${powerPercentage}%` }}></div>
                     </div>
-                    <p className="text-right text-sm text-gray-500 mt-1">{powerPercentage.toFixed(0)}% of max power ({turbine.maxPower} MW)</p>
+                    <p className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">{powerPercentage.toFixed(0)}% of max power ({turbine.maxPower} MW)</p>
                 </div>
             </div>
 
@@ -258,7 +258,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             </div>
             
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Historical Performance (Last 24h)</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Historical Performance (Last 24h)</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <HistoricalChart title="Power Output" data={chartData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
                     <HistoricalChart title="Wind Speed" data={chartData.wind} unit="m/s" color="#ec4899" maxVal={30} />
@@ -267,7 +267,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             </div>
 
             <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Alarm History & Status</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Alarm History & Status</h2>
                 <AlarmHistory alarms={alarms} onAcknowledge={onAcknowledgeAlarm} />
             </div>
         </div>

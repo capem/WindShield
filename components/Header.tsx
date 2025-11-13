@@ -5,11 +5,13 @@ interface HeaderProps {
     onToggleSidebar: () => void;
     onUploadClick: () => void;
     unacknowledgedAlarms: Alarm[];
+    isDarkMode: boolean;
+    onToggleDarkMode: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unacknowledgedAlarms }) => {
+const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unacknowledgedAlarms, isDarkMode, onToggleDarkMode }) => {
     const count = unacknowledgedAlarms.length;
-    let iconColor = 'text-gray-600';
+    let iconColor = 'text-gray-600 dark:text-gray-300';
     let hasCritical = false;
     let hasWarning = false;
 
@@ -27,19 +29,19 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
     }
 
     return (
-        <header className="bg-white h-16 flex items-center justify-between px-6 border-b border-gray-200 flex-shrink-0">
+        <header className="bg-white dark:bg-gray-800 h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <div className="flex items-center gap-4">
-                <button onClick={onToggleSidebar} className="text-gray-600 hover:text-violet-600 transition-colors" aria-label="Toggle sidebar">
+                <button onClick={onToggleSidebar} className="text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors" aria-label="Toggle sidebar">
                     <i className="fa-solid fa-bars text-xl"></i>
                 </button>
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i className="fa-solid fa-magnifying-glass"></i></span>
-                    <input type="search" placeholder="Search" className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                    <input type="search" placeholder="Search" className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400" />
                 </div>
             </div>
-            <div className="flex items-center gap-6 text-gray-600">
+            <div className="flex items-center gap-6 text-gray-600 dark:text-gray-300">
                  <div className="relative group">
-                     <button onClick={onUploadClick} className="flex items-center gap-2 font-semibold text-gray-600 hover:text-violet-600 transition-colors" aria-label="Upload SCADA Data">
+                     <button onClick={onUploadClick} className="flex items-center gap-2 font-semibold text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors" aria-label="Upload SCADA Data">
                         <i className="fa-solid fa-upload text-lg"></i>
                         <span className="hidden sm:inline">Upload Data</span>
                      </button>
@@ -61,10 +63,15 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                         </div>
                     </div>
                  </div>
-                 <div className="h-6 w-px bg-gray-200"></div>
-                 <button className="hover:text-violet-600 transition-colors" aria-label="Light mode"><i className="fa-solid fa-sun text-lg"></i></button>
-                 <button className="hover:text-violet-600 transition-colors" aria-label="Dark mode"><i className="fa-solid fa-moon text-lg"></i></button>
-                 <button className={`relative hover:text-violet-600 transition-colors ${iconColor}`} aria-label="Notifications">
+                 <div className="h-6 w-px bg-gray-200 dark:bg-gray-600"></div>
+                 <button onClick={onToggleDarkMode} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors" aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}>
+                    {isDarkMode ? (
+                        <i className="fa-solid fa-sun text-lg"></i>
+                    ) : (
+                        <i className="fa-solid fa-moon text-lg"></i>
+                    )}
+                </button>
+                 <button className={`relative hover:text-violet-600 dark:hover:text-violet-400 transition-colors ${iconColor}`} aria-label="Notifications">
                     <i className="fa-solid fa-bell text-lg"></i>
                     {count > 0 && (
                         <span className="absolute -top-1 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white border-2 border-white">
@@ -72,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                         </span>
                     )}
                  </button>
-                 <button className="hover:text-violet-600 transition-colors" aria-label="User profile"><i className="fa-solid fa-user text-lg"></i></button>
+                 <button className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors" aria-label="User profile"><i className="fa-solid fa-user text-lg"></i></button>
             </div>
         </header>
     );

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { GoogleGenAI } from "@google/genai";
 import { Turbine, TurbineStatus, Alarm, AlarmSeverity } from './types';
 import TurbineCard from './components/TurbineCard';
 import TurbineDetailView from './components/TurbineDetailView';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import SettingsView from './components/SettingsView';
 
 // --- CSV PARSING & DATA MAPPING UTILITIES ---
 
@@ -200,12 +202,12 @@ const generateInitialAlarms = (turbines: Turbine[]): Alarm[] => {
 // --- UI COMPONENTS ---
 
 const iconColorMap: { [key: string]: string } = {
-    'text-violet-600': 'bg-gradient-to-br from-violet-50 to-violet-200',
-    'text-cyan-500': 'bg-gradient-to-br from-cyan-50 to-cyan-200',
-    'text-purple-600': 'bg-gradient-to-br from-purple-50 to-purple-200',
-    'text-green-600': 'bg-gradient-to-br from-green-50 to-green-200',
-    'text-pink-500': 'bg-gradient-to-br from-pink-50 to-pink-200',
-    'text-orange-500': 'bg-gradient-to-br from-orange-50 to-orange-200',
+    'text-violet-600': 'bg-gradient-to-br from-violet-50 to-violet-200 dark:from-violet-900/50 dark:to-violet-800/50',
+    'text-cyan-500': 'bg-gradient-to-br from-cyan-50 to-cyan-200 dark:from-cyan-900/50 dark:to-cyan-800/50',
+    'text-purple-600': 'bg-gradient-to-br from-purple-50 to-purple-200 dark:from-purple-900/50 dark:to-purple-800/50',
+    'text-green-600': 'bg-gradient-to-br from-green-50 to-green-200 dark:from-green-900/50 dark:to-green-800/50',
+    'text-pink-500': 'bg-gradient-to-br from-pink-50 to-pink-200 dark:from-pink-900/50 dark:to-pink-800/50',
+    'text-orange-500': 'bg-gradient-to-br from-orange-50 to-orange-200 dark:from-orange-900/50 dark:to-orange-800/50',
 };
 
 const SummaryCard: React.FC<{
@@ -215,14 +217,14 @@ const SummaryCard: React.FC<{
     icon: React.ReactNode;
     color: string;
 }> = ({ title, value, unit, icon, color }) => (
-    <div className="bg-white p-4 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         <div>
-            <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-                {value} <span className="text-xl font-medium text-gray-500">{unit}</span>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                {value} <span className="text-xl font-medium text-gray-500 dark:text-gray-400">{unit}</span>
             </p>
         </div>
-        <div className={`p-3 rounded-lg ${iconColorMap[color] || 'bg-gray-100'}`}>
+        <div className={`p-3 rounded-lg ${iconColorMap[color] || 'bg-gray-100 dark:bg-gray-700'}`}>
             <div className={`${color} text-2xl w-7 h-7 flex items-center justify-center`}>{icon}</div>
         </div>
     </div>
@@ -245,16 +247,16 @@ const TurbineStatusSummaryCard: React.FC<{
     ];
 
     return (
-        <div className={`bg-white p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
-            <p className="text-sm text-gray-500 font-medium mb-3">Turbine Status</p>
+        <div className={`bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-3">Turbine Status</p>
             <div className="flex-grow flex flex-col justify-around">
                 {statusItems.map(item => (
                     <div key={item.name} className="flex justify-between items-center">
                         <div className={`flex items-center gap-3 font-medium ${item.color}`}>
                              <span className="text-lg w-5 text-center">{item.icon}</span>
-                            <span className="text-sm text-gray-700 font-semibold">{item.name}</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">{item.name}</span>
                         </div>
-                        <span className="font-bold text-lg text-gray-800">{item.count}</span>
+                        <span className="font-bold text-lg text-gray-800 dark:text-gray-200">{item.count}</span>
                     </div>
                 ))}
             </div>
@@ -275,11 +277,21 @@ function App() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [scrollPosition, setScrollPosition] = useState(0);
     const mainContentRef = useRef<HTMLElement>(null);
+    const [activeView, setActiveView] = useState('dashboard');
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
       return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [isDarkMode]);
 
     useLayoutEffect(() => {
         if (mainContentRef.current) {
@@ -308,15 +320,12 @@ function App() {
         setAlarms(currentAlarms => {
             const alarmIndex = currentAlarms.findIndex(alarm => alarm.id === alarmId);
     
-            // If alarm not found or already acknowledged, do nothing.
             if (alarmIndex === -1 || currentAlarms[alarmIndex].acknowledged) {
                 return currentAlarms;
             }
     
-            // Create a new array to maintain immutability
             const newAlarms = [...currentAlarms];
             
-            // Create a new object for the acknowledged alarm
             newAlarms[alarmIndex] = {
                 ...currentAlarms[alarmIndex],
                 acknowledged: true,
@@ -381,68 +390,165 @@ function App() {
         event.target.value = '';
     };
 
-
     const selectedTurbine = turbines.find(t => t.id === selectedTurbineId);
     const historicalDataForSelectedTurbine = selectedTurbineId && allHistoricalData ? allHistoricalData[selectedTurbineId] : undefined;
     const alarmsForSelectedTurbine = alarms.filter(a => a.turbineId === selectedTurbineId);
     const unacknowledgedAlarms = alarms.filter(a => !a.timeOff && !a.acknowledged);
 
+    const renderDashboard = () => {
+        // --- COHERENT DATA CALCULATIONS ---
+        const onlineTurbines = turbines.filter(t => t.status !== TurbineStatus.Offline);
+        const totalActivePower = onlineTurbines.reduce((sum, t) => sum + (t.activePower || 0), 0);
+        const totalReactivePower = onlineTurbines.reduce((sum, t) => sum + (t.reactivePower || 0), 0);
 
-    // --- COHERENT DATA CALCULATIONS ---
-    const onlineTurbines = turbines.filter(t => t.status !== TurbineStatus.Offline);
-    const totalActivePower = onlineTurbines.reduce((sum, t) => sum + (t.activePower || 0), 0);
-    const totalReactivePower = onlineTurbines.reduce((sum, t) => sum + (t.reactivePower || 0), 0);
-
-    const turbineStatusCounts = {
-        producing: turbines.filter(t => t.status === TurbineStatus.Producing).length,
-        available: turbines.filter(t => t.status === TurbineStatus.Available).length,
-        stopped: turbines.filter(t => t.status === TurbineStatus.Stopped).length,
-        offline: turbines.filter(t => t.status === TurbineStatus.Offline).length,
-    };
+        const turbineStatusCounts = {
+            producing: turbines.filter(t => t.status === TurbineStatus.Producing).length,
+            available: turbines.filter(t => t.status === TurbineStatus.Available).length,
+            stopped: turbines.filter(t => t.status === TurbineStatus.Stopped).length,
+            offline: turbines.filter(t => t.status === TurbineStatus.Offline).length,
+        };
+            
+        const totalInstalledCapacity = turbines.reduce((sum, t) => sum + t.maxPower, 0);
+        const loadFactor = totalInstalledCapacity > 0 ? (totalActivePower / totalInstalledCapacity) * 100 : 0;
         
-    const totalInstalledCapacity = turbines.reduce((sum, t) => sum + t.maxPower, 0);
-    const loadFactor = totalInstalledCapacity > 0 ? (totalActivePower / totalInstalledCapacity) * 100 : 0;
-    
-    // Simulate production today in MWh based on current active power
-    const hoursToday = currentTime.getHours() + currentTime.getMinutes() / 60;
-    const productionTodayMWh = totalActivePower * hoursToday;
+        const hoursToday = currentTime.getHours() + currentTime.getMinutes() / 60;
+        const productionTodayMWh = totalActivePower * hoursToday;
 
 
-    const onlineTurbinesWithWind = onlineTurbines.filter(t => t.windSpeed !== null);
-    const averageWindSpeed = onlineTurbinesWithWind.length > 0 
-        ? onlineTurbinesWithWind.reduce((sum, t) => sum + t.windSpeed!, 0) / onlineTurbinesWithWind.length
-        : 0;
+        const onlineTurbinesWithWind = onlineTurbines.filter(t => t.windSpeed !== null);
+        const averageWindSpeed = onlineTurbinesWithWind.length > 0 
+            ? onlineTurbinesWithWind.reduce((sum, t) => sum + t.windSpeed!, 0) / onlineTurbinesWithWind.length
+            : 0;
 
-    const onlineTurbinesWithTemp = onlineTurbines.filter(t => t.temperature !== null);
-    const averageTemperature = onlineTurbinesWithTemp.length > 0
-        ? onlineTurbinesWithTemp.reduce((sum, t) => sum + t.temperature!, 0) / onlineTurbinesWithTemp.length
-        : 0;
+        const onlineTurbinesWithTemp = onlineTurbines.filter(t => t.temperature !== null);
+        const averageTemperature = onlineTurbinesWithTemp.length > 0
+            ? onlineTurbinesWithTemp.reduce((sum, t) => sum + t.temperature!, 0) / onlineTurbinesWithTemp.length
+            : 0;
 
-    const summaryDataTop = [
-        { title: 'Active Power', value: totalActivePower.toFixed(1), unit: 'MW', icon: <i className="fa-solid fa-bolt"></i>, color: 'text-violet-600' },
-        { title: 'Reactive Power', value: totalReactivePower.toFixed(1), unit: 'MVar', icon: <i className="fa-solid fa-bolt-lightning"></i>, color: 'text-cyan-500' },
-        { title: 'Load Factor', value: loadFactor.toFixed(1), unit: '%', icon: <i className="fa-solid fa-gauge-high"></i>, color: 'text-purple-600' },
-        { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-solar-panel"></i>, color: 'text-green-600' },
-    ];
-     
-    const summaryDataBottom = [
-         { title: 'Average Wind Speed', value: averageWindSpeed.toFixed(1), unit: 'm/s', icon: <i className="fa-solid fa-wind"></i>, color: 'text-pink-500' },
-         { title: 'Average Temperature', value: averageTemperature.toFixed(0), unit: '°C', icon: <i className="fa-solid fa-temperature-half"></i>, color: 'text-orange-500' },
-    ];
+        const summaryDataTop = [
+            { title: 'Active Power', value: totalActivePower.toFixed(1), unit: 'MW', icon: <i className="fa-solid fa-bolt"></i>, color: 'text-violet-600' },
+            { title: 'Reactive Power', value: totalReactivePower.toFixed(1), unit: 'MVar', icon: <i className="fa-solid fa-bolt-lightning"></i>, color: 'text-cyan-500' },
+            { title: 'Load Factor', value: loadFactor.toFixed(1), unit: '%', icon: <i className="fa-solid fa-gauge-high"></i>, color: 'text-purple-600' },
+            { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-solar-panel"></i>, color: 'text-green-600' },
+        ];
+        
+        const summaryDataBottom = [
+            { title: 'Average Wind Speed', value: averageWindSpeed.toFixed(1), unit: 'm/s', icon: <i className="fa-solid fa-wind"></i>, color: 'text-pink-500' },
+            { title: 'Average Temperature', value: averageTemperature.toFixed(0), unit: '°C', icon: <i className="fa-solid fa-temperature-half"></i>, color: 'text-orange-500' },
+        ];
 
-    // --- CUSTOM DATE/TIME FORMATTING ---
-    const weekday = currentTime.toLocaleDateString('en-US', { weekday: 'long' });
-    const day = currentTime.getDate();
-    const month = currentTime.toLocaleDateString('en-US', { month: 'long' });
-    const year = currentTime.getFullYear();
-    const formattedDate = `${weekday} ${day} ${month} ${year}`;
-    const formattedTime = currentTime.toLocaleTimeString('fr-FR');
+        const weekday = currentTime.toLocaleDateString('en-US', { weekday: 'long' });
+        const day = currentTime.getDate();
+        const month = currentTime.toLocaleDateString('en-US', { month: 'long' });
+        const year = currentTime.getFullYear();
+        const formattedDate = `${weekday} ${day} ${month} ${year}`;
+        const formattedTime = currentTime.toLocaleTimeString('fr-FR');
+
+        return (
+            <>
+                <h1 className="text-3xl font-bold text-gray-900 mb-6 dark:text-white">Dashboard</h1>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {summaryDataTop.map((data) => <SummaryCard key={data.title} {...data} />)}
+                    {summaryDataBottom.map((data) => <SummaryCard key={data.title} {...data} />)}
+                    <TurbineStatusSummaryCard counts={turbineStatusCounts} className="sm:col-span-2 lg:col-span-2" />
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mt-6">
+                    <div className="pb-4 mb-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">
+                            {uploadedFileName
+                                ? <>Displaying data from <span className="text-violet-500 font-bold">{uploadedFileName}</span></>
+                                : <>{formattedDate} at {formattedTime}</>
+                            }
+                        </span>
+                         <span className="text-gray-500 dark:text-gray-400">
+                            Last updated: {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                    </div>
+                    <div className="space-y-8">
+                        {Object.entries(layout).map(([zoneName, lines]) => (
+                            <div key={zoneName}>
+                                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 pb-2 border-b-2 border-violet-200 dark:border-violet-700">{zoneName}</h2>
+                                <div className="space-y-6">
+                                    {lines.map(line => {
+                                        const lineTurbines = line.ids.map(id => 
+                                            turbines.find(t => t.id === `T ${String(id).padStart(3, '0')}`)
+                                        ).filter((t): t is Turbine => !!t);
+
+                                        return (
+                                            <div key={line.name}>
+                                                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">{line.name}</h3>
+                                                <div 
+                                                    className="grid gap-4"
+                                                    style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isCompactView ? '10rem' : '12rem'}, 1fr))` }}
+                                                >
+                                                    {lineTurbines.map(turbine => {
+                                                        const activeAlarms = alarms.filter(a => a.turbineId === turbine.id && !a.timeOff);
+                                                        let activeAlarmSeverity: AlarmSeverity | null = null;
+                                                        if (activeAlarms.length > 0) {
+                                                            if (activeAlarms.some(a => a.severity === AlarmSeverity.Critical)) activeAlarmSeverity = AlarmSeverity.Critical;
+                                                            else if (activeAlarms.some(a => a.severity === AlarmSeverity.Warning)) activeAlarmSeverity = AlarmSeverity.Warning;
+                                                            else activeAlarmSeverity = AlarmSeverity.Info;
+                                                        }
+
+                                                        return (
+                                                            <TurbineCard 
+                                                                key={turbine.id} 
+                                                                turbine={turbine} 
+                                                                onClick={() => handleSelectTurbine(turbine.id)} 
+                                                                isCompact={isCompactView} 
+                                                                activeAlarmSeverity={activeAlarmSeverity}
+                                                            />
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </>
+        )
+    };
+
+    const renderContent = () => {
+        switch(activeView) {
+            case 'settings':
+                return (
+                    <SettingsView 
+                        isCompactView={isCompactView}
+                        setIsCompactView={setIsCompactView}
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        setIsSidebarCollapsed={setIsSidebarCollapsed}
+                        isDarkMode={isDarkMode}
+                        setIsDarkMode={setIsDarkMode}
+                    />
+                );
+            case 'dashboard':
+            default:
+                return renderDashboard();
+        }
+    };
     
     return (
-        <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
-            <Sidebar isCollapsed={isSidebarCollapsed} />
+        <div className="flex h-screen bg-gray-50 text-gray-800 font-sans dark:bg-gray-900 dark:text-gray-200">
+            <Sidebar 
+                isCollapsed={isSidebarCollapsed} 
+                activeItem={activeView}
+                onNavigate={setActiveView}
+            />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header onToggleSidebar={handleToggleSidebar} onUploadClick={handleUploadClick} unacknowledgedAlarms={unacknowledgedAlarms} />
+                <Header 
+                    onToggleSidebar={handleToggleSidebar} 
+                    onUploadClick={handleUploadClick} 
+                    unacknowledgedAlarms={unacknowledgedAlarms}
+                    isDarkMode={isDarkMode}
+                    onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+                />
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
                 <main ref={mainContentRef} className="flex-1 p-6 overflow-y-auto">
                     {selectedTurbine ? (
@@ -454,89 +560,7 @@ function App() {
                           onAcknowledgeAlarm={handleAcknowledgeAlarm}
                         />
                     ) : (
-                        <>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {summaryDataTop.map((data) => <SummaryCard key={data.title} {...data} />)}
-                                {summaryDataBottom.map((data) => <SummaryCard key={data.title} {...data} />)}
-                                <TurbineStatusSummaryCard counts={turbineStatusCounts} className="sm:col-span-2 lg:col-span-2" />
-                            </div>
-
-                            <div className="bg-white rounded-lg shadow-sm p-4 mt-6">
-                                <div className="pb-4 mb-4 border-b border-gray-200 flex justify-between items-center text-sm">
-                                    <span className="font-semibold text-gray-700">
-                                        {uploadedFileName
-                                            ? <>Displaying data from <span className="text-violet-600 font-bold">{uploadedFileName}</span></>
-                                            : <>{formattedDate} at {formattedTime}</>
-                                        }
-                                    </span>
-                                    <div className="flex items-center gap-6">
-                                        <label htmlFor="compact-toggle" className="flex items-center cursor-pointer">
-                                            <span className="mr-2 text-gray-600 font-medium">Compact view</span>
-                                            <div className="relative">
-                                                <input
-                                                    type="checkbox"
-                                                    id="compact-toggle"
-                                                    className="sr-only"
-                                                    checked={isCompactView}
-                                                    onChange={() => setIsCompactView(!isCompactView)}
-                                                />
-                                                <div className={`block w-10 h-6 rounded-full transition-colors ${isCompactView ? 'bg-violet-500' : 'bg-gray-200'}`}></div>
-                                                <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ease-in-out ${isCompactView ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                            </div>
-                                        </label>
-                                        <span className="text-gray-500">
-                                            Last updated: {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="space-y-8">
-                                    {Object.entries(layout).map(([zoneName, lines]) => (
-                                        <div key={zoneName}>
-                                            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-violet-200">{zoneName}</h2>
-                                            <div className="space-y-6">
-                                                {lines.map(line => {
-                                                    const lineTurbines = line.ids.map(id => 
-                                                        turbines.find(t => t.id === `T ${String(id).padStart(3, '0')}`)
-                                                    ).filter((t): t is Turbine => !!t);
-
-                                                    return (
-                                                        <div key={line.name}>
-                                                            <h3 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">{line.name}</h3>
-                                                            <div 
-                                                                className="grid gap-4"
-                                                                style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isCompactView ? '10rem' : '12rem'}, 1fr))` }}
-                                                            >
-                                                                {lineTurbines.map(turbine => {
-                                                                    const activeAlarms = alarms.filter(a => a.turbineId === turbine.id && !a.timeOff);
-                                                                    let activeAlarmSeverity: AlarmSeverity | null = null;
-                                                                    if (activeAlarms.length > 0) {
-                                                                        if (activeAlarms.some(a => a.severity === AlarmSeverity.Critical)) activeAlarmSeverity = AlarmSeverity.Critical;
-                                                                        else if (activeAlarms.some(a => a.severity === AlarmSeverity.Warning)) activeAlarmSeverity = AlarmSeverity.Warning;
-                                                                        else activeAlarmSeverity = AlarmSeverity.Info;
-                                                                    }
-
-                                                                    return (
-                                                                        <TurbineCard 
-                                                                            key={turbine.id} 
-                                                                            turbine={turbine} 
-                                                                            onClick={() => handleSelectTurbine(turbine.id)} 
-                                                                            isCompact={isCompactView} 
-                                                                            activeAlarmSeverity={activeAlarmSeverity}
-                                                                        />
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </>
+                        renderContent()
                     )}
                 </main>
             </div>
