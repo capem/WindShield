@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Turbine, TurbineStatus } from './types';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { Turbine, TurbineStatus, Alarm, AlarmSeverity } from './types';
 import TurbineCard from './components/TurbineCard';
 import TurbineDetailView from './components/TurbineDetailView';
 import Sidebar from './components/Sidebar';
@@ -151,6 +151,51 @@ const generateTurbineData = (id: number): Turbine => {
 const allTurbineIds = Object.values(layout).flatMap(zone => zone.flatMap(line => line.ids));
 const initialTurbines: Turbine[] = allTurbineIds.map(generateTurbineData);
 
+// --- ALARM DATA & LOGIC ---
+
+const ALARM_DEFINITIONS: { [code: number]: { description: string, severity: AlarmSeverity } } = {
+    101: { description: 'Generator Overheating', severity: AlarmSeverity.Warning },
+    102: { description: 'Brake System Malfunction', severity: AlarmSeverity.Critical },
+    103: { description: 'Pitch System Fault', severity: AlarmSeverity.Warning },
+    104: { description: 'Low Oil Pressure', severity: AlarmSeverity.Warning },
+    105: { description: 'Emergency Stop Activated', severity: AlarmSeverity.Critical },
+    201: { description: 'Grid Connection Lost', severity: AlarmSeverity.Critical },
+    202: { description: 'High Vibration Detected', severity: AlarmSeverity.Warning },
+    301: { description: 'Communication Link Down', severity: AlarmSeverity.Info },
+};
+
+const generateInitialAlarms = (turbines: Turbine[]): Alarm[] => {
+    const alarms: Alarm[] = [];
+    let alarmIdCounter = 0;
+    const now = Date.now();
+
+    turbines.forEach(turbine => {
+        // ~15% chance of having any alarm
+        if (Math.random() < 0.15) {
+            const alarmCode = Object.keys(ALARM_DEFINITIONS)[Math.floor(Math.random() * Object.keys(ALARM_DEFINITIONS).length)];
+            const definition = ALARM_DEFINITIONS[parseInt(alarmCode)];
+            const isHistorical = Math.random() > 0.4; // 60% are historical
+            
+            const timeOn = new Date(now - Math.random() * 24 * 60 * 60 * 1000); // Sometime in the last 24 hours
+            let timeOff: Date | null = null;
+            
+            if (isHistorical) {
+                timeOff = new Date(timeOn.getTime() + Math.random() * 2 * 60 * 60 * 1000); // Lasted up to 2 hours
+            }
+
+            alarms.push({
+                id: `ALM-${++alarmIdCounter}`,
+                turbineId: turbine.id,
+                code: parseInt(alarmCode),
+                ...definition,
+                timeOn,
+                timeOff,
+                acknowledged: isHistorical ? true : Math.random() > 0.5, // 50% of active alarms are unacknowledged
+            });
+        }
+    });
+    return alarms;
+};
 
 // --- UI COMPONENTS ---
 
@@ -220,6 +265,7 @@ const TurbineStatusSummaryCard: React.FC<{
 
 function App() {
     const [turbines, setTurbines] = useState<Turbine[]>(initialTurbines);
+    const [alarms, setAlarms] = useState<Alarm[]>(() => generateInitialAlarms(initialTurbines));
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
     const [isCompactView, setIsCompactView] = useState(false);
@@ -227,18 +273,43 @@ function App() {
     const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
     const [allHistoricalData, setAllHistoricalData] = useState<Record<string, any[]> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [scrollPosition, setScrollPosition] = useState(0);
+    const mainContentRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
       return () => clearInterval(timer);
     }, []);
 
+    useLayoutEffect(() => {
+        if (mainContentRef.current) {
+            if (selectedTurbineId === null) {
+                // We are returning to the dashboard, restore scroll position
+                mainContentRef.current.scrollTop = scrollPosition;
+            } else {
+                // We are going to the detail view, scroll to top
+                mainContentRef.current.scrollTop = 0;
+            }
+        }
+    }, [selectedTurbineId]);
+
     const handleSelectTurbine = (turbineId: string) => {
+        if (mainContentRef.current) {
+            setScrollPosition(mainContentRef.current.scrollTop);
+        }
         setSelectedTurbineId(turbineId);
     };
 
     const handleCloseDetailView = () => {
         setSelectedTurbineId(null);
+    };
+    
+    const handleAcknowledgeAlarm = (alarmId: string) => {
+        setAlarms(prevAlarms =>
+            prevAlarms.map(alarm =>
+                alarm.id === alarmId ? { ...alarm, acknowledged: true } : alarm
+            )
+        );
     };
 
     const handleToggleSidebar = () => {
@@ -289,6 +360,7 @@ function App() {
             setTurbines(finalTurbines);
             setAllHistoricalData(dataByTurbine);
             setUploadedFileName(file.name);
+            setAlarms(generateInitialAlarms(finalTurbines));
         };
         reader.onerror = () => alert("Error reading file.");
         reader.readAsText(file);
@@ -298,6 +370,9 @@ function App() {
 
     const selectedTurbine = turbines.find(t => t.id === selectedTurbineId);
     const historicalDataForSelectedTurbine = selectedTurbineId && allHistoricalData ? allHistoricalData[selectedTurbineId] : undefined;
+    const alarmsForSelectedTurbine = alarms.filter(a => a.turbineId === selectedTurbineId);
+    const unacknowledgedAlarms = alarms.filter(a => !a.timeOff && !a.acknowledged);
+
 
     // --- COHERENT DATA CALCULATIONS ---
     const onlineTurbines = turbines.filter(t => t.status !== TurbineStatus.Offline);
@@ -353,14 +428,16 @@ function App() {
         <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
             <Sidebar isCollapsed={isSidebarCollapsed} />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header onToggleSidebar={handleToggleSidebar} onUploadClick={handleUploadClick} />
+                <Header onToggleSidebar={handleToggleSidebar} onUploadClick={handleUploadClick} unacknowledgedAlarms={unacknowledgedAlarms} />
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
-                <main className="flex-1 p-6 overflow-y-auto">
+                <main ref={mainContentRef} className="flex-1 p-6 overflow-y-auto">
                     {selectedTurbine ? (
                         <TurbineDetailView 
                           turbine={selectedTurbine} 
                           onBack={handleCloseDetailView} 
                           historicalData={historicalDataForSelectedTurbine}
+                          alarms={alarmsForSelectedTurbine}
+                          onAcknowledgeAlarm={handleAcknowledgeAlarm}
                         />
                     ) : (
                         <>
@@ -417,9 +494,25 @@ function App() {
                                                                 className="grid gap-4"
                                                                 style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isCompactView ? '10rem' : '12rem'}, 1fr))` }}
                                                             >
-                                                                {lineTurbines.map(turbine => (
-                                                                    <TurbineCard key={turbine.id} turbine={turbine} onClick={() => handleSelectTurbine(turbine.id)} isCompact={isCompactView} />
-                                                                ))}
+                                                                {lineTurbines.map(turbine => {
+                                                                    const activeAlarms = alarms.filter(a => a.turbineId === turbine.id && !a.timeOff);
+                                                                    let activeAlarmSeverity: AlarmSeverity | null = null;
+                                                                    if (activeAlarms.length > 0) {
+                                                                        if (activeAlarms.some(a => a.severity === AlarmSeverity.Critical)) activeAlarmSeverity = AlarmSeverity.Critical;
+                                                                        else if (activeAlarms.some(a => a.severity === AlarmSeverity.Warning)) activeAlarmSeverity = AlarmSeverity.Warning;
+                                                                        else activeAlarmSeverity = AlarmSeverity.Info;
+                                                                    }
+
+                                                                    return (
+                                                                        <TurbineCard 
+                                                                            key={turbine.id} 
+                                                                            turbine={turbine} 
+                                                                            onClick={() => handleSelectTurbine(turbine.id)} 
+                                                                            isCompact={isCompactView} 
+                                                                            activeAlarmSeverity={activeAlarmSeverity}
+                                                                        />
+                                                                    )
+                                                                })}
                                                             </div>
                                                         </div>
                                                     );

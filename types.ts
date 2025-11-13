@@ -16,3 +16,20 @@ export interface Turbine {
   temperature: number | null;
   rpm: number | null;
 }
+
+export enum AlarmSeverity {
+  Critical = 'Critical',
+  Warning = 'Warning',
+  Info = 'Info',
+}
+
+export interface Alarm {
+  id: string;
+  turbineId: string;
+  code: number;
+  description: string;
+  severity: AlarmSeverity;
+  timeOn: Date;
+  timeOff: Date | null;
+  acknowledged: boolean;
+}

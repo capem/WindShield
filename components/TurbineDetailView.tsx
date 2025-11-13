@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
-import { Turbine, TurbineStatus } from '../types';
+import { Turbine, TurbineStatus, Alarm, AlarmSeverity } from '../types';
 
 interface TurbineDetailViewProps {
   turbine: Turbine;
   onBack: () => void;
   historicalData?: any[];
+  alarms: Alarm[];
+  onAcknowledgeAlarm: (alarmId: string) => void;
 }
 
 const statusConfig = {
@@ -120,7 +122,91 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
     return { power, wind, rpm };
 };
 
-const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, historicalData }) => {
+const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => void }> = ({ alarms, onAcknowledge }) => {
+    const sortedAlarms = [...alarms].sort((a, b) => {
+        if (!a.timeOff && b.timeOff) return -1; // Active alarms first
+        if (a.timeOff && !b.timeOff) return 1;
+        return b.timeOn.getTime() - a.timeOn.getTime(); // Then by most recent
+    });
+
+    const severityConfig = {
+        [AlarmSeverity.Critical]: { icon: 'fa-triangle-exclamation', color: 'text-red-500', bg: 'bg-red-50' },
+        [AlarmSeverity.Warning]: { icon: 'fa-triangle-exclamation', color: 'text-yellow-500', bg: 'bg-yellow-50' },
+        [AlarmSeverity.Info]: { icon: 'fa-circle-info', color: 'text-blue-500', bg: 'bg-blue-50' },
+    };
+
+    const formatDuration = (start: Date, end: Date | null): string => {
+        const endDate = end || new Date();
+        const diffMs = endDate.getTime() - start.getTime();
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        if (diffHours > 0) return `${diffHours}h ${diffMins}m`;
+        return `${diffMins}m`;
+    };
+
+    if (alarms.length === 0) {
+        return (
+            <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+                <p className="text-gray-500">No alarms recorded for this turbine.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <table className="w-full text-sm text-left text-gray-600">
+                <thead className="bg-gray-50 text-xs text-gray-700 uppercase">
+                    <tr>
+                        <th scope="col" className="px-6 py-3">Severity</th>
+                        <th scope="col" className="px-6 py-3">Description</th>
+                        <th scope="col" className="px-6 py-3">Start Time</th>
+                        <th scope="col" className="px-6 py-3">Duration</th>
+                        <th scope="col" className="px-6 py-3">Status</th>
+                        <th scope="col" className="px-6 py-3 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedAlarms.map(alarm => {
+                        const config = severityConfig[alarm.severity];
+                        const isActive = !alarm.timeOff;
+                        return (
+                            <tr key={alarm.id} className={`border-b ${isActive ? config.bg : 'bg-white'}`}>
+                                <td className="px-6 py-4 font-medium">
+                                    <div className={`flex items-center gap-2 ${config.color}`}>
+                                        <i className={`fa-solid ${config.icon}`}></i>
+                                        <span>{alarm.severity}</span>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4 text-gray-800">{alarm.description}</td>
+                                <td className="px-6 py-4">{alarm.timeOn.toLocaleString()}</td>
+                                <td className="px-6 py-4">{formatDuration(alarm.timeOn, alarm.timeOff)}</td>
+                                <td className="px-6 py-4">
+                                    {isActive ? (
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${alarm.acknowledged ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                            {alarm.acknowledged ? 'Active (Ack)' : 'Active (New)'}
+                                        </span>
+                                    ) : (
+                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">Resolved</span>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    {isActive && !alarm.acknowledged && (
+                                        <button onClick={() => onAcknowledge(alarm.id)} className="font-medium text-violet-600 hover:text-violet-800 bg-violet-100 hover:bg-violet-200 px-3 py-1 rounded-md transition">
+                                            Acknowledge
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+
+const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, historicalData, alarms, onAcknowledgeAlarm }) => {
     const chartData = useMemo(() => {
         if (historicalData && historicalData.length > 0) {
             const reversedData = [...historicalData].reverse();
@@ -171,13 +257,18 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
                 <MetricCard title="RPM" value={turbine.rpm !== null ? `${turbine.rpm}` : '—'} icon={<i className="fa-solid fa-arrows-spin"></i>} color="text-indigo-500" />
             </div>
             
-            <div>
+            <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Historical Performance (Last 24h)</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <HistoricalChart title="Power Output" data={chartData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
                     <HistoricalChart title="Wind Speed" data={chartData.wind} unit="m/s" color="#ec4899" maxVal={30} />
                     <HistoricalChart title="Rotor Speed" data={chartData.rpm} unit="RPM" color="#6366f1" maxVal={SWT_2_3_101_SPECS.RPM_RANGE.max + 4} />
                 </div>
+            </div>
+
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Alarm History & Status</h2>
+                <AlarmHistory alarms={alarms} onAcknowledge={onAcknowledgeAlarm} />
             </div>
         </div>
     );
