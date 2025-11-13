@@ -21,13 +21,13 @@ interface AnalyticsViewProps {
 }
 
 const KpiCard: React.FC<{ title: string, value: string, icon: React.ReactNode, color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+    <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme">
         <div className={`p-4 rounded-lg bg-opacity-10 ${color.replace('text-', 'bg-').replace('-500', '-100')} dark:bg-opacity-20`}>
              <div className={`${color} text-3xl w-8 h-8 flex items-center justify-center`}>{icon}</div>
         </div>
         <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{title}</p>
-            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
+            <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">{title}</p>
+            <p className="text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
         </div>
     </div>
 );
@@ -82,12 +82,12 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
                 {/* Y-axis */}
                 {[0, 25, 50, 75, 100].map(y => (
                     <g key={y}>
-                        <line 
+                        <line
                             x1={padding.left} y1={height - padding.bottom - (y / 100) * (height - padding.top - padding.bottom)}
                             x2={width - padding.right} y2={height - padding.bottom - (y / 100) * (height - padding.top - padding.bottom)}
-                            className="stroke-slate-200 dark:stroke-slate-700" strokeDasharray="2,2"
+                            className="stroke-slate-200 dark:stroke-gray-800" strokeDasharray="2,2"
                         />
-                        <text x={padding.left - 8} y={height - padding.bottom - (y / 100) * (height - padding.top - padding.bottom)} textAnchor="end" alignmentBaseline="middle" className="text-[5px] fill-slate-500 dark:fill-slate-400">{y}%</text>
+                        <text x={padding.left - 8} y={height - padding.bottom - (y / 100) * (height - padding.top - padding.bottom)} textAnchor="end" alignmentBaseline="middle" className="text-[5px] fill-slate-500 dark:fill-gray-400">{y}%</text>
                     </g>
                 ))}
 
@@ -120,7 +120,7 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
                     if (data.length > 15 && i % 3 !== 0) return null; // Show fewer labels if crowded
                     const x = padding.left + i * groupWidth + groupWidth / 2;
                     return (
-                        <text key={d.date} x={x} y={height - padding.bottom + 15} textAnchor="middle" className="text-[5px] fill-slate-500 dark:fill-slate-400">
+                        <text key={d.date} x={x} y={height - padding.bottom + 15} textAnchor="middle" className="text-[5px] fill-slate-500 dark:fill-gray-400">
                            {new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}
                         </text>
                     )
@@ -130,13 +130,13 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
                 <rect x={padding.left} y={padding.top} width={chartAreaWidth} height={height - padding.top - padding.bottom} fill="transparent" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} />
                 {hoverData && (
                     <g pointerEvents="none">
-                        <line x1={hoverData.x} y1={padding.top} x2={hoverData.x} y2={height - padding.bottom} className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1" strokeDasharray="3,3" />
+                        <line x1={hoverData.x} y1={padding.top} x2={hoverData.x} y2={height - padding.bottom} className="stroke-slate-400 dark:stroke-gray-600" strokeWidth="1" strokeDasharray="3,3" />
                     </g>
                 )}
             </svg>
              {hoverData && (
-                <div 
-                    className="absolute p-2 text-xs bg-slate-800 text-white rounded-md shadow-lg pointer-events-none transition-opacity dark:bg-slate-900 ring-1 ring-slate-700"
+                <div
+                    className="absolute p-2 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity dark:bg-black ring-1 ring-gray-800 transition-theme"
                     style={{
                         left: `${(hoverData.x / width) * 100}%`,
                         top: `${padding.top}px`,
@@ -146,7 +146,7 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
                    <p className="font-bold mb-1 text-center whitespace-nowrap">{new Date(hoverData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</p>
                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-sm bg-cyan-400"></div>Time: <span className="font-semibold">{hoverData.time.toFixed(1)}%</span></div>
                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-sm bg-violet-500"></div>Energy: <span className="font-semibold">{hoverData.energy.toFixed(1)}%</span></div>
-                   <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-800 dark:border-t-slate-900"></div>
+                   <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900 dark:border-t-black"></div>
                 </div>
             )}
         </div>
@@ -187,9 +187,9 @@ const TurbinePerformanceTable: React.FC<{ data: any[] }> = ({ data }) => {
     };
     
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden">
-            <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
-                <thead className="bg-slate-50 dark:bg-slate-700 text-xs text-slate-700 dark:text-slate-300 uppercase">
+        <div className="bg-white dark:bg-black rounded-lg shadow-sm overflow-hidden transition-theme">
+            <table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
+                <thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
                     <tr>
                         <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('id')}>Turbine ID {getSortIcon('id')}</th>
                         <th scope="col" className="px-6 py-3 cursor-pointer text-right" onClick={() => requestSort('timeAvailability')}>Time Availability {getSortIcon('timeAvailability')}</th>
@@ -200,8 +200,8 @@ const TurbinePerformanceTable: React.FC<{ data: any[] }> = ({ data }) => {
                 </thead>
                 <tbody>
                     {sortedData.map(turbine => (
-                        <tr key={turbine.id} className="border-b dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                            <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200">{turbine.id}</td>
+                        <tr key={turbine.id} className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50">
+                            <td className="px-6 py-4 font-bold text-slate-800 dark:text-white">{turbine.id}</td>
                             <td className="px-6 py-4 text-right font-medium">{turbine.timeAvailability.toFixed(2)}%</td>
                             <td className="px-6 py-4 text-right font-medium">{turbine.energyAvailability.toFixed(2)}%</td>
                             <td className="px-6 py-4 text-right">{turbine.totalProduction.toFixed(1)}</td>
@@ -343,14 +343,14 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({ historicalData, turbines 
 
     return (
         <div className="animate-fade-in space-y-6">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Analytics</h1>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white transition-theme">Analytics</h1>
             
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 flex flex-wrap items-center gap-4">
-                <label htmlFor="start-date" className="font-semibold text-slate-700 dark:text-slate-300">Date Range:</label>
+            <div className="bg-white dark:bg-black rounded-lg shadow-sm p-4 flex flex-wrap items-center gap-4 transition-theme">
+                <label htmlFor="start-date" className="font-semibold text-slate-700 dark:text-gray-300">Date Range:</label>
                 <div className="flex items-center gap-2">
-                    <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                    <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme" />
                     <span className="text-slate-500">-</span>
-                    <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                    <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme" />
                 </div>
             </div>
 
@@ -370,7 +370,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({ historicalData, turbines 
             </div>
 
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Turbine Performance</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Turbine Performance</h2>
                 <TurbinePerformanceTable data={turbineTableData} />
             </div>
 

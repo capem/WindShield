@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import SettingsView from './components/SettingsView';
 import AnalyticsView from './components/AnalyticsView';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 // --- CSV PARSING & DATA MAPPING UTILITIES ---
 
@@ -258,10 +259,10 @@ const SummaryCard: React.FC<{
     icon: React.ReactNode;
     color: string;
 }> = ({ title, value, unit, icon, color }) => (
-    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+    <div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast">
         <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">
+            <p className="text-sm text-slate-500 dark:text-gray-400">{title}</p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
                 {value} <span className="text-xl font-medium text-slate-500 dark:text-slate-400">{unit}</span>
             </p>
         </div>
@@ -288,8 +289,8 @@ const TurbineStatusSummaryCard: React.FC<{
     ];
 
     return (
-        <div className={`bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-3">Turbine Status</p>
+        <div className={`bg-white dark:bg-black p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast`}>
+            <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mb-3">Turbine Status</p>
             <div className="flex-grow flex flex-col justify-around">
                 {statusItems.map(item => (
                     <div key={item.name} className="flex justify-between items-center">
@@ -297,7 +298,7 @@ const TurbineStatusSummaryCard: React.FC<{
                              <span className="text-lg w-5 text-center">{item.icon}</span>
                             <span className="text-sm text-slate-700 dark:text-slate-300 font-semibold">{item.name}</span>
                         </div>
-                        <span className="font-bold text-lg text-slate-800 dark:text-slate-200">{item.count}</span>
+                        <span className="font-bold text-lg text-slate-800 dark:text-white">{item.count}</span>
                     </div>
                 ))}
             </div>
@@ -306,7 +307,8 @@ const TurbineStatusSummaryCard: React.FC<{
 };
 
 
-function App() {
+function AppContent() {
+    const { isDarkMode, toggleDarkMode } = useTheme();
     const [turbines, setTurbines] = useState<Turbine[]>(initialTurbines);
     const [alarms, setAlarms] = useState<Alarm[]>(() => generateInitialAlarms(initialTurbines));
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -320,21 +322,12 @@ function App() {
     const [scrollPosition, setScrollPosition] = useState(0);
     const mainContentRef = useRef<HTMLElement>(null);
     const [activeView, setActiveView] = useState('dashboard');
-    const [isDarkMode, setIsDarkMode] = useState(false);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
       setAnalyticsData(generateMockAnalyticsData(initialTurbines));
       return () => clearInterval(timer);
     }, []);
-
-    useEffect(() => {
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [isDarkMode]);
 
     useLayoutEffect(() => {
         if (mainContentRef.current) {
@@ -497,7 +490,7 @@ function App() {
 
         return (
             <>
-                <h1 className="text-3xl font-bold text-slate-900 mb-6 dark:text-white">Dashboard</h1>
+                <h1 className="text-3xl font-bold text-slate-900 mb-6 dark:text-white transition-theme">Dashboard</h1>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {summaryDataTop.map((data) => <SummaryCard key={data.title} {...data} />)}
@@ -505,22 +498,22 @@ function App() {
                     <TurbineStatusSummaryCard counts={turbineStatusCounts} className="sm:col-span-2 lg:col-span-2" />
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 mt-6">
-                    <div className="pb-4 mb-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center text-sm">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                <div className="bg-white dark:bg-black rounded-lg shadow-sm p-4 mt-6 transition-theme">
+                    <div className="pb-4 mb-4 border-b border-slate-200 dark:border-gray-800 flex justify-between items-center text-sm">
+                        <span className="font-semibold text-slate-700 dark:text-gray-300">
                             {uploadedFileName
                                 ? <>Displaying data from <span className="text-violet-500 font-bold">{uploadedFileName}</span></>
                                 : <>{formattedDate} at {formattedTime}</>
                             }
                         </span>
-                         <span className="text-slate-500 dark:text-slate-400">
+                         <span className="text-slate-500 dark:text-gray-400">
                             Last updated: {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
                     </div>
                     <div className="space-y-8">
                         {Object.entries(layout).map(([zoneName, lines]) => (
                             <div key={zoneName}>
-                                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 pb-2 border-b-2 border-violet-200 dark:border-violet-700">{zoneName}</h2>
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 pb-2 border-b-2 border-violet-200 dark:border-violet-700">{zoneName}</h2>
                                 <div className="space-y-6">
                                     {lines.map(line => {
                                         const lineTurbines = line.ids.map(id => 
@@ -529,7 +522,7 @@ function App() {
 
                                         return (
                                             <div key={line.name}>
-                                                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">{line.name}</h3>
+                                                <h3 className="text-sm font-semibold text-slate-500 dark:text-gray-400 mb-3 uppercase tracking-wider">{line.name}</h3>
                                                 <div 
                                                     className="grid gap-4"
                                                     style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isCompactView ? '10rem' : '12rem'}, 1fr))` }}
@@ -570,13 +563,13 @@ function App() {
         switch(activeView) {
             case 'settings':
                 return (
-                    <SettingsView 
+                    <SettingsView
                         isCompactView={isCompactView}
                         setIsCompactView={setIsCompactView}
                         isSidebarCollapsed={isSidebarCollapsed}
                         setIsSidebarCollapsed={setIsSidebarCollapsed}
                         isDarkMode={isDarkMode}
-                        setIsDarkMode={setIsDarkMode}
+                        setIsDarkMode={toggleDarkMode}
                     />
                 );
             case 'analytics':
@@ -593,19 +586,19 @@ function App() {
     };
     
     return (
-        <div className="flex h-screen bg-slate-50 text-slate-800 font-sans dark:bg-slate-900 dark:text-slate-200">
+        <div className="flex h-screen bg-slate-50 text-slate-800 font-sans dark:bg-black dark:text-white transition-theme">
             <Sidebar 
                 isCollapsed={isSidebarCollapsed} 
                 activeItem={activeView}
                 onNavigate={setActiveView}
             />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header 
-                    onToggleSidebar={handleToggleSidebar} 
-                    onUploadClick={handleUploadClick} 
+                <Header
+                    onToggleSidebar={handleToggleSidebar}
+                    onUploadClick={handleUploadClick}
                     unacknowledgedAlarms={unacknowledgedAlarms}
                     isDarkMode={isDarkMode}
-                    onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+                    onToggleDarkMode={toggleDarkMode}
                 />
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
                 <main ref={mainContentRef} className="flex-1 p-6 overflow-y-auto">
@@ -623,6 +616,14 @@ function App() {
                 </main>
             </div>
         </div>
+    );
+}
+
+function App() {
+    return (
+        <ThemeProvider>
+            <AppContent />
+        </ThemeProvider>
     );
 }
 

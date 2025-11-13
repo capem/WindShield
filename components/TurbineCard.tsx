@@ -50,10 +50,10 @@ const AnimatedTurbineIcon: React.FC<{ status: TurbineStatus; activePower: number
 
 const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact = false, activeAlarmSeverity = null }) => {
     const statusConfig = {
-        [TurbineStatus.Producing]: { text: 'Producing', classes: 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50 border-green-500' },
-        [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 border-blue-500' },
-        [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 border-red-500' },
-        [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/50 border-yellow-500' },
+        [TurbineStatus.Producing]: { text: 'Producing', classes: 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 border-green-500' },
+        [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 border-blue-500' },
+        [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 border-red-500' },
+        [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 border-yellow-500' },
     };
 
     const alarmConfig: { [key in AlarmSeverity]: { icon: string; color: string } } = {
@@ -68,13 +68,13 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
 
     if (isCompact) {
         return (
-            <button onClick={onClick} className={`bg-white dark:bg-slate-800 rounded-lg p-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full h-full`}>
+            <button onClick={onClick} className={`bg-white dark:bg-black rounded-lg p-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full h-full transition-theme-fast`}>
                 <div className="flex justify-between items-center mb-1">
                     <div className="flex items-center gap-1.5">
                         {activeAlarmSeverity && (
                             <i className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color}`} title={`${activeAlarmSeverity} Alarm Active`}></i>
                         )}
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs">{turbine.id}</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-white text-xs">{turbine.id}</h3>
                     </div>
                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${statusClasses.join(' ')}`}>
                         {config.text}
@@ -86,14 +86,14 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
                     </div>
                     <div className="text-xs text-center space-y-0.5">
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px]">Active Power</p>
-                            <p className="font-semibold text-slate-900 dark:text-slate-100 text-xs">
+                            <p className="text-slate-500 dark:text-gray-400 text-[10px]">Active Power</p>
+                            <p className="font-semibold text-slate-900 dark:text-white text-xs">
                                 {turbine.activePower !== null ? `${turbine.activePower.toFixed(1)} MW` : '—'}
                             </p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px]">Wind Speed</p>
-                            <p className="font-semibold text-slate-900 dark:text-slate-100 text-xs">
+                            <p className="text-slate-500 dark:text-gray-400 text-[10px]">Wind Speed</p>
+                            <p className="font-semibold text-slate-900 dark:text-white text-xs">
                                 {turbine.windSpeed !== null ? `${turbine.windSpeed.toFixed(1)} m/s` : '—'}
                             </p>
                         </div>
@@ -104,14 +104,14 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
     }
 
     return (
-        <button onClick={onClick} className={`bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full`}>
+        <button onClick={onClick} className={`bg-white dark:bg-black rounded-lg p-3 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full transition-theme-fast`}>
             <div>
                 <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                         {activeAlarmSeverity && (
                             <i className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color}`} title={`${activeAlarmSeverity} Alarm Active`}></i>
                         )}
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{turbine.id}</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-white text-sm">{turbine.id}</h3>
                     </div>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusClasses.join(' ')}`}>
                         {config.text}
@@ -126,14 +126,14 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
             
             <div className="text-xs text-center space-y-1 mt-2">
                 <div>
-                    <p className="text-slate-500 dark:text-slate-400">Active Power</p>
-                    <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                    <p className="text-slate-500 dark:text-gray-400">Active Power</p>
+                    <p className="font-semibold text-slate-900 dark:text-white text-sm">
                         {turbine.activePower !== null ? `${turbine.activePower.toFixed(1)} MW` : '—'}
                     </p>
                 </div>
                 <div>
-                    <p className="text-slate-500 dark:text-slate-400">Wind Speed</p>
-                    <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                    <p className="text-slate-500 dark:text-gray-400">Wind Speed</p>
+                    <p className="font-semibold text-slate-900 dark:text-white text-sm">
                         {turbine.windSpeed !== null ? `${turbine.windSpeed.toFixed(1)} m/s` : '—'}
                     </p>
                 </div>

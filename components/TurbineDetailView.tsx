@@ -10,10 +10,10 @@ interface TurbineDetailViewProps {
 }
 
 const statusConfig = {
-    [TurbineStatus.Producing]: { text: 'Producing', classes: 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50' },
-    [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50' },
-    [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50' },
-    [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/50' },
+    [TurbineStatus.Producing]: { text: 'Producing', classes: 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30' },
+    [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30' },
+    [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30' },
+    [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30' },
 };
 
 const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ power, nominalMaxPower }) => {
@@ -80,7 +80,7 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                 
                 <g filter="url(#shadow)">
                     {/* Gauge Background Arc */}
-                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-slate-200 dark:stroke-slate-700" fill="none" />
+                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-slate-200 dark:stroke-gray-800" fill="none" />
                     <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} stroke="black" strokeOpacity="0.05" fill="none" style={{mixBlendMode: 'multiply'}} />
 
 
@@ -97,7 +97,7 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                     const angle = getAngle(value);
                     const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 12, angle);
                     return (
-                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[9px] font-semibold fill-slate-500 dark:fill-slate-400">
+                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[9px] font-semibold fill-slate-500 dark:fill-gray-400">
                             {value.toFixed(1)}
                         </text>
                     );
@@ -105,10 +105,10 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                 
                 {/* Needle */}
                 <g transform={`rotate(${needleAngle} ${CX} ${CY})`} style={{ transition: 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }}>
-                    <path d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH/2 - 2} L ${CX} ${CY - 8}`} className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" strokeLinecap="round" filter="url(#shadow)"/>
+                    <path d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH/2 - 2} L ${CX} ${CY - 8}`} className="stroke-slate-800 dark:stroke-white" strokeWidth="2" strokeLinecap="round" filter="url(#shadow)"/>
                 </g>
-                <circle cx={CX} cy={CY} r="8" fill="url(#hubGradient)" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="0.5"/>
-                <circle cx={CX} cy={CY} r="4" className="fill-slate-700 dark:fill-slate-300" />
+                <circle cx={CX} cy={CY} r="8" fill="url(#hubGradient)" className="stroke-slate-400 dark:stroke-gray-600" strokeWidth="0.5"/>
+                <circle cx={CX} cy={CY} r="4" className="fill-slate-700 dark:fill-gray-400" />
             </svg>
             <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                 <p className={`text-5xl font-bold ${powerValueColor}`} style={{ textShadow: `0 0 15px var(--tw-shadow-color)` }} >
@@ -123,13 +123,13 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
 
 
 const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+    <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme">
         <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-500', '-100')} dark:bg-opacity-10`}>
             <div className={`${color} text-2xl w-8 h-8 flex items-center justify-center`}>{icon}</div>
         </div>
         <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
-            <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
+            <p className="text-sm text-slate-500 dark:text-gray-400">{title}</p>
+            <p className="text-xl font-bold text-slate-800 dark:text-white">{value}</p>
         </div>
     </div>
 );
@@ -140,8 +140,8 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     const [hoverData, setHoverData] = useState<{ x: number; y: number; value: number; index: number } | null>(null);
 
     if (!data || data.length === 0) return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px]">
-             <p className="text-slate-500 dark:text-slate-400">No historical data available.</p>
+        <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px] transition-theme">
+             <p className="text-slate-500 dark:text-gray-400">No historical data available.</p>
         </div>
     );
 
@@ -173,11 +173,11 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
+        <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm transition-theme">
             <div className="flex justify-between items-baseline mb-2">
-                <h4 className="font-semibold text-slate-700 dark:text-slate-300">{title}</h4>
+                <h4 className="font-semibold text-slate-700 dark:text-gray-300">{title}</h4>
                 <p className="text-sm font-bold" style={{ color: color }}>
-                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-slate-500 dark:text-slate-400">{unit}</span>
+                    {data[data.length - 1].toFixed(1)} <span className="font-medium text-slate-500 dark:text-gray-400">{unit}</span>
                 </p>
             </div>
             <div className="relative">
@@ -199,8 +199,8 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
                     )}
                 </svg>
                  {hoverData && (
-                    <div 
-                        className="absolute p-2 text-xs bg-slate-800 text-white rounded-md shadow-lg pointer-events-none transition-opacity"
+                    <div
+                        className="absolute p-2 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity transition-theme"
                         style={{
                             left: `${hoverData.x}px`,
                             top: `${hoverData.y}px`,
@@ -346,16 +346,16 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
 
     if (alarms.length === 0) {
         return (
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm text-center">
-                <p className="text-slate-500 dark:text-slate-400">No alarms recorded for this turbine.</p>
+            <div className="bg-white dark:bg-black rounded-lg p-6 shadow-sm text-center transition-theme">
+                <p className="text-slate-500 dark:text-gray-400">No alarms recorded for this turbine.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden">
-            <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
-                <thead className="bg-slate-50 dark:bg-slate-700 text-xs text-slate-700 dark:text-slate-300 uppercase">
+        <div className="bg-white dark:bg-black rounded-lg shadow-sm overflow-hidden transition-theme">
+            <table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
+                <thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
                     <tr>
                         <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('severity')}>Severity {getSortIcon('severity')}</th>
                         <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('description')}>Description {getSortIcon('description')}</th>
@@ -370,14 +370,14 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                         const config = severityConfig[alarm.severity];
                         const isActive = !alarm.timeOff;
                         return (
-                            <tr key={alarm.id} className={`border-b dark:border-slate-700 ${isActive ? config.bg : 'bg-white dark:bg-slate-800'}`}>
+                            <tr key={alarm.id} className={`border-b dark:border-gray-800 ${isActive ? config.bg : 'bg-white dark:bg-black'}`}>
                                 <td className="px-6 py-4 font-medium">
                                     <div className={`flex items-center gap-2 ${config.color}`}>
                                         <i className={`fa-solid ${config.icon}`}></i>
                                         <span>{alarm.severity}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-slate-800 dark:text-slate-200">{alarm.description}</td>
+                                <td className="px-6 py-4 text-slate-800 dark:text-white">{alarm.description}</td>
                                 <td className="px-6 py-4">{alarm.timeOn.toLocaleString()}</td>
                                 <td className="px-6 py-4">{formatDuration(alarm.timeOn, alarm.timeOff)}</td>
                                 <td className="px-6 py-4">
@@ -386,12 +386,12 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                                             {alarm.acknowledged ? 'Active (Ack)' : 'Active (New)'}
                                         </span>
                                     ) : (
-                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">Resolved</span>
+                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300">Resolved</span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     {isActive && !alarm.acknowledged && (
-                                        <button onClick={() => onAcknowledge(alarm.id)} className="font-medium text-violet-600 hover:text-violet-800 bg-violet-100 hover:bg-violet-200 dark:text-violet-400 dark:bg-violet-900/50 dark:hover:bg-violet-900 px-3 py-1 rounded-md transition">
+                                        <button onClick={() => onAcknowledge(alarm.id)} className="font-medium text-violet-600 hover:text-violet-800 bg-violet-100 hover:bg-violet-200 dark:text-violet-400 dark:bg-violet-900/50 dark:hover:bg-violet-900 px-3 py-1 rounded-md transition transition-theme">
                                             Acknowledge
                                         </button>
                                     )}
@@ -423,23 +423,23 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
 
     return (
         <div className="animate-fade-in">
-            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white mb-4">
+            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white mb-4 transition-theme">
                 <i className="fa-solid fa-arrow-left"></i>
                 Back to Dashboard
             </button>
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-white dark:bg-black rounded-lg shadow-sm p-6 mb-6 transition-theme">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Turbine {turbine.id}</h1>
-                        <p className="text-slate-500 dark:text-slate-400">Detailed operational metrics and status.</p>
+                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Turbine {turbine.id}</h1>
+                        <p className="text-slate-500 dark:text-gray-400">Detailed operational metrics and status.</p>
                     </div>
                     <span className={`text-sm font-semibold px-3 py-1 rounded-full ${config.classes}`}>{config.text}</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                 <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2 text-center">Active Power Output</h3>
+                 <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-black rounded-lg p-6 shadow-sm transition-theme">
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-gray-300 mb-2 text-center">Active Power Output</h3>
                     <PowerGauge
                         power={turbine.activePower ?? 0}
                         nominalMaxPower={turbine.maxPower}
@@ -465,7 +465,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             </div>
 
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Alarm History & Status</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Alarm History & Status</h2>
                 <AlarmHistory alarms={alarms} onAcknowledge={onAcknowledgeAlarm} />
             </div>
         </div>
