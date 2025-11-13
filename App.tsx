@@ -429,7 +429,7 @@ function App() {
             { title: 'Active Power', value: totalActivePower.toFixed(1), unit: 'MW', icon: <i className="fa-solid fa-bolt"></i>, color: 'text-violet-600' },
             { title: 'Reactive Power', value: totalReactivePower.toFixed(1), unit: 'MVar', icon: <i className="fa-solid fa-bolt-lightning"></i>, color: 'text-cyan-500' },
             { title: 'Load Factor', value: loadFactor.toFixed(1), unit: '%', icon: <i className="fa-solid fa-gauge-high"></i>, color: 'text-purple-600' },
-            { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-solar-panel"></i>, color: 'text-green-600' },
+            { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-chart-line"></i>, color: 'text-green-600' },
         ];
         
         const summaryDataBottom = [
