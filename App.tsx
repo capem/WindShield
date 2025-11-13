@@ -6,6 +6,7 @@ import TurbineDetailView from './components/TurbineDetailView';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import SettingsView from './components/SettingsView';
+import AnalyticsView from './components/AnalyticsView';
 
 // --- CSV PARSING & DATA MAPPING UTILITIES ---
 
@@ -153,6 +154,46 @@ const generateTurbineData = (id: number): Turbine => {
 const allTurbineIds = Object.values(layout).flatMap(zone => zone.flatMap(line => line.ids));
 const initialTurbines: Turbine[] = allTurbineIds.map(generateTurbineData);
 
+// --- MOCK ANALYTICS DATA GENERATION ---
+const generateMockAnalyticsData = (turbines: Turbine[]): Record<string, any[]> => {
+    const data: Record<string, any[]> = {};
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    let currentDate = new Date(startOfMonth);
+
+    while (currentDate <= now) {
+        for (const turbine of turbines) {
+            if (!data[turbine.id]) data[turbine.id] = [];
+            
+            for (let hour = 0; hour < 24; hour++) {
+                const timestamp = new Date(currentDate);
+                timestamp.setHours(hour);
+
+                if (timestamp > now) continue;
+
+                const mockTurbineState = generateTurbineData(parseInt(turbine.id.replace('T', '').trim()));
+
+                data[turbine.id].push({
+                    'Timestamp': timestamp.toISOString(),
+                    'Turbine ID': parseInt(turbine.id.replace('T', '').trim()),
+                    'Status': mockTurbineState.status,
+                    'ActivePower(MW)': mockTurbineState.activePower,
+                    'ReactivePower(MVar)': mockTurbineState.reactivePower,
+                    'WindSpeed(m/s)': mockTurbineState.windSpeed,
+                    'Direction(°)': mockTurbineState.direction,
+                    'Temperature(°C)': mockTurbineState.temperature,
+                    'RPM': mockTurbineState.rpm,
+                    'MaxPower(MW)': mockTurbineState.maxPower
+                });
+            }
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return data;
+}
+
+
 // --- ALARM DATA & LOGIC ---
 
 const ALARM_DEFINITIONS: { [code: number]: { description: string, severity: AlarmSeverity } } = {
@@ -274,6 +315,7 @@ function App() {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
     const [allHistoricalData, setAllHistoricalData] = useState<Record<string, any[]> | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<Record<string, any[]> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [scrollPosition, setScrollPosition] = useState(0);
     const mainContentRef = useRef<HTMLElement>(null);
@@ -282,6 +324,7 @@ function App() {
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+      setAnalyticsData(generateMockAnalyticsData(initialTurbines));
       return () => clearInterval(timer);
     }, []);
 
@@ -304,6 +347,13 @@ function App() {
             }
         }
     }, [selectedTurbineId]);
+    
+    // Scroll to top when view changes
+    useEffect(() => {
+        if (mainContentRef.current) {
+            mainContentRef.current.scrollTop = 0;
+        }
+    }, [activeView]);
 
     const handleSelectTurbine = (turbineId: string) => {
         if (mainContentRef.current) {
@@ -382,6 +432,7 @@ function App() {
 
             setTurbines(finalTurbines);
             setAllHistoricalData(dataByTurbine);
+            setAnalyticsData(dataByTurbine); // Also use uploaded data for analytics
             setUploadedFileName(file.name);
             setAlarms(generateInitialAlarms(finalTurbines));
         };
@@ -391,7 +442,7 @@ function App() {
     };
 
     const selectedTurbine = turbines.find(t => t.id === selectedTurbineId);
-    const historicalDataForSelectedTurbine = selectedTurbineId && allHistoricalData ? allHistoricalData[selectedTurbineId] : undefined;
+    const historicalDataForSelectedTurbine = selectedTurbineId && (allHistoricalData || analyticsData) ? (allHistoricalData || analyticsData)![selectedTurbineId] : undefined;
     const alarmsForSelectedTurbine = alarms.filter(a => a.turbineId === selectedTurbineId);
     const unacknowledgedAlarms = alarms.filter(a => !a.timeOff && !a.acknowledged);
 
@@ -526,6 +577,13 @@ function App() {
                         setIsSidebarCollapsed={setIsSidebarCollapsed}
                         isDarkMode={isDarkMode}
                         setIsDarkMode={setIsDarkMode}
+                    />
+                );
+            case 'analytics':
+                 return (
+                    <AnalyticsView 
+                        historicalData={analyticsData} 
+                        turbines={turbines} 
                     />
                 );
             case 'dashboard':
