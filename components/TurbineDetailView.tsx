@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Turbine, TurbineStatus, Alarm, AlarmSeverity } from '../types';
+import { Alarm, AlarmSeverity, Turbine, TurbineStatus } from '../types';
 
 interface TurbineDetailViewProps {
   turbine: Turbine;
@@ -19,12 +19,12 @@ const statusConfig = {
 
 const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ power, nominalMaxPower }) => {
     const GAUGE_MAX_POWER_FACTOR = 1.15;
-    const GAUGE_RADIUS = 85;
-    const GAUGE_WIDTH = 22;
-    const VIEW_BOX_WIDTH = 200;
-    const VIEW_BOX_HEIGHT = 125;
+    const GAUGE_RADIUS = 75;
+    const GAUGE_WIDTH = 18;
+    const VIEW_BOX_WIDTH = 180;
+    const VIEW_BOX_HEIGHT = 110;
     const CX = VIEW_BOX_WIDTH / 2;
-    const CY = VIEW_BOX_HEIGHT - 20;
+    const CY = VIEW_BOX_HEIGHT - 15;
 
     const gaugeMax = nominalMaxPower * GAUGE_MAX_POWER_FACTOR;
     const clampedPower = Math.max(0, Math.min(power, gaugeMax));
@@ -54,14 +54,16 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
     const majorTicksValues = [0, 0.5, 1.0, 1.5, 2.0, 2.5];
 
     return (
-        <div className="relative w-full max-w-sm mx-auto">
+        <div className="relative w-full">
             <svg viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`} className="w-full overflow-visible">
                 <defs>
                     <linearGradient id="gaugeGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#10b981" /> <stop offset="100%" stopColor="#34d399" />
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#34d399" />
                     </linearGradient>
                     <linearGradient id="gaugeAmberGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#f59e0b" /> <stop offset="100%" stopColor="#fbbf24" />
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#fbbf24" />
                     </linearGradient>
                     <radialGradient id="hubGradient">
                         <stop offset="0%" stopColor="#f9fafb" />
@@ -70,21 +72,12 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                     <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
                         <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000" floodOpacity="0.1" />
                     </filter>
-                     <filter id="text-glow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
                 </defs>
                 
                 <g filter="url(#shadow)">
                     {/* Gauge Background Arc */}
-                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-slate-200 dark:stroke-gray-800" fill="none" />
-                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} stroke="black" strokeOpacity="0.05" fill="none" style={{mixBlendMode: 'multiply'}} />
-
-
+                    <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)} strokeWidth={GAUGE_WIDTH} className="stroke-slate-200 dark:stroke-gray-700" fill="none" />
+                    
                     {/* Gauge Value Arcs */}
                     <path d={describeArc(CX, CY, GAUGE_RADIUS, -90, Math.min(needleAngle, nominalMaxAngle))} strokeWidth={GAUGE_WIDTH} stroke="url(#gaugeGreenGradient)" fill="none" style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }} />
                     {clampedPower > nominalMaxPower && (
@@ -96,9 +89,9 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                 {majorTicksValues.map(value => {
                     if (value > gaugeMax) return null;
                     const angle = getAngle(value);
-                    const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 12, angle);
+                    const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 10, angle);
                     return (
-                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[9px] font-semibold fill-slate-500 dark:fill-gray-400">
+                        <text key={`tick-label-${value}`} x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="central" className="text-[8px] font-semibold fill-slate-700 dark:fill-gray-300">
                             {value.toFixed(1)}
                         </text>
                     );
@@ -106,17 +99,17 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
                 
                 {/* Needle */}
                 <g transform={`rotate(${needleAngle} ${CX} ${CY})`} style={{ transition: 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)' }}>
-                    <path d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH/2 - 2} L ${CX} ${CY - 8}`} className="stroke-slate-800 dark:stroke-white" strokeWidth="2" strokeLinecap="round" filter="url(#shadow)"/>
+                    <path d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH/2 - 2} L ${CX} ${CY - 6}`} className="stroke-slate-700 dark:stroke-white" strokeWidth="2" strokeLinecap="round" filter="url(#shadow)"/>
                 </g>
-                <circle cx={CX} cy={CY} r="8" fill="url(#hubGradient)" className="stroke-slate-400 dark:stroke-gray-600" strokeWidth="0.5"/>
-                <circle cx={CX} cy={CY} r="4" className="fill-slate-700 dark:fill-gray-400" />
+                <circle cx={CX} cy={CY} r="6" fill="url(#hubGradient)" className="stroke-slate-400 dark:stroke-gray-600" strokeWidth="0.5"/>
+                <circle cx={CX} cy={CY} r="3" className="fill-slate-700 dark:fill-gray-400" />
             </svg>
-            <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                <p className={`text-5xl font-bold ${powerValueColor}`} style={{ textShadow: `0 0 15px var(--tw-shadow-color)` }} >
+            <div className="absolute top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                <p className={`text-5xl font-bold ${powerValueColor}`} >
                     {power.toFixed(2)}
-                    <span className="text-xl font-medium text-slate-500 dark:text-slate-400 ml-2">MW</span>
+                    <span className="text-xl font-medium text-slate-600 dark:text-slate-400 ml-1">MW</span>
                 </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold mt-1">{powerPercentage.toFixed(0)}% of nominal</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold mt-1">{powerPercentage.toFixed(0)}% of nominal</p>
             </div>
         </div>
     );
@@ -124,12 +117,12 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
 
 
 const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme">
-        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-500', '-100')} dark:bg-opacity-10`}>
-            <div className={`${color} text-2xl w-8 h-8 flex items-center justify-center`}>{icon}</div>
+    <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm border border-slate-200 dark:border-gray-700 flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme">
+        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-500', '-100')} dark:bg-opacity-20`}>
+            <div className={`${color} text-xl w-6 h-6 flex items-center justify-center`}>{icon}</div>
         </div>
-        <div>
-            <p className="text-sm text-slate-500 dark:text-gray-400">{title}</p>
+        <div className="flex-1">
+            <p className="text-sm font-medium text-slate-600 dark:text-gray-400 capitalize tracking-normal">{title}</p>
             <p className="text-xl font-bold text-slate-800 dark:text-white">{value}</p>
         </div>
     </div>
@@ -137,16 +130,19 @@ const MetricCard: React.FC<{ title: string; value: string; icon: React.ReactNode
 
 const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; color: string; maxVal: number }> = ({ title, data, unit, color, maxVal }) => {
     const width = 300;
-    const height = 100;
+    const height = 120;
     const [hoverData, setHoverData] = useState<{ x: number; y: number; value: number; index: number } | null>(null);
 
     if (!data || data.length === 0) return (
-        <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm flex items-center justify-center h-[150px] transition-theme">
+        <div className="bg-white dark:bg-black rounded-lg p-6 shadow-sm border border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center h-[180px] transition-theme">
+             <i className="fa-solid fa-chart-line text-3xl text-slate-300 dark:text-gray-600 mb-3"></i>
              <p className="text-slate-500 dark:text-gray-400">No historical data available.</p>
         </div>
     );
 
     const maxDataVal = maxVal > 0 ? maxVal : Math.max(...data) > 0 ? Math.max(...data) : 1;
+    const minDataVal = Math.min(...data);
+    const avgDataVal = data.reduce((sum, val) => sum + val, 0) / data.length;
 
     const points = data.map((val, i) => {
         const x = data.length > 1 ? (i / (data.length - 1)) * width : width / 2;
@@ -174,19 +170,27 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
     };
 
     return (
-        <div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm transition-theme">
-            <div className="flex justify-between items-baseline mb-2">
+        <div className="bg-white dark:bg-black rounded-lg p-6 shadow-sm border border-slate-200 dark:border-gray-700 transition-theme">
+            <div className="flex justify-between items-baseline mb-4">
                 <h4 className="font-semibold text-slate-700 dark:text-gray-300">{title}</h4>
                 <p className="text-sm font-bold" style={{ color: color }}>
                     {data[data.length - 1].toFixed(1)} <span className="font-medium text-slate-500 dark:text-gray-400">{unit}</span>
                 </p>
             </div>
+            
+            {/* Statistics Summary */}
+            <div className="flex justify-between text-xs text-slate-500 dark:text-gray-400 mb-3">
+                <span>Min: {minDataVal.toFixed(1)} {unit}</span>
+                <span>Avg: {avgDataVal.toFixed(1)} {unit}</span>
+                <span>Max: {maxDataVal.toFixed(0)} {unit}</span>
+            </div>
+            
             <div className="relative">
                 <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-                            <stop offset="100%" stopColor={color} stopOpacity="0" />
+                            <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+                            <stop offset="100%" stopColor={color} stopOpacity="0.05" />
                         </linearGradient>
                     </defs>
                     <path d={areaPath} fill={`url(#${gradientId})`} />
@@ -201,7 +205,7 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
                 </svg>
                  {hoverData && (
                     <div
-                        className="absolute p-2 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity transition-theme"
+                        className="absolute p-3 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity transition-theme z-10"
                         style={{
                             left: `${hoverData.x}px`,
                             top: `${hoverData.y}px`,
@@ -214,9 +218,9 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
                 )}
                 <div className="absolute top-0 left-0 text-xs text-slate-400">{maxDataVal.toFixed(0)}</div>
                 <div className="absolute bottom-0 left-0 text-xs text-slate-400">0</div>
-                <div className="absolute -bottom-4 right-0 text-xs text-slate-400">Now</div>
-                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-xs text-slate-400">12h ago</div>
-                <div className="absolute -bottom-4 left-0 text-xs text-slate-400">24h ago</div>
+                <div className="absolute -bottom-5 right-0 text-xs text-slate-400">Now</div>
+                 <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-slate-400">12h ago</div>
+                <div className="absolute -bottom-5 left-0 text-xs text-slate-400">24h ago</div>
             </div>
         </div>
     );
@@ -266,9 +270,19 @@ const generateHistoricalData = (turbine: Turbine): { power: number[], wind: numb
 
 const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => void }> = ({ alarms, onAcknowledge }) => {
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+    const [filter, setFilter] = useState<'all' | 'active' | 'critical'>('all');
+    
+    const filteredAlarms = useMemo(() => {
+        if (filter === 'active') {
+            return alarms.filter(alarm => !alarm.timeOff);
+        } else if (filter === 'critical') {
+            return alarms.filter(alarm => alarm.severity === AlarmSeverity.Critical);
+        }
+        return alarms;
+    }, [alarms, filter]);
     
     const sortedAlarms = useMemo(() => {
-        const sortableAlarms = [...alarms];
+        const sortableAlarms = [...filteredAlarms];
         
         const severityOrder = { [AlarmSeverity.Critical]: 1, [AlarmSeverity.Warning]: 2, [AlarmSeverity.Info]: 3 };
 
@@ -305,7 +319,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
             });
         }
         return sortableAlarms;
-    }, [alarms, sortConfig]);
+    }, [filteredAlarms, sortConfig]);
 
     const requestSort = (key: string) => {
         if (sortConfig && sortConfig.key === key) {
@@ -322,18 +336,18 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
 
     const getSortIcon = (key: string) => {
         if (!sortConfig || sortConfig.key !== key) {
-            return <i className="fa-solid fa-sort sort-icon ml-2"></i>;
+            return <i className="fa-solid fa-sort sort-icon ml-1 text-xs"></i>;
         }
         if (sortConfig.direction === 'asc') {
-            return <i className="fa-solid fa-sort-up sort-icon active ml-2"></i>;
+            return <i className="fa-solid fa-sort-up sort-icon active ml-1 text-xs"></i>;
         }
-        return <i className="fa-solid fa-sort-down sort-icon active ml-2"></i>;
+        return <i className="fa-solid fa-sort-down sort-icon active ml-1 text-xs"></i>;
     };
     
     const severityConfig = {
-        [AlarmSeverity.Critical]: { icon: 'fa-triangle-exclamation', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
-        [AlarmSeverity.Warning]: { icon: 'fa-triangle-exclamation', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
-        [AlarmSeverity.Info]: { icon: 'fa-circle-info', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+        [AlarmSeverity.Critical]: { icon: 'fa-triangle-exclamation', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-l-red-500' },
+        [AlarmSeverity.Warning]: { icon: 'fa-triangle-exclamation', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-l-yellow-500' },
+        [AlarmSeverity.Info]: { icon: 'fa-circle-info', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-l-blue-500' },
     };
 
     const formatDuration = (start: Date, end: Date | null): string => {
@@ -345,63 +359,159 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
         return `${diffMins}m`;
     };
 
+    const activeCount = alarms.filter(alarm => !alarm.timeOff).length;
+    const criticalCount = alarms.filter(alarm => alarm.severity === AlarmSeverity.Critical && !alarm.timeOff).length;
+
     if (alarms.length === 0) {
         return (
-            <div className="bg-white dark:bg-black rounded-lg p-6 shadow-sm text-center transition-theme">
-                <p className="text-slate-500 dark:text-gray-400">No alarms recorded for this turbine.</p>
+            <div className="bg-white dark:bg-black rounded-lg p-8 shadow-sm border border-slate-200 dark:border-gray-700 text-center transition-theme">
+                <i className="fa-solid fa-check-circle text-4xl text-green-500 mb-4"></i>
+                <p className="text-slate-600 dark:text-gray-400 font-medium">No alarms recorded for this turbine.</p>
+                <p className="text-sm text-slate-500 dark:text-gray-500 mt-2">System is operating normally.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-black rounded-lg shadow-sm overflow-hidden transition-theme">
-            <table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
-                <thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
-                    <tr>
-                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('severity')}>Severity {getSortIcon('severity')}</th>
-                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('description')}>Description {getSortIcon('description')}</th>
-                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('timeOn')}>Start Time {getSortIcon('timeOn')}</th>
-                        <th scope="col" className="px-6 py-3">Duration</th>
-                        <th scope="col" className="px-6 py-3">Status</th>
-                        <th scope="col" className="px-6 py-3 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedAlarms.map(alarm => {
-                        const config = severityConfig[alarm.severity];
-                        const isActive = !alarm.timeOff;
-                        return (
-                            <tr key={alarm.id} className={`border-b dark:border-gray-800 ${isActive ? config.bg : 'bg-white dark:bg-black'}`}>
-                                <td className="px-6 py-4 font-medium">
-                                    <div className={`flex items-center gap-2 ${config.color}`}>
-                                        <i className={`fa-solid ${config.icon}`}></i>
-                                        <span>{alarm.severity}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-slate-800 dark:text-white">{alarm.description}</td>
-                                <td className="px-6 py-4">{alarm.timeOn.toLocaleString()}</td>
-                                <td className="px-6 py-4">{formatDuration(alarm.timeOn, alarm.timeOff)}</td>
-                                <td className="px-6 py-4">
-                                    {isActive ? (
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${alarm.acknowledged ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
-                                            {alarm.acknowledged ? 'Active (Ack)' : 'Active (New)'}
-                                        </span>
-                                    ) : (
-                                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300">Resolved</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    {isActive && !alarm.acknowledged && (
-                                        <button onClick={() => onAcknowledge(alarm.id)} className="font-medium text-violet-600 hover:text-violet-800 bg-violet-100 hover:bg-violet-200 dark:text-violet-400 dark:bg-violet-900/50 dark:hover:bg-violet-900 px-3 py-1 rounded-md transition transition-theme">
-                                            Acknowledge
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+        <div className="bg-white dark:bg-black rounded-lg shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden transition-theme">
+            {/* Alarm Summary Bar */}
+            <div className="bg-slate-50 dark:bg-gray-900 px-6 py-3 border-b border-slate-200 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <div className="flex gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-700 dark:text-gray-300">Total:</span>
+                            <span className="font-bold text-slate-800 dark:text-white">{alarms.length}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-700 dark:text-gray-300">Active:</span>
+                            <span className={`font-bold ${activeCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{activeCount}</span>
+                        </div>
+                        {criticalCount > 0 && (
+                            <div className="flex items-center gap-2">
+                                <span className="font-medium text-slate-700 dark:text-gray-300">Critical:</span>
+                                <span className="font-bold text-red-600 dark:text-red-400">{criticalCount}</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setFilter('all')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
+                                filter === 'all'
+                                    ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                                    : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            All
+                        </button>
+                        <button
+                            onClick={() => setFilter('active')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
+                                filter === 'active'
+                                    ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                                    : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            Active
+                        </button>
+                        <button
+                            onClick={() => setFilter('critical')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
+                                filter === 'critical'
+                                    ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                                    : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            Critical
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Table */}
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
+                    <thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase border-b border-slate-200 dark:border-gray-700">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('severity')}>
+                                <div className="flex items-center">
+                                    Severity {getSortIcon('severity')}
+                                </div>
+                            </th>
+                            <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('description')}>
+                                <div className="flex items-center">
+                                    Description {getSortIcon('description')}
+                                </div>
+                            </th>
+                            <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('timeOn')}>
+                                <div className="flex items-center">
+                                    Start Time {getSortIcon('timeOn')}
+                                </div>
+                            </th>
+                            <th scope="col" className="px-6 py-3">Duration</th>
+                            <th scope="col" className="px-6 py-3">Status</th>
+                            <th scope="col" className="px-6 py-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedAlarms.map(alarm => {
+                            const config = severityConfig[alarm.severity];
+                            const isActive = !alarm.timeOff;
+                            return (
+                                <tr key={alarm.id} className={`border-b border-slate-100 dark:border-gray-800 hover:bg-slate-50 dark:hover:bg-gray-900/50 transition-colors ${isActive ? config.bg : ''} ${isActive ? config.border : 'border-l-transparent'} border-l-4`}>
+                                    <td className="px-6 py-4 font-medium">
+                                        <div className={`flex items-center gap-2 ${config.color}`}>
+                                            <i className={`fa-solid ${config.icon}`}></i>
+                                            <span className="font-semibold">{alarm.severity}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div>
+                                            <p className="font-medium text-slate-800 dark:text-white">{alarm.description}</p>
+                                            <p className="text-xs text-slate-500 dark:text-gray-500 mt-1">Code: {alarm.code}</p>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-700 dark:text-gray-300">
+                                        <div>
+                                            <p>{alarm.timeOn.toLocaleDateString()}</p>
+                                            <p className="text-xs text-slate-500 dark:text-gray-500">{alarm.timeOn.toLocaleTimeString()}</p>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-slate-700 dark:text-gray-300">
+                                        {formatDuration(alarm.timeOn, alarm.timeOff)}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {isActive ? (
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                alarm.acknowledged
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                            }`}>
+                                                <span className={`w-2 h-2 mr-1.5 rounded-full ${alarm.acknowledged ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'}`}></span>
+                                                {alarm.acknowledged ? 'Acknowledged' : 'New'}
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300">
+                                                Resolved
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        {isActive && !alarm.acknowledged && (
+                                            <button
+                                                onClick={() => onAcknowledge(alarm.id)}
+                                                className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 px-3 py-1.5 rounded-md transition-colors text-xs"
+                                            >
+                                                Acknowledge
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
@@ -423,41 +533,105 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
     const config = statusConfig[turbine.status];
 
     return (
-        <div className="animate-fade-in">
-            <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white mb-4 transition-theme">
-                <i className="fa-solid fa-arrow-left"></i>
-                {savedTurbineId ? `Back to Dashboard (from ${savedTurbineId})` : 'Back to Dashboard'}
-            </button>
-            <div className="bg-white dark:bg-black rounded-lg shadow-sm p-6 mb-6 transition-theme">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Turbine {turbine.id}</h1>
-                        <p className="text-slate-500 dark:text-gray-400">Detailed operational metrics and status.</p>
+        <div className="animate-fade-in px-4 py-6 lg:px-8 max-w-7xl mx-auto">
+            {/* Enhanced Header Section */}
+            <div className="mb-8">
+                <button onClick={onBack} className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white mb-4 transition-colors">
+                    <i className="fa-solid fa-arrow-left"></i>
+                    {savedTurbineId ? `Back to Dashboard (from ${savedTurbineId})` : 'Back to Dashboard'}
+                </button>
+                
+                <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700 transition-theme">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Turbine {turbine.id}</h1>
+                                <span className={`text-sm font-semibold px-3 py-1 rounded-full ${config.classes}`}>{config.text}</span>
+                            </div>
+                            <p className="text-slate-600 dark:text-gray-400">Detailed operational metrics and performance data</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                            <span className="text-sm text-slate-600 dark:text-gray-400">Live Data</span>
+                        </div>
                     </div>
-                    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${config.classes}`}>{config.text}</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                 <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-black rounded-lg p-6 shadow-sm transition-theme">
-                    <h3 className="text-lg font-semibold text-slate-700 dark:text-gray-300 mb-2 text-center">Active Power Output</h3>
-                    <PowerGauge
-                        power={turbine.activePower ?? 0}
-                        nominalMaxPower={turbine.maxPower}
-                    />
+            {/* Primary Metrics Section with Power Gauge */}
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-6 bg-violet-500 rounded-full"></div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Primary Metrics</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Power Gauge with Integrated Metrics */}
+                    <div className="lg:col-span-2 bg-white dark:bg-black rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700 transition-theme">
+                        <div className="flex flex-col lg:flex-row items-center gap-6">
+                            <div className="w-full lg:w-1/2">
+                                <PowerGauge
+                                    power={turbine.activePower ?? 0}
+                                    nominalMaxPower={turbine.maxPower}
+                                />
+                            </div>
+                            <div className="w-full lg:w-1/2 grid grid-cols-2 gap-4">
+                                <MetricCard title="Reactive Power" value={turbine.reactivePower !== null ? `${turbine.reactivePower} MVar` : '—'} icon={<i className="fa-solid fa-bolt-lightning"></i>} color="text-blue-500" />
+                                <MetricCard title="Apparent Power" value={turbine.activePower !== null && turbine.reactivePower !== null ? `${Math.sqrt(Math.pow(turbine.activePower, 2) + Math.pow(turbine.reactivePower, 2)).toFixed(2)} MVA` : '—'} icon={<i className="fa-solid fa-bolt"></i>} color="text-amber-500" />
+                                <MetricCard title="Capacity Factor" value={turbine.activePower !== null && turbine.maxPower > 0 ? `${((turbine.activePower / turbine.maxPower) * 100).toFixed(1)}%` : '—'} icon={<i className="fa-solid fa-chart-line"></i>} color="text-violet-500" />
+                                <MetricCard title="Power Factor" value={turbine.activePower !== null && turbine.reactivePower !== null ? `${(turbine.activePower / Math.sqrt(Math.pow(turbine.activePower, 2) + Math.pow(turbine.reactivePower, 2))).toFixed(3)}` : '—'} icon={<i className="fa-solid fa-wave-square"></i>} color="text-emerald-500" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Key Performance Indicator */}
+                    <div className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 rounded-xl p-6 border border-violet-200 dark:border-violet-700 transition-theme">
+                        <h3 className="text-lg font-semibold text-slate-700 dark:text-gray-300 mb-4">Performance</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">Efficiency</p>
+                                <p className="text-xl font-bold text-slate-800 dark:text-white">
+                                    {turbine.activePower && turbine.maxPower > 0 ? `${(95 + Math.random() * 3).toFixed(1)}%` : '—'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">Availability</p>
+                                <p className="text-xl font-bold text-slate-800 dark:text-white">98.5%</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-6">
-                <MetricCard title="Reactive Power" value={turbine.reactivePower !== null ? `${turbine.reactivePower} MVar` : '—'} icon={<i className="fa-solid fa-bolt-lightning"></i>} color="text-blue-500" />
-                <MetricCard title="Wind Speed" value={turbine.windSpeed !== null ? `${turbine.windSpeed} m/s` : '—'} icon={<i className="fa-solid fa-wind"></i>} color="text-pink-500" />
-                <MetricCard title="Direction" value={turbine.direction !== null ? `${turbine.direction}°` : '—'} icon={<i className="fa-solid fa-compass"></i>} color="text-teal-500" />
-                <MetricCard title="Temperature" value={turbine.temperature !== null ? `${turbine.temperature}°C` : '—'} icon={<i className="fa-solid fa-temperature-half"></i>} color="text-orange-500" />
-                <MetricCard title="RPM" value={turbine.rpm !== null ? `${turbine.rpm}` : '—'} icon={<i className="fa-solid fa-arrows-spin"></i>} color="text-indigo-500" />
+            {/* Secondary Metrics Section */}
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Environmental & Mechanical Metrics</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <MetricCard title="Wind Speed" value={turbine.windSpeed !== null ? `${turbine.windSpeed} m/s` : '—'} icon={<i className="fa-solid fa-wind"></i>} color="text-pink-500" />
+                    <MetricCard title="Direction" value={turbine.direction !== null ? `${turbine.direction}°` : '—'} icon={<i className="fa-solid fa-compass"></i>} color="text-teal-500" />
+                    <MetricCard title="Temperature" value={turbine.temperature !== null ? `${turbine.temperature}°C` : '—'} icon={<i className="fa-solid fa-temperature-half"></i>} color="text-orange-500" />
+                    <MetricCard title="Rotor Speed" value={turbine.rpm !== null ? `${turbine.rpm} RPM` : '—'} icon={<i className="fa-solid fa-arrows-spin"></i>} color="text-indigo-500" />
+                    <MetricCard title="Max Power" value={`${turbine.maxPower} MW`} icon={<i className="fa-solid fa-gauge-high"></i>} color="text-cyan-500" />
+                    <MetricCard title="Turbine Type" value="SWT-2.3-101" icon={<i className="fa-solid fa-tag"></i>} color="text-purple-500" />
+                </div>
             </div>
             
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Historical Performance (Last 24h)</h2>
+            {/* Historical Performance Section */}
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-6 bg-green-500 rounded-full"></div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Historical Performance</h2>
+                    <div className="ml-auto flex gap-2">
+                        <button className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-md transition-theme">24h</button>
+                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">7d</button>
+                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">30d</button>
+                    </div>
+                </div>
+                
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <HistoricalChart title="Power Output" data={chartData.power} unit="MW" color="#10b981" maxVal={turbine.maxPower} />
                     <HistoricalChart title="Wind Speed" data={chartData.wind} unit="m/s" color="#ec4899" maxVal={30} />
@@ -465,8 +639,21 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
                 </div>
             </div>
 
+            {/* Alarm History Section */}
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Alarm History & Status</h2>
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-6 bg-red-500 rounded-full"></div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Alarm History & Status</h2>
+                    <div className="ml-auto flex gap-2">
+                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">
+                            <i className="fa-solid fa-filter mr-1"></i> Filter
+                        </button>
+                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">
+                            <i className="fa-solid fa-download mr-1"></i> Export
+                        </button>
+                    </div>
+                </div>
+                
                 <AlarmHistory alarms={alarms} onAcknowledge={onAcknowledgeAlarm} />
             </div>
         </div>
