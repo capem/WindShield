@@ -313,6 +313,7 @@ function AppContent() {
     const [alarms, setAlarms] = useState<Alarm[]>(() => generateInitialAlarms(initialTurbines));
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
+    const [savedTurbineId, setSavedTurbineId] = useState<string | null>(null);
     const [isCompactView, setIsCompactView] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
@@ -353,10 +354,29 @@ function AppContent() {
             setScrollPosition(mainContentRef.current.scrollTop);
         }
         setSelectedTurbineId(turbineId);
+        setSavedTurbineId(null); // Clear any saved turbine when selecting a new one
     };
 
     const handleCloseDetailView = () => {
         setSelectedTurbineId(null);
+        setSavedTurbineId(null); // Clear saved turbine when explicitly closing
+    };
+
+    const handleNavigate = (viewId: string) => {
+        // If we're in turbine detail view and navigating away, save the turbine context
+        if (selectedTurbineId) {
+            setSavedTurbineId(selectedTurbineId);
+            setSelectedTurbineId(null);
+        }
+        setActiveView(viewId);
+    };
+
+    const handleRestoreTurbineDetail = () => {
+        if (savedTurbineId) {
+            setSelectedTurbineId(savedTurbineId);
+            setSavedTurbineId(null);
+            setActiveView('dashboard'); // Switch to dashboard context
+        }
     };
     
     const handleAcknowledgeAlarm = (alarmId: string) => {
@@ -587,10 +607,10 @@ function AppContent() {
     
     return (
         <div className="flex h-screen bg-slate-50 text-slate-800 font-sans dark:bg-black dark:text-white transition-theme">
-            <Sidebar 
-                isCollapsed={isSidebarCollapsed} 
+            <Sidebar
+                isCollapsed={isSidebarCollapsed}
                 activeItem={activeView}
-                onNavigate={setActiveView}
+                onNavigate={handleNavigate}
             />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header
@@ -599,16 +619,19 @@ function AppContent() {
                     unacknowledgedAlarms={unacknowledgedAlarms}
                     isDarkMode={isDarkMode}
                     onToggleDarkMode={toggleDarkMode}
+                    savedTurbineId={savedTurbineId}
+                    onRestoreTurbineDetail={handleRestoreTurbineDetail}
                 />
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
                 <main ref={mainContentRef} className="flex-1 p-6 overflow-y-auto">
                     {selectedTurbine ? (
-                        <TurbineDetailView 
-                          turbine={selectedTurbine} 
-                          onBack={handleCloseDetailView} 
+                        <TurbineDetailView
+                          turbine={selectedTurbine}
+                          onBack={handleCloseDetailView}
                           historicalData={historicalDataForSelectedTurbine}
                           alarms={alarmsForSelectedTurbine}
                           onAcknowledgeAlarm={handleAcknowledgeAlarm}
+                          savedTurbineId={savedTurbineId}
                         />
                     ) : (
                         renderContent()

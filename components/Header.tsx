@@ -8,9 +8,11 @@ interface HeaderProps {
     unacknowledgedAlarms: Alarm[];
     isDarkMode: boolean;
     onToggleDarkMode: () => void;
+    savedTurbineId?: string | null;
+    onRestoreTurbineDetail?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unacknowledgedAlarms, isDarkMode, onToggleDarkMode }) => {
+const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unacknowledgedAlarms, isDarkMode, onToggleDarkMode, savedTurbineId, onRestoreTurbineDetail }) => {
     const count = unacknowledgedAlarms.length;
     let iconColor = 'text-slate-600 dark:text-slate-300';
     let hasCritical = false;
@@ -41,6 +43,23 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                 </div>
             </div>
             <div className="flex items-center gap-6 text-slate-600 dark:text-gray-300 transition-theme">
+                {savedTurbineId && onRestoreTurbineDetail && (
+                    <div className="relative group">
+                        <button
+                            onClick={onRestoreTurbineDetail}
+                            className="flex items-center gap-2 font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors transition-theme animate-pulse"
+                            aria-label="Return to turbine detail"
+                        >
+                            <i className="fa-solid fa-arrow-left text-lg"></i>
+                            <span className="hidden sm:inline">Back to Turbine {savedTurbineId}</span>
+                        </button>
+                        <div className="absolute top-full mt-2 w-max max-w-sm p-3 -translate-x-1/2 left-1/2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10 transition-theme">
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-slate-800"></div>
+                            <p className="mb-1 font-medium">Return to turbine detail view</p>
+                            <p>Click to go back to Turbine {savedTurbineId} details</p>
+                        </div>
+                    </div>
+                )}
                  <div className="relative group">
                      <button onClick={onUploadClick} className="flex items-center gap-2 font-semibold text-slate-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="Upload SCADA Data">
                         <i className="fa-solid fa-upload text-lg"></i>

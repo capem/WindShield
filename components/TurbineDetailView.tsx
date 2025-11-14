@@ -7,6 +7,7 @@ interface TurbineDetailViewProps {
   historicalData?: any[];
   alarms: Alarm[];
   onAcknowledgeAlarm: (alarmId: string) => void;
+  savedTurbineId?: string | null;
 }
 
 const statusConfig = {
@@ -406,7 +407,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
 };
 
 
-const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, historicalData, alarms, onAcknowledgeAlarm }) => {
+const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, historicalData, alarms, onAcknowledgeAlarm, savedTurbineId }) => {
     const chartData = useMemo(() => {
         if (historicalData && historicalData.length > 0) {
             const reversedData = [...historicalData].reverse();
@@ -425,7 +426,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
         <div className="animate-fade-in">
             <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white mb-4 transition-theme">
                 <i className="fa-solid fa-arrow-left"></i>
-                Back to Dashboard
+                {savedTurbineId ? `Back to Dashboard (from ${savedTurbineId})` : 'Back to Dashboard'}
             </button>
             <div className="bg-white dark:bg-black rounded-lg shadow-sm p-6 mb-6 transition-theme">
                 <div className="flex justify-between items-start">
