@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import { Turbine, TurbineStatus } from '../types';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import type { Turbine } from '../types';
+import { TurbineStatus } from '../types';
 
 // FIX: Define a type for historical data rows to resolve typing errors.
 type HistoricalDataRow = {
@@ -16,7 +18,7 @@ type HistoricalDataRow = {
 };
 
 interface AnalyticsViewProps {
-    historicalData: Record<string, any[]> | null;
+    historicalData: Record<string, HistoricalDataRow[]> | null;
     turbines: Turbine[];
 }
 
@@ -79,6 +81,7 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
     return (
         <div className="relative">
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+                <title>Availability Chart</title>
                 {/* Y-axis */}
                 {[0, 25, 50, 75, 100].map(y => (
                     <g key={y}>
@@ -127,7 +130,19 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
                 })}
 
                 {/* Hover interactions */}
-                <rect x={padding.left} y={padding.top} width={chartAreaWidth} height={height - padding.top - padding.bottom} fill="transparent" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} />
+                <button
+                    type="button"
+                    className="absolute border-0 bg-transparent cursor-pointer"
+                    style={{
+                        left: `${padding.left}px`,
+                        top: `${padding.top}px`,
+                        width: `${chartAreaWidth}px`,
+                        height: `${height - padding.top - padding.bottom}px`
+                    }}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    aria-label="Chart interaction area"
+                />
                 {hoverData && (
                     <g pointerEvents="none">
                         <line x1={hoverData.x} y1={padding.top} x2={hoverData.x} y2={height - padding.bottom} className="stroke-slate-400 dark:stroke-gray-600" strokeWidth="1" strokeDasharray="3,3" />
@@ -153,7 +168,13 @@ const AvailabilityChart: React.FC<{ data: { date: string, time: number, energy: 
     )
 }
 
-const TurbinePerformanceTable: React.FC<{ data: any[] }> = ({ data }) => {
+const TurbinePerformanceTable: React.FC<{ data: Array<{
+    id: string;
+    timeAvailability: number;
+    energyAvailability: number;
+    totalProduction: number;
+    downTime: number;
+}> }> = ({ data }) => {
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'energyAvailability', direction: 'asc'});
 
     const sortedData = useMemo(() => {
@@ -243,7 +264,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({ historicalData, turbines 
         let potentialProduction = 0;
         
         dateFilteredData.forEach(d => {
-            const status = d['Status'];
+            const status = d.Status;
             if (status === TurbineStatus.Producing || status === TurbineStatus.Available) {
                 uptimeHours += 1; // Assuming hourly data points
             }
@@ -281,7 +302,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({ historicalData, turbines 
 
             dataByDay[day].totalHours += 1;
 
-            if (d['Status'] === TurbineStatus.Producing || d['Status'] === TurbineStatus.Available) {
+            if (d.Status === TurbineStatus.Producing || d.Status === TurbineStatus.Available) {
                 dataByDay[day].uptimeHours += 1;
             }
 
@@ -317,7 +338,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({ historicalData, turbines 
             if (!dataByTurbine[id]) return;
 
             dataByTurbine[id].totalHours += 1;
-            if (d['Status'] === TurbineStatus.Producing || d['Status'] === TurbineStatus.Available) {
+            if (d.Status === TurbineStatus.Producing || d.Status === TurbineStatus.Available) {
                 dataByTurbine[id].uptimeHours += 1;
             }
 
@@ -357,7 +378,12 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({ historicalData, turbines 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <KpiCard title="Time-Based Availability" value={`${availabilityMetrics.time.toFixed(2)}%`} icon={<i className="fa-regular fa-clock"></i>} color="text-cyan-500" />
                 <KpiCard title="Energy-Based Availability" value={`${availabilityMetrics.energy.toFixed(2)}%`} icon={<i className="fa-solid fa-bolt"></i>} color="text-violet-500" />
-                <KpiCard title="Total Production" value={`${(availabilityMetrics.production / 1000).toFixed(2)} GWh`} icon={<i className="fa-solid fa-chart-line"></i>} color="text-green-500" />
+                <KpiCard title="Energy Lost" value={`${(availabilityMetrics.production / 1000).toFixed(2)} GWh`} icon={<i className="fa-solid fa-battery-quarter"></i>} color="text-red-500" />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <KpiCard title="Total Production" value={`${(availabilityMetrics.production).toFixed(2)} MWh`} icon={<i className="fa-solid fa-industry"></i>} color="text-green-500" />
+                <KpiCard title="Potential Production" value={`${(availabilityMetrics.production / (availabilityMetrics.energy / 100)).toFixed(2)} MWh`} icon={<i className="fa-solid fa-wind"></i>} color="text-blue-500" />
             </div>
 
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6">

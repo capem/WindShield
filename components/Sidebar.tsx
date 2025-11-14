@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 interface SidebarProps {
     isCollapsed: boolean;
@@ -27,14 +27,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, activeItem, onNavigate }
             </div>
             <nav className="mt-6 px-4 space-y-2">
                 {menuItems.map(item => (
-                    <a
+                    <button
+                        type="button"
                         key={item.id}
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onNavigate(item.id);
-                        }}
-                        className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group transition-theme ${
+                        onClick={() => onNavigate(item.id)}
+                        className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group transition-theme w-full text-left ${
                             activeItem === item.id
                                 ? 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
                                 : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-900'
@@ -53,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, activeItem, onNavigate }
                                 {item.label}
                             </span>
                         )}
-                    </a>
+                    </button>
                 ))}
             </nav>
         </aside>

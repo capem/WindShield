@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
 // Props for the main component
@@ -51,6 +51,7 @@ const CardSizePreview: React.FC<{
 }> = ({ title, isSelected, onClick, children }) => (
     <div className="text-center w-40">
         <button
+            type="button"
             onClick={onClick}
             className={`rounded-lg p-3 border-2 transition-all duration-200 w-full h-36 flex flex-col items-center justify-center shadow-sm transition-theme ${
                 isSelected
@@ -68,6 +69,7 @@ const CardSizePreview: React.FC<{
 
 const PreviewTurbineIcon: React.FC = () => (
      <svg viewBox="0 0 24 24" className="w-8 h-8 text-green-500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <title>Turbine Icon</title>
         <path d="M12 22 L11 12.5 h2 L12 22" fill="currentColor" stroke="currentColor" strokeWidth="0.5" strokeLinejoin="round" />
         <g className="origin-center">
             <path d="M12 12 L12 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -86,7 +88,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     isSidebarCollapsed,
     setIsSidebarCollapsed,
     isDarkMode,
-    setIsDarkMode,
 }) => {
     const { setDarkMode } = useTheme();
     return (
@@ -97,10 +98,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                 
                 <SettingRow title="Theme" description="Switch between light and dark visual modes.">
                     <div className="flex items-center gap-2">
-                        <button onClick={() => setDarkMode(false)} className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm transition-theme ${!isDarkMode ? 'bg-violet-500 text-white' : 'bg-gray-800 text-gray-200 hover:bg-gray-700'}`}>
+                        <button type="button" onClick={() => setDarkMode(false)} className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm transition-theme ${!isDarkMode ? 'bg-violet-500 text-white' : 'bg-gray-800 text-gray-200 hover:bg-gray-700'}`}>
                             <i className="fa-solid fa-sun mr-2"></i> Light
                         </button>
-                        <button onClick={() => setDarkMode(true)} className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm transition-theme ${isDarkMode ? 'bg-violet-500 text-white' : 'bg-gray-800 text-gray-200 hover:bg-gray-700'}`}>
+                        <button type="button" onClick={() => setDarkMode(true)} className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm transition-theme ${isDarkMode ? 'bg-violet-500 text-white' : 'bg-gray-800 text-gray-200 hover:bg-gray-700'}`}>
                             <i className="fa-solid fa-moon mr-2"></i> Dark
                         </button>
                     </div>

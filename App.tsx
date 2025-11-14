@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
-import { Turbine, TurbineStatus, Alarm, AlarmSeverity } from './types';
-import TurbineCard from './components/TurbineCard';
-import TurbineDetailView from './components/TurbineDetailView';
-import Sidebar from './components/Sidebar';
+import type React from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import AnalyticsView from './components/AnalyticsView';
 import Header from './components/Header';
 import SettingsView from './components/SettingsView';
-import AnalyticsView from './components/AnalyticsView';
+import Sidebar from './components/Sidebar';
+import TurbineCard from './components/TurbineCard';
+import TurbineDetailView from './components/TurbineDetailView';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import type { Alarm, Turbine } from './types';
+import { AlarmSeverity, TurbineStatus } from './types';
 
 // --- CSV PARSING & DATA MAPPING UTILITIES ---
 
@@ -41,14 +42,18 @@ const mapCsvRowToTurbine = (row: Record<string, string>): Turbine => {
         'available': TurbineStatus.Available,
         'offline': TurbineStatus.Offline,
         'stopped': TurbineStatus.Stopped,
+        'maintenance': TurbineStatus.Maintenance,
+        'fault': TurbineStatus.Fault,
+        'warning': TurbineStatus.Warning,
+        'curtailement': TurbineStatus.Curtailement,
     };
     const getNumber = (key: string): number | null => {
         const val = parseFloat(row[key]);
-        return isNaN(val) ? null : val;
+        return Number.isNaN(val) ? null : val;
     };
     return {
         id: `T ${String(row['Turbine ID']).padStart(3, '0')}`,
-        status: statusMap[(row['Status'] || '').toLowerCase()] || TurbineStatus.Offline,
+        status: statusMap[row.Status?.toLowerCase() || ''] || TurbineStatus.Offline,
         maxPower: getNumber('MaxPower(MW)') || 2.3,
         activePower: getNumber('ActivePower(MW)'),
         reactivePower: getNumber('ReactivePower(MVar)'),
@@ -92,7 +97,8 @@ const SWT_2_3_101_SPECS = {
 const generateTurbineData = (id: number): Turbine => {
     const statuses = [
         TurbineStatus.Producing, TurbineStatus.Producing, TurbineStatus.Producing, TurbineStatus.Producing,
-        TurbineStatus.Available, TurbineStatus.Stopped, TurbineStatus.Offline
+        TurbineStatus.Available, TurbineStatus.Stopped, TurbineStatus.Offline,
+        TurbineStatus.Maintenance, TurbineStatus.Fault, TurbineStatus.Warning, TurbineStatus.Curtailement
     ];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const maxPower = SWT_2_3_101_SPECS.MAX_POWER;
@@ -108,7 +114,7 @@ const generateTurbineData = (id: number): Turbine => {
         const powerRatio = activePower / maxPower;
 
         // Realistic wind speed based on power output
-        windSpeed = SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN + Math.pow(powerRatio, 0.7) * (SWT_2_3_101_SPECS.WIND_SPEED_NOMINAL - SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN); 
+        windSpeed = SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN + (powerRatio ** 0.7) * (SWT_2_3_101_SPECS.WIND_SPEED_NOMINAL - SWT_2_3_101_SPECS.WIND_SPEED_CUT_IN);
         windSpeed += (Math.random() - 0.5) * 0.5; // Add some noise
         if (windSpeed > SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT) windSpeed = SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT; // Cap at cut-out speed
 
@@ -156,12 +162,12 @@ const allTurbineIds = Object.values(layout).flatMap(zone => zone.flatMap(line =>
 const initialTurbines: Turbine[] = allTurbineIds.map(generateTurbineData);
 
 // --- MOCK ANALYTICS DATA GENERATION ---
-const generateMockAnalyticsData = (turbines: Turbine[]): Record<string, any[]> => {
-    const data: Record<string, any[]> = {};
+const generateMockAnalyticsData = (turbines: Turbine[]): Record<string, Array<Record<string, unknown>>> => {
+    const data: Record<string, Array<Record<string, unknown>>> = {};
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    let currentDate = new Date(startOfMonth);
+    const currentDate = new Date(startOfMonth);
 
     while (currentDate <= now) {
         for (const turbine of turbines) {
@@ -173,11 +179,11 @@ const generateMockAnalyticsData = (turbines: Turbine[]): Record<string, any[]> =
 
                 if (timestamp > now) continue;
 
-                const mockTurbineState = generateTurbineData(parseInt(turbine.id.replace('T', '').trim()));
+                const mockTurbineState = generateTurbineData(parseInt(turbine.id.replace('T', '').trim(), 10));
 
                 data[turbine.id].push({
                     'Timestamp': timestamp.toISOString(),
-                    'Turbine ID': parseInt(turbine.id.replace('T', '').trim()),
+                    'Turbine ID': parseInt(turbine.id.replace('T', '').trim(), 10),
                     'Status': mockTurbineState.status,
                     'ActivePower(MW)': mockTurbineState.activePower,
                     'ReactivePower(MVar)': mockTurbineState.reactivePower,
@@ -217,7 +223,7 @@ const generateInitialAlarms = (turbines: Turbine[]): Alarm[] => {
         // ~15% chance of having any alarm
         if (Math.random() < 0.15) {
             const alarmCode = Object.keys(ALARM_DEFINITIONS)[Math.floor(Math.random() * Object.keys(ALARM_DEFINITIONS).length)];
-            const definition = ALARM_DEFINITIONS[parseInt(alarmCode)];
+            const definition = ALARM_DEFINITIONS[parseInt(alarmCode, 10)];
             const isHistorical = Math.random() > 0.4; // 60% are historical
             
             const timeOn = new Date(now - Math.random() * 24 * 60 * 60 * 1000); // Sometime in the last 24 hours
@@ -230,7 +236,7 @@ const generateInitialAlarms = (turbines: Turbine[]): Alarm[] => {
             alarms.push({
                 id: `ALM-${++alarmIdCounter}`,
                 turbineId: turbine.id,
-                code: parseInt(alarmCode),
+                code: parseInt(alarmCode, 10),
                 ...definition,
                 timeOn,
                 timeOff,
@@ -278,6 +284,10 @@ const TurbineStatusSummaryCard: React.FC<{
         available: number;
         stopped: number;
         offline: number;
+        maintenance: number;
+        fault: number;
+        warning: number;
+        curtailement: number;
     };
     className?: string;
 }> = ({ counts, className }) => {
@@ -286,14 +296,18 @@ const TurbineStatusSummaryCard: React.FC<{
         { name: 'Available', count: counts.available, icon: <i className="fa-solid fa-circle-info"></i>, color: 'text-blue-500' },
         { name: 'Stopped', count: counts.stopped, icon: <i className="fa-solid fa-circle-pause"></i>, color: 'text-yellow-500' },
         { name: 'Offline', count: counts.offline, icon: <i className="fa-solid fa-circle-xmark"></i>, color: 'text-red-500' },
+        { name: 'Maintenance', count: counts.maintenance, icon: <i className="fa-solid fa-wrench"></i>, color: 'text-purple-500' },
+        { name: 'Fault', count: counts.fault, icon: <i className="fa-solid fa-triangle-exclamation"></i>, color: 'text-red-600' },
+        { name: 'Warning', count: counts.warning, icon: <i className="fa-solid fa-exclamation-triangle"></i>, color: 'text-orange-500' },
+        { name: 'Curtailement', count: counts.curtailement, icon: <i className="fa-solid fa-hand"></i>, color: 'text-indigo-500' },
     ];
 
     return (
         <div className={`bg-white dark:bg-black p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast`}>
-            <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mb-3">Turbine Status</p>
+            <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mb-4">Turbine Status</p>
             <div className="flex-grow flex flex-col justify-around">
                 {statusItems.map(item => (
-                    <div key={item.name} className="flex justify-between items-center">
+                    <div key={item.name} className="flex justify-between items-center py-1">
                         <div className={`flex items-center gap-3 font-medium ${item.color}`}>
                              <span className="text-lg w-5 text-center">{item.icon}</span>
                             <span className="text-sm text-slate-700 dark:text-slate-300 font-semibold">{item.name}</span>
@@ -317,8 +331,8 @@ function AppContent() {
     const [isCompactView, setIsCompactView] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
-    const [allHistoricalData, setAllHistoricalData] = useState<Record<string, any[]> | null>(null);
-    const [analyticsData, setAnalyticsData] = useState<Record<string, any[]> | null>(null);
+    const [allHistoricalData, setAllHistoricalData] = useState<Record<string, Array<Record<string, unknown>>> | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<Record<string, Array<Record<string, unknown>>> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [scrollPosition, setScrollPosition] = useState(0);
     const mainContentRef = useRef<HTMLElement>(null);
@@ -340,14 +354,14 @@ function AppContent() {
                 mainContentRef.current.scrollTop = 0;
             }
         }
-    }, [selectedTurbineId]);
+    }, [selectedTurbineId, scrollPosition]);
     
     // Scroll to top when view changes
     useEffect(() => {
         if (mainContentRef.current) {
             mainContentRef.current.scrollTop = 0;
         }
-    }, [activeView]);
+    }, []);
 
     const handleSelectTurbine = (turbineId: string) => {
         if (mainContentRef.current) {
@@ -426,13 +440,13 @@ function AppContent() {
                     acc[turbineId].push(row);
                 }
                 return acc;
-            }, {} as Record<string, any[]>);
+            }, {} as Record<string, Array<Record<string, string>>>);
 
             Object.values(dataByTurbine).forEach(rows => {
-                rows.sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime());
+                rows.sort((a, b) => new Date(b.Timestamp as string).getTime() - new Date(a.Timestamp as string).getTime());
             });
 
-            const latestTurbineData = Object.values(dataByTurbine).map(rows => mapCsvRowToTurbine(rows[0]));
+            const latestTurbineData = Object.values(dataByTurbine).map(rows => mapCsvRowToTurbine(rows[0] as Record<string, string>));
 
             const finalTurbines = allTurbineIds.map(id => {
                 const idStr = `T ${String(id).padStart(3, '0')}`;
@@ -455,7 +469,7 @@ function AppContent() {
     };
 
     const selectedTurbine = turbines.find(t => t.id === selectedTurbineId);
-    const historicalDataForSelectedTurbine = selectedTurbineId && (allHistoricalData || analyticsData) ? (allHistoricalData || analyticsData)![selectedTurbineId] : undefined;
+    const historicalDataForSelectedTurbine = selectedTurbineId && (allHistoricalData || analyticsData) ? (allHistoricalData || analyticsData)?.[selectedTurbineId] : undefined;
     const alarmsForSelectedTurbine = alarms.filter(a => a.turbineId === selectedTurbineId);
     const unacknowledgedAlarms = alarms.filter(a => !a.timeOff && !a.acknowledged);
 
@@ -470,6 +484,10 @@ function AppContent() {
             available: turbines.filter(t => t.status === TurbineStatus.Available).length,
             stopped: turbines.filter(t => t.status === TurbineStatus.Stopped).length,
             offline: turbines.filter(t => t.status === TurbineStatus.Offline).length,
+            maintenance: turbines.filter(t => t.status === TurbineStatus.Maintenance).length,
+            fault: turbines.filter(t => t.status === TurbineStatus.Fault).length,
+            warning: turbines.filter(t => t.status === TurbineStatus.Warning).length,
+            curtailement: turbines.filter(t => t.status === TurbineStatus.Curtailement).length,
         };
             
         const totalInstalledCapacity = turbines.reduce((sum, t) => sum + t.maxPower, 0);
@@ -481,24 +499,27 @@ function AppContent() {
 
         const onlineTurbinesWithWind = onlineTurbines.filter(t => t.windSpeed !== null);
         const averageWindSpeed = onlineTurbinesWithWind.length > 0 
-            ? onlineTurbinesWithWind.reduce((sum, t) => sum + t.windSpeed!, 0) / onlineTurbinesWithWind.length
+            ? onlineTurbinesWithWind.reduce((sum, t) => sum + (t.windSpeed ?? 0), 0) / onlineTurbinesWithWind.length
             : 0;
 
         const onlineTurbinesWithTemp = onlineTurbines.filter(t => t.temperature !== null);
         const averageTemperature = onlineTurbinesWithTemp.length > 0
-            ? onlineTurbinesWithTemp.reduce((sum, t) => sum + t.temperature!, 0) / onlineTurbinesWithTemp.length
+            ? onlineTurbinesWithTemp.reduce((sum, t) => sum + (t.temperature ?? 0), 0) / onlineTurbinesWithTemp.length
             : 0;
 
         const summaryDataTop = [
             { title: 'Active Power', value: totalActivePower.toFixed(1), unit: 'MW', icon: <i className="fa-solid fa-bolt"></i>, color: 'text-violet-600' },
             { title: 'Reactive Power', value: totalReactivePower.toFixed(1), unit: 'MVar', icon: <i className="fa-solid fa-bolt-lightning"></i>, color: 'text-cyan-500' },
-            { title: 'Load Factor', value: loadFactor.toFixed(1), unit: '%', icon: <i className="fa-solid fa-gauge-high"></i>, color: 'text-purple-600' },
-            { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-chart-line"></i>, color: 'text-green-600' },
+        ];
+        
+        const summaryDataMiddle = [
+            { title: 'Average Wind Speed', value: averageWindSpeed.toFixed(1), unit: 'm/s', icon: <i className="fa-solid fa-wind"></i>, color: 'text-pink-500' },
+            { title: 'Average Temperature', value: averageTemperature.toFixed(0), unit: '°C', icon: <i className="fa-solid fa-temperature-half"></i>, color: 'text-orange-500' },
         ];
         
         const summaryDataBottom = [
-            { title: 'Average Wind Speed', value: averageWindSpeed.toFixed(1), unit: 'm/s', icon: <i className="fa-solid fa-wind"></i>, color: 'text-pink-500' },
-            { title: 'Average Temperature', value: averageTemperature.toFixed(0), unit: '°C', icon: <i className="fa-solid fa-temperature-half"></i>, color: 'text-orange-500' },
+            { title: 'Load Factor', value: loadFactor.toFixed(1), unit: '%', icon: <i className="fa-solid fa-gauge-high"></i>, color: 'text-purple-600' },
+            { title: 'Production (Today)', value: productionTodayMWh.toFixed(1), unit: 'MWh', icon: <i className="fa-solid fa-chart-line"></i>, color: 'text-green-600' },
         ];
 
         const weekday = currentTime.toLocaleDateString('en-US', { weekday: 'long' });
@@ -512,10 +533,13 @@ function AppContent() {
             <>
                 <h1 className="text-3xl font-bold text-slate-900 mb-6 dark:text-white transition-theme">Dashboard</h1>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {summaryDataTop.map((data) => <SummaryCard key={data.title} {...data} />)}
-                    {summaryDataBottom.map((data) => <SummaryCard key={data.title} {...data} />)}
-                    <TurbineStatusSummaryCard counts={turbineStatusCounts} className="sm:col-span-2 lg:col-span-2" />
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {summaryDataTop.map((data) => <SummaryCard key={data.title} {...data} />)}
+                        {summaryDataMiddle.map((data) => <SummaryCard key={data.title} {...data} />)}
+                        {summaryDataBottom.map((data) => <SummaryCard key={data.title} {...data} />)}
+                    </div>
+                    <TurbineStatusSummaryCard counts={turbineStatusCounts} className="lg:col-span-1" />
                 </div>
 
                 <div className="bg-white dark:bg-black rounded-lg shadow-sm p-4 mt-6 transition-theme">
@@ -599,7 +623,6 @@ function AppContent() {
                         turbines={turbines} 
                     />
                 );
-            case 'dashboard':
             default:
                 return renderDashboard();
         }

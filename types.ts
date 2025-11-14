@@ -3,6 +3,10 @@ export enum TurbineStatus {
   Available = 'available',
   Offline = 'offline',
   Stopped = 'stopped',
+  Maintenance = 'maintenance',
+  Fault = 'fault',
+  Warning = 'warning',
+  Curtailement = 'curtailement',
 }
 
 export interface Turbine {

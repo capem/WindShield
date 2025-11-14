@@ -1,6 +1,6 @@
-import React from 'react';
-import { Alarm, AlarmSeverity } from '../types';
-import { useTheme } from '../contexts/ThemeContext';
+import type React from 'react';
+import type { Alarm } from '../types';
+import { AlarmSeverity } from '../types';
 
 interface HeaderProps {
     onToggleSidebar: () => void;
@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
     return (
         <header className="bg-white dark:bg-black h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-gray-800 flex-shrink-0 transition-theme">
             <div className="flex items-center gap-4">
-                <button onClick={onToggleSidebar} className="text-slate-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="Toggle sidebar">
+                <button type="button" onClick={onToggleSidebar} className="text-slate-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="Toggle sidebar">
                     <i className="fa-solid fa-bars text-xl"></i>
                 </button>
                 <div className="relative">
@@ -46,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                 {savedTurbineId && onRestoreTurbineDetail && (
                     <div className="relative group">
                         <button
+                            type="button"
                             onClick={onRestoreTurbineDetail}
                             className="flex items-center gap-2 font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors transition-theme animate-pulse"
                             aria-label="Return to turbine detail"
@@ -61,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                     </div>
                 )}
                  <div className="relative group">
-                     <button onClick={onUploadClick} className="flex items-center gap-2 font-semibold text-slate-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="Upload SCADA Data">
+                     <button type="button" onClick={onUploadClick} className="flex items-center gap-2 font-semibold text-slate-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="Upload SCADA Data">
                         <i className="fa-solid fa-upload text-lg"></i>
                         <span className="hidden sm:inline">Upload Data</span>
                      </button>
@@ -84,14 +85,14 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                     </div>
                 </div>
              <div className="h-6 w-px bg-slate-200 dark:bg-gray-700"></div>
-             <button onClick={onToggleDarkMode} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}>
+             <button type="button" onClick={onToggleDarkMode} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}>
                     {isDarkMode ? (
                         <i className="fa-solid fa-sun text-lg"></i>
                     ) : (
                         <i className="fa-solid fa-moon text-lg"></i>
                     )}
                 </button>
-                 <button className={`relative hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme ${iconColor}`} aria-label="Notifications">
+                 <button type="button" className={`relative hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme ${iconColor}`} aria-label="Notifications">
                     <i className="fa-solid fa-bell text-lg"></i>
                     {count > 0 && (
                         <span className="absolute -top-1 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white border-2 border-white dark:border-black">
@@ -99,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onUploadClick, unackno
                         </span>
                     )}
                  </button>
-                 <button className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="User profile"><i className="fa-solid fa-user text-lg"></i></button>
+                 <button type="button" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors transition-theme" aria-label="User profile"><i className="fa-solid fa-user text-lg"></i></button>
             </div>
         </header>
     );

@@ -1,5 +1,6 @@
-import React from 'react';
-import { Turbine, TurbineStatus, AlarmSeverity } from '../types';
+import type React from 'react';
+import type { Turbine } from '../types';
+import { AlarmSeverity, TurbineStatus } from '../types';
 
 interface TurbineCardProps {
   turbine: Turbine;
@@ -14,6 +15,10 @@ const AnimatedTurbineIcon: React.FC<{ status: TurbineStatus; activePower: number
         [TurbineStatus.Available]: 'text-blue-500',
         [TurbineStatus.Offline]: 'text-red-400',
         [TurbineStatus.Stopped]: 'text-yellow-500',
+        [TurbineStatus.Maintenance]: 'text-purple-500',
+        [TurbineStatus.Fault]: 'text-red-600',
+        [TurbineStatus.Warning]: 'text-orange-500',
+        [TurbineStatus.Curtailement]: 'text-indigo-500',
     }[status];
 
     let animationStyle: React.CSSProperties = {};
@@ -37,6 +42,7 @@ const AnimatedTurbineIcon: React.FC<{ status: TurbineStatus; activePower: number
 
     return (
         <svg viewBox="0 0 24 24" className={`w-full h-full ${baseColor}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <title>Turbine Status Icon</title>
             {/* Tower */}
             <path d="M12 22 L11 12.5 h2 L12 22" fill="currentColor" stroke="currentColor" strokeWidth="0.5" strokeLinejoin="round" />
             {/* Blades */}
@@ -54,6 +60,10 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
         [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 border-blue-500' },
         [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 border-red-500' },
         [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 border-yellow-500' },
+        [TurbineStatus.Maintenance]: { text: 'Maintenance', classes: 'text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/30 border-purple-500' },
+        [TurbineStatus.Fault]: { text: 'Fault', classes: 'text-red-800 dark:text-red-200 bg-red-200 dark:bg-red-900/40 border-red-600' },
+        [TurbineStatus.Warning]: { text: 'Warning', classes: 'text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 border-orange-500' },
+        [TurbineStatus.Curtailement]: { text: 'Curtailement', classes: 'text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500' },
     };
 
     const alarmConfig: { [key in AlarmSeverity]: { icon: string; color: string } } = {
@@ -68,7 +78,7 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
 
     if (isCompact) {
         return (
-            <button onClick={onClick} className={`bg-white dark:bg-black rounded-lg p-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full h-full transition-theme-fast`}>
+            <button type="button" onClick={onClick} className={`bg-white dark:bg-black rounded-lg p-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full h-full transition-theme-fast`}>
                 <div className="flex justify-between items-center mb-1">
                     <div className="flex items-center gap-1.5">
                         {activeAlarmSeverity && (
@@ -104,7 +114,7 @@ const TurbineCard: React.FC<TurbineCardProps> = ({ turbine, onClick, isCompact =
     }
 
     return (
-        <button onClick={onClick} className={`bg-white dark:bg-black rounded-lg p-3 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full transition-theme-fast`}>
+        <button type="button" onClick={onClick} className={`bg-white dark:bg-black rounded-lg p-3 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full transition-theme-fast`}>
             <div>
                 <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">

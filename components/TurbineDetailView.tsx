@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import { Alarm, AlarmSeverity, Turbine, TurbineStatus } from '../types';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import type { Alarm, Turbine } from '../types';
+import { AlarmSeverity, TurbineStatus } from '../types';
 
 interface TurbineDetailViewProps {
   turbine: Turbine;
   onBack: () => void;
-  historicalData?: any[];
+  historicalData?: Array<Record<string, string>>;
   alarms: Alarm[];
   onAcknowledgeAlarm: (alarmId: string) => void;
   savedTurbineId?: string | null;
@@ -15,6 +17,10 @@ const statusConfig = {
     [TurbineStatus.Available]: { text: 'Available', classes: 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30' },
     [TurbineStatus.Offline]: { text: 'Offline', classes: 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30' },
     [TurbineStatus.Stopped]: { text: 'Stopped', classes: 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30' },
+    [TurbineStatus.Maintenance]: { text: 'Maintenance', classes: 'text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/30' },
+    [TurbineStatus.Fault]: { text: 'Fault', classes: 'text-red-800 dark:text-red-200 bg-red-200 dark:bg-red-900/40' },
+    [TurbineStatus.Warning]: { text: 'Warning', classes: 'text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30' },
+    [TurbineStatus.Curtailement]: { text: 'Curtailement', classes: 'text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30' },
 };
 
 const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ power, nominalMaxPower }) => {
@@ -56,6 +62,7 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({ powe
     return (
         <div className="relative w-full">
             <svg viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`} className="w-full overflow-visible">
+                <title>Power Gauge</title>
                 <defs>
                     <linearGradient id="gaugeGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#10b981" />
@@ -187,6 +194,7 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
             
             <div className="relative">
                 <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" preserveAspectRatio="none">
+                    <title>Historical Chart</title>
                     <defs>
                         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -195,7 +203,6 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
                     </defs>
                     <path d={areaPath} fill={`url(#${gradientId})`} />
                     <path d={linePath} fill="none" stroke={color} strokeWidth="2" />
-                    <rect width={width} height={height} fill="transparent" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} />
                     {hoverData && (
                         <g>
                             <line x1={hoverData.x} y1="0" x2={hoverData.x} y2={height} stroke={color} strokeWidth="1" strokeDasharray="3,3" />
@@ -203,6 +210,14 @@ const HistoricalChart: React.FC<{ title: string; data: number[]; unit: string; c
                         </g>
                     )}
                 </svg>
+                <button
+                    type="button"
+                    className="absolute inset-0 w-full h-full cursor-default"
+                    style={{ top: 0, left: 0 }}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    aria-label="Chart interaction area"
+                />
                  {hoverData && (
                     <div
                         className="absolute p-3 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity transition-theme z-10"
@@ -288,7 +303,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
 
         if (sortConfig !== null) {
             sortableAlarms.sort((a, b) => {
-                let aVal: any, bVal: any;
+                let aVal: number | string | Date, bVal: number | string | Date;
                 
                 switch(sortConfig.key) {
                     case 'severity':
@@ -395,6 +410,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                     </div>
                     <div className="flex gap-2">
                         <button
+                            type="button"
                             onClick={() => setFilter('all')}
                             className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
                                 filter === 'all'
@@ -405,6 +421,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                             All
                         </button>
                         <button
+                            type="button"
                             onClick={() => setFilter('active')}
                             className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
                                 filter === 'active'
@@ -415,6 +432,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                             Active
                         </button>
                         <button
+                            type="button"
                             onClick={() => setFilter('critical')}
                             className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
                                 filter === 'critical'
@@ -499,6 +517,7 @@ const AlarmHistory: React.FC<{ alarms: Alarm[]; onAcknowledge: (id: string) => v
                                     <td className="px-6 py-4 text-right">
                                         {isActive && !alarm.acknowledged && (
                                             <button
+                                                type="button"
                                                 onClick={() => onAcknowledge(alarm.id)}
                                                 className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 px-3 py-1.5 rounded-md transition-colors text-xs"
                                             >
@@ -524,7 +543,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
             return {
                 power: reversedData.map(d => parseFloat(d['ActivePower(MW)']) || 0),
                 wind: reversedData.map(d => parseFloat(d['WindSpeed(m/s)']) || 0),
-                rpm: reversedData.map(d => parseFloat(d['RPM']) || 0),
+                rpm: reversedData.map(d => parseFloat(d.RPM) || 0),
             };
         }
         return generateHistoricalData(turbine);
@@ -536,7 +555,7 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
         <div className="animate-fade-in px-4 py-6 lg:px-8 max-w-7xl mx-auto">
             {/* Enhanced Header Section */}
             <div className="mb-8">
-                <button onClick={onBack} className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white mb-4 transition-colors">
+                <button type="button" onClick={onBack} className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white mb-4 transition-colors">
                     <i className="fa-solid fa-arrow-left"></i>
                     {savedTurbineId ? `Back to Dashboard (from ${savedTurbineId})` : 'Back to Dashboard'}
                 </button>
@@ -577,9 +596,9 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
                             </div>
                             <div className="w-full lg:w-1/2 grid grid-cols-2 gap-4">
                                 <MetricCard title="Reactive Power" value={turbine.reactivePower !== null ? `${turbine.reactivePower} MVar` : '—'} icon={<i className="fa-solid fa-bolt-lightning"></i>} color="text-blue-500" />
-                                <MetricCard title="Apparent Power" value={turbine.activePower !== null && turbine.reactivePower !== null ? `${Math.sqrt(Math.pow(turbine.activePower, 2) + Math.pow(turbine.reactivePower, 2)).toFixed(2)} MVA` : '—'} icon={<i className="fa-solid fa-bolt"></i>} color="text-amber-500" />
+                                <MetricCard title="Apparent Power" value={turbine.activePower !== null && turbine.reactivePower !== null ? `${Math.sqrt(turbine.activePower ** 2 + turbine.reactivePower ** 2).toFixed(2)} MVA` : '—'} icon={<i className="fa-solid fa-bolt"></i>} color="text-amber-500" />
                                 <MetricCard title="Capacity Factor" value={turbine.activePower !== null && turbine.maxPower > 0 ? `${((turbine.activePower / turbine.maxPower) * 100).toFixed(1)}%` : '—'} icon={<i className="fa-solid fa-chart-line"></i>} color="text-violet-500" />
-                                <MetricCard title="Power Factor" value={turbine.activePower !== null && turbine.reactivePower !== null ? `${(turbine.activePower / Math.sqrt(Math.pow(turbine.activePower, 2) + Math.pow(turbine.reactivePower, 2))).toFixed(3)}` : '—'} icon={<i className="fa-solid fa-wave-square"></i>} color="text-emerald-500" />
+                                <MetricCard title="Power Factor" value={turbine.activePower !== null && turbine.reactivePower !== null ? `${(turbine.activePower / Math.sqrt(turbine.activePower ** 2 + turbine.reactivePower ** 2)).toFixed(3)}` : '—'} icon={<i className="fa-solid fa-wave-square"></i>} color="text-emerald-500" />
                             </div>
                         </div>
                     </div>
@@ -626,9 +645,9 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
                     <div className="w-1 h-6 bg-green-500 rounded-full"></div>
                     <h2 className="text-xl font-bold text-slate-800 dark:text-white">Historical Performance</h2>
                     <div className="ml-auto flex gap-2">
-                        <button className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-md transition-theme">24h</button>
-                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">7d</button>
-                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">30d</button>
+                        <button type="button" className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-md transition-theme">24h</button>
+                        <button type="button" className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">7d</button>
+                        <button type="button" className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">30d</button>
                     </div>
                 </div>
                 
@@ -645,10 +664,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({ turbine, onBack, 
                     <div className="w-1 h-6 bg-red-500 rounded-full"></div>
                     <h2 className="text-xl font-bold text-slate-800 dark:text-white">Alarm History & Status</h2>
                     <div className="ml-auto flex gap-2">
-                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">
+                        <button type="button" className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">
                             <i className="fa-solid fa-filter mr-1"></i> Filter
                         </button>
-                        <button className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">
+                        <button type="button" className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme">
                             <i className="fa-solid fa-download mr-1"></i> Export
                         </button>
                     </div>
