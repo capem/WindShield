@@ -2,6 +2,9 @@ import type React from "react";
 import { useMemo, useState } from "react";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
+import TurbineAvailabilityModal from "./TurbineAvailabilityModal";
+import type { SummaryStats } from "../availabilityTypes";
+import { calculateSummaryStats } from "../availabilityDataUtils";
 
 // FIX: Define a type for historical data rows to resolve typing errors.
 type HistoricalDataRow = {
@@ -277,6 +280,7 @@ const AvailabilityChart: React.FC<{
 	);
 };
 
+
 const TurbinePerformanceTable: React.FC<{
 	data: Array<{
 		id: string;
@@ -284,8 +288,15 @@ const TurbinePerformanceTable: React.FC<{
 		energyAvailability: number;
 		totalProduction: number;
 		downTime: number;
+		totalEnergyProduced: number;
+		totalLoss: number;
+		totalNonExcusableLoss: number;
+		totalExcusableLoss: number;
+		totalUndefinedLoss: number;
+		availabilityPercentage: string;
 	}>;
-}> = ({ data }) => {
+	onTurbineClick: (turbineId: string) => void;
+}> = ({ data, onTurbineClick }) => {
 	const [sortConfig, setSortConfig] = useState<{
 		key: string;
 		direction: "asc" | "desc";
@@ -328,44 +339,86 @@ const TurbinePerformanceTable: React.FC<{
 	};
 
 	return (
-		<div className="bg-white dark:bg-black rounded-lg shadow-sm overflow-hidden transition-theme">
-			<table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
+		<div className="bg-white dark:bg-black rounded-lg shadow-sm overflow-hidden transition-theme overflow-x-auto">
+			<table className="w-full text-sm text-left text-slate-600 dark:text-gray-400 min-w-max">
 				<thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
 					<tr>
 						<th
 							scope="col"
-							className="px-6 py-3 cursor-pointer"
+							className="px-6 py-3 cursor-pointer whitespace-nowrap"
 							onClick={() => requestSort("id")}
 						>
 							Turbine ID {getSortIcon("id")}
 						</th>
 						<th
 							scope="col"
-							className="px-6 py-3 cursor-pointer text-right"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
 							onClick={() => requestSort("timeAvailability")}
 						>
 							Time Availability {getSortIcon("timeAvailability")}
 						</th>
 						<th
 							scope="col"
-							className="px-6 py-3 cursor-pointer text-right"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
 							onClick={() => requestSort("energyAvailability")}
 						>
 							Energy Availability {getSortIcon("energyAvailability")}
 						</th>
 						<th
 							scope="col"
-							className="px-6 py-3 cursor-pointer text-right"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
 							onClick={() => requestSort("totalProduction")}
 						>
 							Total Production (MWh) {getSortIcon("totalProduction")}
 						</th>
 						<th
 							scope="col"
-							className="px-6 py-3 cursor-pointer text-right"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
 							onClick={() => requestSort("downTime")}
 						>
 							Downtime (Hours) {getSortIcon("downTime")}
+						</th>
+						<th
+							scope="col"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
+							onClick={() => requestSort("totalEnergyProduced")}
+						>
+							Energy Produced (kWh) {getSortIcon("totalEnergyProduced")}
+						</th>
+						<th
+							scope="col"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
+							onClick={() => requestSort("totalLoss")}
+						>
+							Total Loss (kWh) {getSortIcon("totalLoss")}
+						</th>
+						<th
+							scope="col"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
+							onClick={() => requestSort("totalNonExcusableLoss")}
+						>
+							Non-Excusable Loss (kWh) {getSortIcon("totalNonExcusableLoss")}
+						</th>
+						<th
+							scope="col"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
+							onClick={() => requestSort("totalExcusableLoss")}
+						>
+							Excusable Loss (kWh) {getSortIcon("totalExcusableLoss")}
+						</th>
+						<th
+							scope="col"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
+							onClick={() => requestSort("totalUndefinedLoss")}
+						>
+							Undefined Loss (kWh) {getSortIcon("totalUndefinedLoss")}
+						</th>
+						<th
+							scope="col"
+							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
+							onClick={() => requestSort("availabilityPercentage")}
+						>
+							Availability (%) {getSortIcon("availabilityPercentage")}
 						</th>
 					</tr>
 				</thead>
@@ -373,22 +426,44 @@ const TurbinePerformanceTable: React.FC<{
 					{sortedData.map((turbine) => (
 						<tr
 							key={turbine.id}
-							className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50"
+							className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50 cursor-pointer"
+							onClick={() => {
+								console.log('Turbine clicked:', turbine.id);
+								onTurbineClick(turbine.id);
+							}}
 						>
-							<td className="px-6 py-4 font-bold text-slate-800 dark:text-white">
+							<td className="px-6 py-4 font-bold text-slate-800 dark:text-white whitespace-nowrap">
 								{turbine.id}
 							</td>
-							<td className="px-6 py-4 text-right font-medium">
+							<td className="px-6 py-4 text-right font-medium whitespace-nowrap">
 								{turbine.timeAvailability.toFixed(2)}%
 							</td>
-							<td className="px-6 py-4 text-right font-medium">
+							<td className="px-6 py-4 text-right font-medium whitespace-nowrap">
 								{turbine.energyAvailability.toFixed(2)}%
 							</td>
-							<td className="px-6 py-4 text-right">
+							<td className="px-6 py-4 text-right whitespace-nowrap">
 								{turbine.totalProduction.toFixed(1)}
 							</td>
-							<td className="px-6 py-4 text-right">
+							<td className="px-6 py-4 text-right whitespace-nowrap">
 								{turbine.downTime.toFixed(1)}
+							</td>
+							<td className="px-6 py-4 text-right whitespace-nowrap">
+								{turbine.totalEnergyProduced.toFixed(2)}
+							</td>
+							<td className="px-6 py-4 text-right whitespace-nowrap text-red-600 dark:text-red-400 font-medium">
+								{turbine.totalLoss.toFixed(2)}
+							</td>
+							<td className="px-6 py-4 text-right whitespace-nowrap text-orange-600 dark:text-orange-400 font-medium">
+								{turbine.totalNonExcusableLoss.toFixed(2)}
+							</td>
+							<td className="px-6 py-4 text-right whitespace-nowrap text-yellow-600 dark:text-yellow-400 font-medium">
+								{turbine.totalExcusableLoss.toFixed(2)}
+							</td>
+							<td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-400 font-medium">
+								{turbine.totalUndefinedLoss.toFixed(2)}
+							</td>
+							<td className="px-6 py-4 text-right whitespace-nowrap text-green-600 dark:text-green-400 font-medium">
+								{turbine.availabilityPercentage}%
 							</td>
 						</tr>
 					))}
@@ -409,6 +484,14 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 		startOfMonth.toISOString().split("T")[0],
 	);
 	const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
+	
+	// Function to handle turbine row clicks
+	const handleTurbineClick = (turbineId: string) => {
+		setSelectedTurbineForAvailability(turbineId);
+	};
+
+	// State for turbine availability modal
+	const [selectedTurbineForAvailability, setSelectedTurbineForAvailability] = useState<string | null>(null);
 
 	const dateFilteredData = useMemo(() => {
 		if (!historicalData) return [];
@@ -534,6 +617,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 				totalHours: number;
 				actualProd: number;
 				potentialProd: number;
+				entries: typeof dateFilteredData;
 			}
 		> = {};
 
@@ -544,6 +628,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 				totalHours: 0,
 				actualProd: 0,
 				potentialProd: 0,
+				entries: [],
 			};
 		});
 
@@ -552,6 +637,8 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 			if (!dataByTurbine[id]) return;
 
 			dataByTurbine[id].totalHours += 1;
+			dataByTurbine[id].entries.push(d);
+			
 			if (
 				d.Status === TurbineStatus.Producing ||
 				d.Status === TurbineStatus.Available
@@ -569,15 +656,67 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 			}
 		});
 
-		return Object.values(dataByTurbine).map((d) => ({
-			id: d.id,
-			timeAvailability:
-				d.totalHours > 0 ? (d.uptimeHours / d.totalHours) * 100 : 0,
-			energyAvailability:
-				d.potentialProd > 0 ? (d.actualProd / d.potentialProd) * 100 : 0,
-			totalProduction: d.actualProd,
-			downTime: d.totalHours - d.uptimeHours,
-		}));
+		return Object.values(dataByTurbine).map((d) => {
+			// Calculate summary statistics for each turbine
+			const turbineAlarmData = [] as any[]; // We don't have alarm data per turbine in this context
+			const turbineTimestampData = d.entries.map(entry => ({
+				timestamp: new Date(entry.Timestamp),
+				averagePower: Number(entry["ActivePower(MW)"]) * 1000 || 0, // Convert MW to kW
+				averageWindSpeed: Number(entry["WindSpeed(m/s)"]) || 0,
+				energyProduced: (Number(entry["ActivePower(MW)"]) || 0) * 1000, // Convert MW to kW for this hour
+				activeAlarms: [], // No alarm data in historical data
+				nonExcusableEnergyLost: 0, // Will be calculated based on status
+				excusableEnergyLost: 0, // Will be calculated based on status
+				totalEnergyLost: 0,
+				energyLostUndefined: 0,
+			}));
+
+			// Calculate energy losses for each entry
+			turbineTimestampData.forEach((entry, index) => {
+				const windSpeed = entry.averageWindSpeed;
+				const activePower = Number(d.entries[index]["ActivePower(MW)"]) || 0;
+				const maxPower = Number(d.entries[index]["MaxPower(MW)"]) || 2.3;
+				const status = d.entries[index].Status;
+
+				// Calculate potential energy if wind is in operational range
+				if (windSpeed >= 3.5 && windSpeed <= 25) {
+					const potentialPower = maxPower * 1000; // Convert to kW
+					const potentialEnergy = potentialPower; // kWh for 1 hour
+					const actualEnergy = activePower * 1000; // Convert to kW
+
+					if (status === TurbineStatus.Offline || status === TurbineStatus.Fault || status === TurbineStatus.Maintenance) {
+						// Non-excusable loss for turbine faults
+						entry.nonExcusableEnergyLost = Math.max(0, potentialEnergy - actualEnergy);
+					} else if (status === TurbineStatus.Stopped && windSpeed >= 3.5) {
+						// Some stopped states might be excusable (e.g., grid issues)
+						entry.excusableEnergyLost = Math.max(0, potentialEnergy - actualEnergy);
+					} else if (actualEnergy < potentialEnergy * 0.1 && status !== TurbineStatus.Producing) {
+						// Undefined loss - sufficient wind but low production with no clear reason
+						entry.energyLostUndefined = Math.max(0, potentialEnergy - actualEnergy);
+					}
+
+					entry.totalEnergyLost = entry.nonExcusableEnergyLost + entry.excusableEnergyLost;
+				}
+			});
+
+			const summaryStats = calculateSummaryStats(turbineAlarmData, turbineTimestampData);
+
+			return {
+				id: d.id,
+				timeAvailability:
+					d.totalHours > 0 ? (d.uptimeHours / d.totalHours) * 100 : 0,
+				energyAvailability:
+					d.potentialProd > 0 ? (d.actualProd / d.potentialProd) * 100 : 0,
+				totalProduction: d.actualProd,
+				downTime: d.totalHours - d.uptimeHours,
+				totalEnergyProduced: summaryStats.totalEnergyProduced,
+				totalLoss: summaryStats.totalLoss,
+				totalNonExcusableLoss: summaryStats.totalNonExcusableLoss,
+				totalExcusableLoss: summaryStats.totalExcusableLoss,
+				totalUndefinedLoss: summaryStats.totalUndefinedLoss,
+				availabilityPercentage: summaryStats.availabilityPercentage,
+			};
+		});
 	}, [dateFilteredData, turbines]);
 
 	return (
@@ -679,8 +818,18 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 				<h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">
 					Turbine Performance
 				</h2>
-				<TurbinePerformanceTable data={turbineTableData} />
+				<TurbinePerformanceTable
+					data={turbineTableData}
+					onTurbineClick={handleTurbineClick}
+				/>
 			</div>
+			
+			{/* Turbine Availability Modal */}
+			<TurbineAvailabilityModal
+				turbineId={selectedTurbineForAvailability || ''}
+				isOpen={selectedTurbineForAvailability !== null}
+				onClose={() => setSelectedTurbineForAvailability(null)}
+			/>
 		</div>
 	);
 };
