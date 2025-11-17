@@ -1,10 +1,9 @@
 import type React from "react";
 import { useMemo, useState } from "react";
+import { calculateSummaryStats } from "../availabilityDataUtils";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
 import TurbineAvailabilityModal from "./TurbineAvailabilityModal";
-import type { SummaryStats } from "../availabilityTypes";
-import { calculateSummaryStats } from "../availabilityDataUtils";
 
 // FIX: Define a type for historical data rows to resolve typing errors.
 type HistoricalDataRow = {
@@ -280,7 +279,6 @@ const AvailabilityChart: React.FC<{
 	);
 };
 
-
 const TurbinePerformanceTable: React.FC<{
 	data: Array<{
 		id: string;
@@ -428,7 +426,7 @@ const TurbinePerformanceTable: React.FC<{
 							key={turbine.id}
 							className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50 cursor-pointer"
 							onClick={() => {
-								console.log('Turbine clicked:', turbine.id);
+								console.log("Turbine clicked:", turbine.id);
 								onTurbineClick(turbine.id);
 							}}
 						>
@@ -484,14 +482,15 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 		startOfMonth.toISOString().split("T")[0],
 	);
 	const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
-	
+
 	// Function to handle turbine row clicks
 	const handleTurbineClick = (turbineId: string) => {
 		setSelectedTurbineForAvailability(turbineId);
 	};
 
 	// State for turbine availability modal
-	const [selectedTurbineForAvailability, setSelectedTurbineForAvailability] = useState<string | null>(null);
+	const [selectedTurbineForAvailability, setSelectedTurbineForAvailability] =
+		useState<string | null>(null);
 
 	const dateFilteredData = useMemo(() => {
 		if (!historicalData) return [];
@@ -638,7 +637,7 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
 			dataByTurbine[id].totalHours += 1;
 			dataByTurbine[id].entries.push(d);
-			
+
 			if (
 				d.Status === TurbineStatus.Producing ||
 				d.Status === TurbineStatus.Available
@@ -658,8 +657,19 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
 		return Object.values(dataByTurbine).map((d) => {
 			// Calculate summary statistics for each turbine
-			const turbineAlarmData = [] as any[]; // We don't have alarm data per turbine in this context
-			const turbineTimestampData = d.entries.map(entry => ({
+			const turbineAlarmData: Array<{
+				id: string;
+				turbineId: string;
+				timeOn: Date;
+				timeOff: Date | null;
+				duration: number;
+				alarmName: string;
+				alarmCode: number;
+				nonExcusableEnergyLost: number;
+				excusableEnergyLost: number;
+				totalEnergyLost: number;
+			}> = []; // We don't have alarm data per turbine in this context
+			const turbineTimestampData = d.entries.map((entry) => ({
 				timestamp: new Date(entry.Timestamp),
 				averagePower: Number(entry["ActivePower(MW)"]) * 1000 || 0, // Convert MW to kW
 				averageWindSpeed: Number(entry["WindSpeed(m/s)"]) || 0,
@@ -684,22 +694,42 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 					const potentialEnergy = potentialPower; // kWh for 1 hour
 					const actualEnergy = activePower * 1000; // Convert to kW
 
-					if (status === TurbineStatus.Offline || status === TurbineStatus.Fault || status === TurbineStatus.Maintenance) {
+					if (
+						status === TurbineStatus.Offline ||
+						status === TurbineStatus.Fault ||
+						status === TurbineStatus.Maintenance
+					) {
 						// Non-excusable loss for turbine faults
-						entry.nonExcusableEnergyLost = Math.max(0, potentialEnergy - actualEnergy);
+						entry.nonExcusableEnergyLost = Math.max(
+							0,
+							potentialEnergy - actualEnergy,
+						);
 					} else if (status === TurbineStatus.Stopped && windSpeed >= 3.5) {
 						// Some stopped states might be excusable (e.g., grid issues)
-						entry.excusableEnergyLost = Math.max(0, potentialEnergy - actualEnergy);
-					} else if (actualEnergy < potentialEnergy * 0.1 && status !== TurbineStatus.Producing) {
+						entry.excusableEnergyLost = Math.max(
+							0,
+							potentialEnergy - actualEnergy,
+						);
+					} else if (
+						actualEnergy < potentialEnergy * 0.1 &&
+						status !== TurbineStatus.Producing
+					) {
 						// Undefined loss - sufficient wind but low production with no clear reason
-						entry.energyLostUndefined = Math.max(0, potentialEnergy - actualEnergy);
+						entry.energyLostUndefined = Math.max(
+							0,
+							potentialEnergy - actualEnergy,
+						);
 					}
 
-					entry.totalEnergyLost = entry.nonExcusableEnergyLost + entry.excusableEnergyLost;
+					entry.totalEnergyLost =
+						entry.nonExcusableEnergyLost + entry.excusableEnergyLost;
 				}
 			});
 
-			const summaryStats = calculateSummaryStats(turbineAlarmData, turbineTimestampData);
+			const summaryStats = calculateSummaryStats(
+				turbineAlarmData,
+				turbineTimestampData,
+			);
 
 			return {
 				id: d.id,
@@ -823,10 +853,10 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 					onTurbineClick={handleTurbineClick}
 				/>
 			</div>
-			
+
 			{/* Turbine Availability Modal */}
 			<TurbineAvailabilityModal
-				turbineId={selectedTurbineForAvailability || ''}
+				turbineId={selectedTurbineForAvailability || ""}
 				isOpen={selectedTurbineForAvailability !== null}
 				onClose={() => setSelectedTurbineForAvailability(null)}
 			/>
