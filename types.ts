@@ -19,6 +19,8 @@ export interface Turbine {
 	direction: number | null;
 	temperature: number | null;
 	rpm: number | null;
+	latitude?: number;
+	longitude?: number;
 }
 
 export enum AlarmSeverity {

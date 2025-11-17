@@ -2,11 +2,13 @@ import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import AnalyticsView from "./components/AnalyticsView";
 import Header from "./components/Header";
+import MapView from "./components/MapView";
 import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
 import TurbineCard from "./components/TurbineCard";
 import TurbineDetailView from "./components/TurbineDetailView";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { turbineCoordinates } from "./data/turbineCoordinates";
 import type { Alarm, Turbine } from "./types";
 import { AlarmSeverity, TurbineStatus } from "./types";
 
@@ -898,6 +900,17 @@ function AppContent() {
 			case "analytics":
 				return (
 					<AnalyticsView historicalData={analyticsData} turbines={turbines} />
+				);
+			case "map":
+				return (
+					<MapView
+						turbines={turbines.map((turbine) => ({
+							...turbine,
+							latitude: turbineCoordinates[turbine.id]?.lat,
+							longitude: turbineCoordinates[turbine.id]?.lng,
+						}))}
+						onTurbineSelect={handleSelectTurbine}
+					/>
 				);
 			default:
 				return renderDashboard();
