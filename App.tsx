@@ -8,6 +8,7 @@ import Sidebar from "./components/Sidebar";
 import TurbineCard from "./components/TurbineCard";
 import TurbineDetailView from "./components/TurbineDetailView";
 import TurbineList from "./components/TurbineList";
+import ReportsView from "./components/ReportsView";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { turbineCoordinates } from "./data/turbineCoordinates";
 import type { Alarm, Turbine } from "./types";
@@ -1014,8 +1015,14 @@ function AppContent() {
 				);
 			case "analytics":
 				return (
-					<AnalyticsView historicalData={analyticsData} turbines={turbines} />
+					<AnalyticsView
+						analyticsData={analyticsData}
+						turbines={turbines}
+						alarms={alarms}
+					/>
 				);
+			case "reports":
+				return <ReportsView />;
 			default:
 				return renderDashboard();
 		}
