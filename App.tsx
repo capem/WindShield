@@ -327,21 +327,21 @@ const SummaryCard: React.FC<{
 	icon: React.ReactNode;
 	color: string;
 }> = ({ title, value, unit, icon, color }) => (
-	<div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast">
+	<div className="bg-white dark:bg-black p-3 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast">
 		<div>
-			<p className="text-sm text-slate-500 dark:text-gray-400">{title}</p>
-			<p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
+			<p className="text-xs text-slate-500 dark:text-gray-400">{title}</p>
+			<p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
 				{value}{" "}
-				<span className="text-xl font-medium text-slate-500 dark:text-slate-400">
+				<span className="text-sm font-medium text-slate-500 dark:text-slate-400">
 					{unit}
 				</span>
 			</p>
 		</div>
 		<div
-			className={`p-3 rounded-lg ${iconColorMap[color] || "bg-slate-100 dark:bg-slate-700"}`}
+			className={`p-2 rounded-lg ${iconColorMap[color] || "bg-slate-100 dark:bg-slate-700"}`}
 		>
 			<div
-				className={`${color} text-2xl w-7 h-7 flex items-center justify-center`}
+				className={`${color} text-lg w-6 h-6 flex items-center justify-center`}
 			>
 				{icon}
 			</div>
@@ -415,26 +415,26 @@ const TurbineStatusSummaryCard: React.FC<{
 
 	return (
 		<div
-			className={`bg-white dark:bg-black p-4 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast`}
+			className={`bg-white dark:bg-black p-3 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast`}
 		>
-			<p className="text-sm text-slate-500 dark:text-gray-400 font-medium mb-4">
+			<p className="text-xs text-slate-500 dark:text-gray-400 font-medium mb-2">
 				Turbine Status
 			</p>
 			<div className="flex-grow flex flex-col justify-around">
 				{statusItems.map((item) => (
 					<div
 						key={item.name}
-						className="flex justify-between items-center py-1"
+						className="flex justify-between items-center py-0.5"
 					>
 						<div
-							className={`flex items-center gap-3 font-medium ${item.color}`}
+							className={`flex items-center gap-2 font-medium ${item.color}`}
 						>
-							<span className="text-lg w-5 text-center">{item.icon}</span>
-							<span className="text-sm text-slate-700 dark:text-slate-300 font-semibold">
+							<span className="text-sm w-4 text-center">{item.icon}</span>
+							<span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
 								{item.name}
 							</span>
 						</div>
-						<span className="font-bold text-lg text-slate-800 dark:text-white">
+						<span className="font-bold text-sm text-slate-800 dark:text-white">
 							{item.count}
 						</span>
 					</div>
@@ -635,6 +635,12 @@ function AppContent() {
 		(a) => !a.timeOff && !a.acknowledged,
 	);
 
+	const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
+	const [searchQuery, setSearchQuery] = useState("");
+	const [statusFilter, setStatusFilter] = useState<TurbineStatus | "All">(
+		"All",
+	);
+
 	const renderDashboard = () => {
 		// --- COHERENT DATA CALCULATIONS ---
 		const onlineTurbines = turbines.filter(
@@ -763,6 +769,16 @@ function AppContent() {
 		const formattedDate = `${weekday} ${day} ${month} ${year}`;
 		const formattedTime = currentTime.toLocaleTimeString("fr-FR");
 
+		// Filter turbines
+		const filteredTurbines = turbines.filter((turbine) => {
+			const matchesSearch = turbine.id
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase());
+			const matchesStatus =
+				statusFilter === "All" || turbine.status === statusFilter;
+			return matchesSearch && matchesStatus;
+		});
+
 		return (
 			<>
 				<h1 className="text-3xl font-bold text-slate-900 mb-6 dark:text-white transition-theme">
@@ -788,8 +804,79 @@ function AppContent() {
 				</div>
 
 				<div className="bg-white dark:bg-black rounded-lg shadow-sm p-4 mt-6 transition-theme">
-					<div className="pb-4 mb-4 border-b border-slate-200 dark:border-gray-800 flex justify-between items-center text-sm">
-						<span className="font-semibold text-slate-700 dark:text-gray-300">
+					<div className="pb-4 mb-4 border-b border-slate-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+						<div className="flex items-center gap-4 w-full md:w-auto">
+							<div className="relative flex-1 md:w-64">
+								<i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+								<input
+									type="text"
+									placeholder="Search turbine..."
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+									className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-gray-900 border-none rounded-lg text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none transition-theme"
+								/>
+							</div>
+							<div className="relative">
+								<select
+									value={statusFilter}
+									onChange={(e) =>
+										setStatusFilter(e.target.value as TurbineStatus | "All")
+									}
+									className="pl-4 pr-8 py-2 bg-slate-100 dark:bg-gray-900 border-none rounded-lg text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none appearance-none cursor-pointer transition-theme"
+								>
+									<option value="All">All Statuses</option>
+									{Object.values(TurbineStatus).map((status) => (
+										<option key={status} value={status}>
+											{status}
+										</option>
+									))}
+								</select>
+								<i className="fa-solid fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+							</div>
+						</div>
+
+						<div className="flex items-center bg-slate-100 dark:bg-gray-900 rounded-lg p-1 transition-theme">
+							<button
+								type="button"
+								onClick={() => setViewMode("grid")}
+								className={`p-2 rounded-md transition-all ${
+									viewMode === "grid"
+										? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
+										: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
+								}`}
+								title="Grid View"
+							>
+								<i className="fa-solid fa-border-all"></i>
+							</button>
+							<button
+								type="button"
+								onClick={() => setViewMode("list")}
+								className={`p-2 rounded-md transition-all ${
+									viewMode === "list"
+										? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
+										: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
+								}`}
+								title="List View"
+							>
+								<i className="fa-solid fa-list"></i>
+							</button>
+							<button
+								type="button"
+								onClick={() => setViewMode("map")}
+								className={`p-2 rounded-md transition-all ${
+									viewMode === "map"
+										? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
+										: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
+								}`}
+								title="Map View"
+							>
+								<i className="fa-solid fa-map"></i>
+							</button>
+						</div>
+					</div>
+
+					<div className="flex justify-between items-center text-sm mb-4 text-slate-500 dark:text-gray-400">
+						<span>
 							{uploadedFileName ? (
 								<>
 									Displaying data from{" "}
@@ -803,7 +890,7 @@ function AppContent() {
 								</>
 							)}
 						</span>
-						<span className="text-slate-500 dark:text-gray-400">
+						<span>
 							Last updated:{" "}
 							{currentTime.toLocaleTimeString("fr-FR", {
 								hour: "2-digit",
@@ -812,73 +899,101 @@ function AppContent() {
 							})}
 						</span>
 					</div>
-					<div className="space-y-8">
-						{Object.entries(layout).map(([zoneName, lines]) => (
-							<div key={zoneName}>
-								<h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 pb-2 border-b-2 border-violet-200 dark:border-violet-700">
-									{zoneName}
-								</h2>
-								<div className="space-y-6">
-									{lines.map((line) => {
+
+					{viewMode === "map" ? (
+						<div className="h-[600px] rounded-lg overflow-hidden border border-slate-200 dark:border-gray-800">
+							<MapView
+								turbines={filteredTurbines.map((turbine) => ({
+									...turbine,
+									latitude: turbineCoordinates[turbine.id]?.lat,
+									longitude: turbineCoordinates[turbine.id]?.lng,
+								}))}
+								onTurbineSelect={handleSelectTurbine}
+							/>
+						</div>
+					) : (
+						<div className="space-y-8">
+							{Object.entries(layout).map(([zoneName, lines]) => {
+								// Filter lines to only include turbines that match the filter
+								const visibleLines = lines
+									.map((line) => {
 										const lineTurbines = line.ids
 											.map((id) =>
-												turbines.find(
+												filteredTurbines.find(
 													(t) => t.id === `T ${String(id).padStart(3, "0")}`,
 												),
 											)
 											.filter((t): t is Turbine => !!t);
+										return { ...line, turbines: lineTurbines };
+									})
+									.filter((line) => line.turbines.length > 0);
 
-										return (
-											<div key={line.name}>
-												<h3 className="text-sm font-semibold text-slate-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
-													{line.name}
-												</h3>
-												<div
-													className="grid gap-4"
-													style={{
-														gridTemplateColumns: `repeat(auto-fill, minmax(${isCompactView ? "10rem" : "12rem"}, 1fr))`,
-													}}
-												>
-													{lineTurbines.map((turbine) => {
-														const activeAlarms = alarms.filter(
-															(a) => a.turbineId === turbine.id && !a.timeOff,
-														);
-														let activeAlarmSeverity: AlarmSeverity | null =
-															null;
-														if (activeAlarms.length > 0) {
-															if (
-																activeAlarms.some(
-																	(a) => a.severity === AlarmSeverity.Critical,
-																)
-															)
-																activeAlarmSeverity = AlarmSeverity.Critical;
-															else if (
-																activeAlarms.some(
-																	(a) => a.severity === AlarmSeverity.Warning,
-																)
-															)
-																activeAlarmSeverity = AlarmSeverity.Warning;
-															else activeAlarmSeverity = AlarmSeverity.Info;
-														}
+								if (visibleLines.length === 0) return null;
 
-														return (
-															<TurbineCard
-																key={turbine.id}
-																turbine={turbine}
-																onClick={() => handleSelectTurbine(turbine.id)}
-																isCompact={isCompactView}
-																activeAlarmSeverity={activeAlarmSeverity}
-															/>
-														);
-													})}
+								return (
+									<div key={zoneName}>
+										<h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 pb-2 border-b-2 border-violet-200 dark:border-violet-700">
+											{zoneName}
+										</h2>
+										<div className="space-y-6">
+											{visibleLines.map((line) => (
+												<div key={line.name}>
+													<h3 className="text-sm font-semibold text-slate-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+														{line.name}
+													</h3>
+													<div
+														className={`grid gap-4 ${
+															viewMode === "list"
+																? "grid-cols-1"
+																: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+														}`}
+													>
+														{line.turbines.map((turbine) => {
+															const activeAlarms = alarms.filter(
+																(a) => a.turbineId === turbine.id && !a.timeOff,
+															);
+															let activeAlarmSeverity: AlarmSeverity | null =
+																null;
+															if (activeAlarms.length > 0) {
+																if (
+																	activeAlarms.some(
+																		(a) =>
+																			a.severity === AlarmSeverity.Critical,
+																	)
+																)
+																	activeAlarmSeverity = AlarmSeverity.Critical;
+																else if (
+																	activeAlarms.some(
+																		(a) => a.severity === AlarmSeverity.Warning,
+																	)
+																)
+																	activeAlarmSeverity = AlarmSeverity.Warning;
+																else activeAlarmSeverity = AlarmSeverity.Info;
+															}
+
+															return (
+																<TurbineCard
+																	key={turbine.id}
+																	turbine={turbine}
+																	onClick={() =>
+																		handleSelectTurbine(turbine.id)
+																	}
+																	isCompact={
+																		isCompactView || viewMode === "list"
+																	}
+																	activeAlarmSeverity={activeAlarmSeverity}
+																/>
+															);
+														})}
+													</div>
 												</div>
-											</div>
-										);
-									})}
-								</div>
-							</div>
-						))}
-					</div>
+											))}
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					)}
 				</div>
 			</>
 		);
@@ -900,17 +1015,6 @@ function AppContent() {
 			case "analytics":
 				return (
 					<AnalyticsView historicalData={analyticsData} turbines={turbines} />
-				);
-			case "map":
-				return (
-					<MapView
-						turbines={turbines.map((turbine) => ({
-							...turbine,
-							latitude: turbineCoordinates[turbine.id]?.lat,
-							longitude: turbineCoordinates[turbine.id]?.lng,
-						}))}
-						onTurbineSelect={handleSelectTurbine}
-					/>
 				);
 			default:
 				return renderDashboard();

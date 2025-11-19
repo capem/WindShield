@@ -5,7 +5,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { turbineCoordinates } from "../data/turbineCoordinates";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
-import MapLegend from "./map/MapLegend";
+
 import "leaflet/dist/leaflet.css";
 import "./MapView.css";
 
@@ -117,7 +117,6 @@ const MapView: React.FC<MapViewProps> = ({ turbines, onTurbineSelect }) => {
 					</Marker>
 				))}
 			</MapContainer>
-			<MapLegend className="map-legend-position" />
 		</div>
 	);
 };

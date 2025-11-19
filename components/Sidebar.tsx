@@ -9,7 +9,6 @@ interface SidebarProps {
 const menuItems = [
 	{ id: "dashboard", icon: "fa-table-cells-large", label: "Dashboard" },
 	{ id: "analytics", icon: "fa-chart-pie", label: "Analytics" },
-	{ id: "map", icon: "fa-map-location-dot", label: "Map View" },
 	{ id: "reports", icon: "fa-file-lines", label: "Reports" },
 	{ id: "settings", icon: "fa-gear", label: "Settings" },
 ];
