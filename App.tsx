@@ -7,6 +7,7 @@ import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
 import TurbineCard from "./components/TurbineCard";
 import TurbineDetailView from "./components/TurbineDetailView";
+import TurbineList from "./components/TurbineList";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { turbineCoordinates } from "./data/turbineCoordinates";
 import type { Alarm, Turbine } from "./types";
@@ -327,21 +328,23 @@ const SummaryCard: React.FC<{
 	icon: React.ReactNode;
 	color: string;
 }> = ({ title, value, unit, icon, color }) => (
-	<div className="bg-white dark:bg-black p-3 rounded-xl shadow-sm flex items-start justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast">
+	<div className="bg-white dark:bg-black p-2 rounded-lg shadow-sm flex items-center justify-between transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme-fast">
 		<div>
-			<p className="text-xs text-slate-500 dark:text-gray-400">{title}</p>
-			<p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+			<p className="text-[10px] text-slate-500 dark:text-gray-400 uppercase tracking-wide">
+				{title}
+			</p>
+			<p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
 				{value}{" "}
-				<span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+				<span className="text-xs font-medium text-slate-500 dark:text-slate-400">
 					{unit}
 				</span>
 			</p>
 		</div>
 		<div
-			className={`p-2 rounded-lg ${iconColorMap[color] || "bg-slate-100 dark:bg-slate-700"}`}
+			className={`p-1.5 rounded-md ${iconColorMap[color] || "bg-slate-100 dark:bg-slate-700"}`}
 		>
 			<div
-				className={`${color} text-lg w-6 h-6 flex items-center justify-center`}
+				className={`${color} text-sm w-5 h-5 flex items-center justify-center`}
 			>
 				{icon}
 			</div>
@@ -415,26 +418,23 @@ const TurbineStatusSummaryCard: React.FC<{
 
 	return (
 		<div
-			className={`bg-white dark:bg-black p-3 rounded-xl shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme-fast`}
+			className={`bg-white dark:bg-black p-2 rounded-lg shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme-fast`}
 		>
-			<p className="text-xs text-slate-500 dark:text-gray-400 font-medium mb-2">
+			<p className="text-[10px] text-slate-500 dark:text-gray-400 font-medium mb-1 uppercase tracking-wide">
 				Turbine Status
 			</p>
-			<div className="flex-grow flex flex-col justify-around">
+			<div className="flex-grow grid grid-cols-2 gap-x-4 gap-y-0.5">
 				{statusItems.map((item) => (
-					<div
-						key={item.name}
-						className="flex justify-between items-center py-0.5"
-					>
+					<div key={item.name} className="flex justify-between items-center">
 						<div
-							className={`flex items-center gap-2 font-medium ${item.color}`}
+							className={`flex items-center gap-1.5 font-medium ${item.color}`}
 						>
-							<span className="text-sm w-4 text-center">{item.icon}</span>
-							<span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
+							<span className="text-xs w-3 text-center">{item.icon}</span>
+							<span className="text-[10px] text-slate-700 dark:text-slate-300 font-semibold">
 								{item.name}
 							</span>
 						</div>
-						<span className="font-bold text-sm text-slate-800 dark:text-white">
+						<span className="font-bold text-xs text-slate-800 dark:text-white">
 							{item.count}
 						</span>
 					</div>
@@ -780,13 +780,13 @@ function AppContent() {
 		});
 
 		return (
-			<>
-				<h1 className="text-3xl font-bold text-slate-900 mb-6 dark:text-white transition-theme">
+			<div className="flex flex-col h-full">
+				<h1 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white transition-theme shrink-0">
 					Dashboard
 				</h1>
 
-				<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-					<div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 shrink-0">
+					<div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 						{summaryDataTop.map((data) => (
 							<SummaryCard key={data.title} {...data} />
 						))}
@@ -803,8 +803,8 @@ function AppContent() {
 					/>
 				</div>
 
-				<div className="bg-white dark:bg-black rounded-lg shadow-sm p-4 mt-6 transition-theme">
-					<div className="pb-4 mb-4 border-b border-slate-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+				<div className="bg-white dark:bg-black rounded-lg shadow-sm p-3 mt-4 transition-theme flex-1 flex flex-col">
+					<div className="pb-3 mb-3 border-b border-slate-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-3 shrink-0">
 						<div className="flex items-center gap-4 w-full md:w-auto">
 							<div className="relative flex-1 md:w-64">
 								<i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
@@ -813,7 +813,7 @@ function AppContent() {
 									placeholder="Search turbine..."
 									value={searchQuery}
 									onChange={(e) => setSearchQuery(e.target.value)}
-									className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-gray-900 border-none rounded-lg text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none transition-theme"
+									className="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-100 dark:bg-gray-900 border-none rounded-md text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none transition-theme"
 								/>
 							</div>
 							<div className="relative">
@@ -822,7 +822,7 @@ function AppContent() {
 									onChange={(e) =>
 										setStatusFilter(e.target.value as TurbineStatus | "All")
 									}
-									className="pl-4 pr-8 py-2 bg-slate-100 dark:bg-gray-900 border-none rounded-lg text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none appearance-none cursor-pointer transition-theme"
+									className="pl-3 pr-8 py-1.5 text-sm bg-slate-100 dark:bg-gray-900 border-none rounded-md text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none appearance-none cursor-pointer transition-theme"
 								>
 									<option value="All">All Statuses</option>
 									{Object.values(TurbineStatus).map((status) => (
@@ -839,7 +839,7 @@ function AppContent() {
 							<button
 								type="button"
 								onClick={() => setViewMode("grid")}
-								className={`p-2 rounded-md transition-all ${
+								className={`p-1.5 rounded-md transition-all ${
 									viewMode === "grid"
 										? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
 										: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
@@ -851,7 +851,7 @@ function AppContent() {
 							<button
 								type="button"
 								onClick={() => setViewMode("list")}
-								className={`p-2 rounded-md transition-all ${
+								className={`p-1.5 rounded-md transition-all ${
 									viewMode === "list"
 										? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
 										: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
@@ -863,7 +863,7 @@ function AppContent() {
 							<button
 								type="button"
 								onClick={() => setViewMode("map")}
-								className={`p-2 rounded-md transition-all ${
+								className={`p-1.5 rounded-md transition-all ${
 									viewMode === "map"
 										? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
 										: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
@@ -875,7 +875,7 @@ function AppContent() {
 						</div>
 					</div>
 
-					<div className="flex justify-between items-center text-sm mb-4 text-slate-500 dark:text-gray-400">
+					<div className="flex justify-between items-center text-xs mb-3 text-slate-500 dark:text-gray-400 shrink-0">
 						<span>
 							{uploadedFileName ? (
 								<>
@@ -901,18 +901,26 @@ function AppContent() {
 					</div>
 
 					{viewMode === "map" ? (
-						<div className="h-[600px] rounded-lg overflow-hidden border border-slate-200 dark:border-gray-800">
-							<MapView
-								turbines={filteredTurbines.map((turbine) => ({
-									...turbine,
-									latitude: turbineCoordinates[turbine.id]?.lat,
-									longitude: turbineCoordinates[turbine.id]?.lng,
-								}))}
-								onTurbineSelect={handleSelectTurbine}
-							/>
+						<div className="flex-1 min-h-[500px] rounded-lg overflow-hidden border border-slate-200 dark:border-gray-800 relative">
+							<div className="absolute inset-0">
+								<MapView
+									turbines={filteredTurbines.map((turbine) => ({
+										...turbine,
+										latitude: turbineCoordinates[turbine.id]?.lat,
+										longitude: turbineCoordinates[turbine.id]?.lng,
+									}))}
+									onTurbineSelect={handleSelectTurbine}
+								/>
+							</div>
 						</div>
+					) : viewMode === "list" ? (
+						<TurbineList
+							turbines={filteredTurbines}
+							onSelect={handleSelectTurbine}
+							layout={layout}
+						/>
 					) : (
-						<div className="space-y-8">
+						<div className="space-y-6">
 							{Object.entries(layout).map(([zoneName, lines]) => {
 								// Filter lines to only include turbines that match the filter
 								const visibleLines = lines
@@ -932,22 +940,16 @@ function AppContent() {
 
 								return (
 									<div key={zoneName}>
-										<h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 pb-2 border-b-2 border-violet-200 dark:border-violet-700">
+										<h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3 pb-1 border-b border-violet-200 dark:border-violet-700">
 											{zoneName}
 										</h2>
-										<div className="space-y-6">
+										<div className="space-y-4">
 											{visibleLines.map((line) => (
 												<div key={line.name}>
-													<h3 className="text-sm font-semibold text-slate-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+													<h3 className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
 														{line.name}
 													</h3>
-													<div
-														className={`grid gap-4 ${
-															viewMode === "list"
-																? "grid-cols-1"
-																: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-														}`}
-													>
+													<div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
 														{line.turbines.map((turbine) => {
 															const activeAlarms = alarms.filter(
 																(a) => a.turbineId === turbine.id && !a.timeOff,
@@ -978,9 +980,7 @@ function AppContent() {
 																	onClick={() =>
 																		handleSelectTurbine(turbine.id)
 																	}
-																	isCompact={
-																		isCompactView || viewMode === "list"
-																	}
+																	isCompact={isCompactView}
 																	activeAlarmSeverity={activeAlarmSeverity}
 																/>
 															);
@@ -995,7 +995,7 @@ function AppContent() {
 						</div>
 					)}
 				</div>
-			</>
+			</div>
 		);
 	};
 

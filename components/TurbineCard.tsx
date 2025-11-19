@@ -161,53 +161,53 @@ const TurbineCard: React.FC<TurbineCardProps> = ({
 			<button
 				type="button"
 				onClick={onClick}
-				className={`bg-white dark:bg-black rounded-lg p-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full h-full transition-theme-fast`}
+				className={`bg-white dark:bg-black rounded-lg p-1.5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full h-full transition-theme-fast`}
 			>
-				<div className="flex justify-between items-center mb-1">
-					<div className="flex items-center gap-1.5">
+				<div className="flex justify-between items-center mb-0.5">
+					<div className="flex items-center gap-1">
 						{activeAlarmSeverity && (
 							<i
-								className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color}`}
+								className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color} text-xs`}
 								title={`${activeAlarmSeverity} Alarm Active`}
 							></i>
 						)}
-						<h3 className="font-bold text-slate-800 dark:text-white text-xs">
+						<h3 className="font-bold text-slate-800 dark:text-white text-[10px]">
 							{turbine.id}
 						</h3>
 					</div>
 					<span
-						className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${statusClasses.join(" ")}`}
+						className={`text-[8px] font-bold px-1 py-0 rounded-full ${statusClasses.join(" ")}`}
 					>
 						{config.text}
 					</span>
 				</div>
-				<div className="flex items-center justify-around gap-2 mt-1 flex-grow">
-					<div className="w-10 h-10 flex-shrink-0">
+				<div className="flex items-center justify-around gap-1 mt-0.5 flex-grow">
+					<div className="w-6 h-6 flex-shrink-0">
 						<AnimatedTurbineIcon
 							status={turbine.status}
 							activePower={turbine.activePower}
 							maxPower={turbine.maxPower}
 						/>
 					</div>
-					<div className="text-xs text-center space-y-0.5">
+					<div className="text-[8px] text-center space-y-0">
 						<div>
-							<p className="text-slate-500 dark:text-gray-400 text-[10px]">
-								Active Power
+							<p className="text-slate-500 dark:text-gray-400 text-[8px] leading-none">
+								Pwr
 							</p>
-							<p className="font-semibold text-slate-900 dark:text-white text-xs">
+							<p className="font-bold text-slate-900 dark:text-white text-[9px] leading-tight">
 								{turbine.activePower !== null
-									? `${turbine.activePower.toFixed(1)} MW`
-									: "—"}
+									? `${turbine.activePower.toFixed(1)}`
+									: "-"}
 							</p>
 						</div>
 						<div>
-							<p className="text-slate-500 dark:text-gray-400 text-[10px]">
-								Wind Speed
+							<p className="text-slate-500 dark:text-gray-400 text-[8px] leading-none">
+								Wind
 							</p>
-							<p className="font-semibold text-slate-900 dark:text-white text-xs">
+							<p className="font-bold text-slate-900 dark:text-white text-[9px] leading-tight">
 								{turbine.windSpeed !== null
-									? `${turbine.windSpeed.toFixed(1)} m/s`
-									: "—"}
+									? `${turbine.windSpeed.toFixed(1)}`
+									: "-"}
 							</p>
 						</div>
 					</div>
@@ -220,29 +220,29 @@ const TurbineCard: React.FC<TurbineCardProps> = ({
 		<button
 			type="button"
 			onClick={onClick}
-			className={`bg-white dark:bg-black rounded-lg p-3 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full transition-theme-fast`}
+			className={`bg-white dark:bg-black rounded-lg p-2 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full transition-theme-fast`}
 		>
 			<div>
-				<div className="flex justify-between items-center mb-2">
-					<div className="flex items-center gap-2">
+				<div className="flex justify-between items-center mb-1">
+					<div className="flex items-center gap-1.5">
 						{activeAlarmSeverity && (
 							<i
-								className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color}`}
+								className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color} text-xs`}
 								title={`${activeAlarmSeverity} Alarm Active`}
 							></i>
 						)}
-						<h3 className="font-bold text-slate-800 dark:text-white text-sm">
+						<h3 className="font-bold text-slate-800 dark:text-white text-xs">
 							{turbine.id}
 						</h3>
 					</div>
 					<span
-						className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusClasses.join(" ")}`}
+						className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${statusClasses.join(" ")}`}
 					>
 						{config.text}
 					</span>
 				</div>
-				<div className="flex justify-center items-center my-3 h-16">
-					<div className="w-16 h-16">
+				<div className="flex justify-center items-center my-1 h-10">
+					<div className="w-10 h-10">
 						<AnimatedTurbineIcon
 							status={turbine.status}
 							activePower={turbine.activePower}
@@ -252,21 +252,21 @@ const TurbineCard: React.FC<TurbineCardProps> = ({
 				</div>
 			</div>
 
-			<div className="text-xs text-center space-y-1 mt-2">
-				<div>
-					<p className="text-slate-500 dark:text-gray-400">Active Power</p>
-					<p className="font-semibold text-slate-900 dark:text-white text-sm">
+			<div className="text-[10px] text-center space-y-0.5 mt-1">
+				<div className="flex justify-between items-end border-b border-slate-100 dark:border-gray-800 pb-0.5">
+					<p className="text-slate-500 dark:text-gray-400">Power</p>
+					<p className="font-bold text-slate-900 dark:text-white">
 						{turbine.activePower !== null
 							? `${turbine.activePower.toFixed(1)} MW`
-							: "—"}
+							: "-"}
 					</p>
 				</div>
-				<div>
-					<p className="text-slate-500 dark:text-gray-400">Wind Speed</p>
-					<p className="font-semibold text-slate-900 dark:text-white text-sm">
+				<div className="flex justify-between items-end pt-0.5">
+					<p className="text-slate-500 dark:text-gray-400">Wind</p>
+					<p className="font-bold text-slate-900 dark:text-white">
 						{turbine.windSpeed !== null
 							? `${turbine.windSpeed.toFixed(1)} m/s`
-							: "—"}
+							: "-"}
 					</p>
 				</div>
 			</div>

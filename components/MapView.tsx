@@ -29,13 +29,24 @@ const createTurbineIcon = (status: TurbineStatus) => {
 		[TurbineStatus.Curtailment]: "#6366f1", // indigo
 	};
 
+	const statusIcons = {
+		[TurbineStatus.Producing]: "fa-circle-check",
+		[TurbineStatus.Available]: "fa-circle-info",
+		[TurbineStatus.Offline]: "fa-circle-xmark",
+		[TurbineStatus.Stopped]: "fa-circle-pause",
+		[TurbineStatus.Maintenance]: "fa-wrench",
+		[TurbineStatus.Fault]: "fa-triangle-exclamation",
+		[TurbineStatus.Warning]: "fa-exclamation-triangle",
+		[TurbineStatus.Curtailment]: "fa-hand",
+	};
+
 	return L.divIcon({
 		html: `
 			<div 
 				style="
 					background-color: ${statusColors[status]};
-					width: 20px;
-					height: 20px;
+					width: 24px;
+					height: 24px;
 					border-radius: 50%;
 					border: 2px solid white;
 					box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -44,13 +55,13 @@ const createTurbineIcon = (status: TurbineStatus) => {
 					justify-content: center;
 				"
 			>
-				<i class="fa-solid fa-wind" style="color: white; font-size: 10px;"></i>
+				<i class="fa-solid ${statusIcons[status]}" style="color: white; font-size: 12px;"></i>
 			</div>
 		`,
 		className: "turbine-marker",
-		iconSize: [24, 24],
-		iconAnchor: [12, 12],
-		popupAnchor: [0, -12],
+		iconSize: [28, 28],
+		iconAnchor: [14, 14],
+		popupAnchor: [0, -14],
 	});
 };
 
