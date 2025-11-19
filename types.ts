@@ -6,7 +6,7 @@ export enum TurbineStatus {
 	Maintenance = "maintenance",
 	Fault = "fault",
 	Warning = "warning",
-	Curtailement = "curtailement",
+	Curtailment = "curtailment",
 }
 
 export interface Turbine {

@@ -53,7 +53,7 @@ const mapCsvRowToTurbine = (row: Record<string, string>): Turbine => {
 		maintenance: TurbineStatus.Maintenance,
 		fault: TurbineStatus.Fault,
 		warning: TurbineStatus.Warning,
-		curtailement: TurbineStatus.Curtailement,
+		curtailment: TurbineStatus.Curtailment,
 	};
 	const getNumber = (key: string): number | null => {
 		const val = parseFloat(row[key]);
@@ -113,7 +113,7 @@ const generateTurbineData = (id: number): Turbine => {
 		TurbineStatus.Maintenance,
 		TurbineStatus.Fault,
 		TurbineStatus.Warning,
-		TurbineStatus.Curtailement,
+		TurbineStatus.Curtailment,
 	];
 	const status = statuses[Math.floor(Math.random() * statuses.length)];
 	const maxPower = SWT_2_3_101_SPECS.MAX_POWER;
@@ -358,7 +358,7 @@ const TurbineStatusSummaryCard: React.FC<{
 		maintenance: number;
 		fault: number;
 		warning: number;
-		curtailement: number;
+		curtailment: number;
 	};
 	className?: string;
 }> = ({ counts, className }) => {
@@ -406,8 +406,8 @@ const TurbineStatusSummaryCard: React.FC<{
 			color: "text-orange-500",
 		},
 		{
-			name: "Curtailement",
-			count: counts.curtailement,
+			name: "Curtailment",
+			count: counts.curtailment,
 			icon: <i className="fa-solid fa-hand"></i>,
 			color: "text-indigo-500",
 		},
@@ -664,8 +664,8 @@ function AppContent() {
 			fault: turbines.filter((t) => t.status === TurbineStatus.Fault).length,
 			warning: turbines.filter((t) => t.status === TurbineStatus.Warning)
 				.length,
-			curtailement: turbines.filter(
-				(t) => t.status === TurbineStatus.Curtailement,
+			curtailment: turbines.filter(
+				(t) => t.status === TurbineStatus.Curtailment,
 			).length,
 		};
 

@@ -22,7 +22,7 @@ const AnimatedTurbineIcon: React.FC<{
 		[TurbineStatus.Maintenance]: "text-purple-500",
 		[TurbineStatus.Fault]: "text-red-600",
 		[TurbineStatus.Warning]: "text-orange-500",
-		[TurbineStatus.Curtailement]: "text-indigo-500",
+		[TurbineStatus.Curtailment]: "text-indigo-500",
 	}[status];
 
 	let animationStyle: React.CSSProperties = {};
@@ -127,8 +127,8 @@ const TurbineCard: React.FC<TurbineCardProps> = ({
 			classes:
 				"text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 border-orange-500",
 		},
-		[TurbineStatus.Curtailement]: {
-			text: "Curtailement",
+		[TurbineStatus.Curtailment]: {
+			text: "Curtailment",
 			classes:
 				"text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500",
 		},

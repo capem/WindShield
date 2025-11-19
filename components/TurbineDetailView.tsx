@@ -45,8 +45,8 @@ const statusConfig = {
 		classes:
 			"text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30",
 	},
-	[TurbineStatus.Curtailement]: {
-		text: "Curtailement",
+	[TurbineStatus.Curtailment]: {
+		text: "Curtailment",
 		classes:
 			"text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30",
 	},
@@ -58,7 +58,7 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({
 }) => {
 	const GAUGE_MAX_POWER_FACTOR = 1.15;
 	const GAUGE_RADIUS = 75;
-	const GAUGE_WIDTH = 18;
+	const GAUGE_WIDTH = 20;
 	const VIEW_BOX_WIDTH = 180;
 	const VIEW_BOX_HEIGHT = 110;
 	const CX = VIEW_BOX_WIDTH / 2;
@@ -101,114 +101,146 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({
 	};
 
 	const powerValueColor =
-		power > nominalMaxPower ? "text-amber-500" : "text-green-500";
+		power > nominalMaxPower ? "text-amber-500" : "text-emerald-500";
 	const majorTicksValues = [0, 0.5, 1.0, 1.5, 2.0, 2.5];
 
 	return (
-		<div className="relative w-full">
+		<div className="relative w-full group">
 			<svg
 				viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`}
-				className="w-full overflow-visible"
+				className="w-full overflow-visible drop-shadow-xl"
 			>
 				<title>Power Gauge</title>
 				<defs>
 					<linearGradient
 						id="gaugeGreenGradient"
-						x1="0%"
-						y1="0%"
-						x2="100%"
-						y2="0%"
+						gradientUnits="userSpaceOnUse"
+						x1={CX - GAUGE_RADIUS}
+						y1="0"
+						x2={CX + GAUGE_RADIUS}
+						y2="0"
 					>
 						<stop offset="0%" stopColor="#10b981" />
-						<stop offset="100%" stopColor="#34d399" />
+						<stop offset="50%" stopColor="#34d399" />
+						<stop offset="100%" stopColor="#059669" />
 					</linearGradient>
 					<linearGradient
 						id="gaugeAmberGradient"
-						x1="0%"
-						y1="0%"
-						x2="100%"
-						y2="0%"
+						gradientUnits="userSpaceOnUse"
+						x1={CX - GAUGE_RADIUS}
+						y1="0"
+						x2={CX + GAUGE_RADIUS}
+						y2="0"
 					>
 						<stop offset="0%" stopColor="#f59e0b" />
-						<stop offset="100%" stopColor="#fbbf24" />
+						<stop offset="100%" stopColor="#d97706" />
 					</linearGradient>
 					<radialGradient id="hubGradient">
-						<stop offset="0%" stopColor="#f9fafb" />
-						<stop offset="100%" stopColor="#d1d5db" />
+						<stop offset="0%" stopColor="#f3f4f6" />
+						<stop offset="90%" stopColor="#d1d5db" />
+						<stop offset="100%" stopColor="#9ca3af" />
 					</radialGradient>
-					<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-						<feDropShadow
-							dx="0"
-							dy="2"
-							stdDeviation="2"
-							floodColor="#000"
-							floodOpacity="0.1"
-						/>
-					</filter>
 				</defs>
 
-				<g filter="url(#shadow)">
-					{/* Gauge Background Arc */}
-					<path
-						d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)}
-						strokeWidth={GAUGE_WIDTH}
-						className="stroke-slate-200 dark:stroke-gray-700"
-						fill="none"
-					/>
+				{/* Gauge Background Arc */}
+				<path
+					d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)}
+					strokeWidth={GAUGE_WIDTH}
+					className="stroke-slate-100 dark:stroke-gray-800"
+					fill="none"
+					strokeLinecap="round"
+				/>
 
-					{/* Gauge Value Arcs */}
-					<path
-						d={describeArc(
-							CX,
-							CY,
-							GAUGE_RADIUS,
-							-90,
-							Math.min(needleAngle, nominalMaxAngle),
-						)}
-						strokeWidth={GAUGE_WIDTH}
-						stroke="url(#gaugeGreenGradient)"
-						fill="none"
-						style={{
-							transition:
-								"stroke-dasharray 0.6s cubic-bezier(0.23, 1, 0.32, 1)",
-						}}
-					/>
-					{clampedPower > nominalMaxPower && (
-						<path
-							d={describeArc(
-								CX,
-								CY,
-								GAUGE_RADIUS,
-								nominalMaxAngle,
-								needleAngle,
-							)}
-							strokeWidth={GAUGE_WIDTH}
-							stroke="url(#gaugeAmberGradient)"
-							fill="none"
-							style={{
-								transition:
-									"stroke-dasharray 0.6s cubic-bezier(0.23, 1, 0.32, 1)",
-							}}
-						/>
+				{/* Gauge Value Arcs - Glow Layer */}
+				<path
+					d={describeArc(
+						CX,
+						CY,
+						GAUGE_RADIUS,
+						-90,
+						Math.min(needleAngle, nominalMaxAngle),
 					)}
-				</g>
+					strokeWidth={GAUGE_WIDTH + 4}
+					stroke="url(#gaugeGreenGradient)"
+					fill="none"
+					strokeLinecap="round"
+					className="opacity-15 blur-sm"
+				/>
+				{clampedPower > nominalMaxPower && (
+					<path
+						d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, needleAngle)}
+						strokeWidth={GAUGE_WIDTH + 4}
+						stroke="url(#gaugeAmberGradient)"
+						fill="none"
+						strokeLinecap="round"
+						className="opacity-15 blur-sm"
+					/>
+				)}
+
+				{/* Gauge Value Arcs - Main Layer */}
+				<path
+					d={describeArc(
+						CX,
+						CY,
+						GAUGE_RADIUS,
+						-90,
+						Math.min(needleAngle, nominalMaxAngle),
+					)}
+					strokeWidth={GAUGE_WIDTH}
+					stroke="url(#gaugeGreenGradient)"
+					fill="none"
+					strokeLinecap="round"
+				/>
+				{clampedPower > nominalMaxPower && (
+					<path
+						d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, needleAngle)}
+						strokeWidth={GAUGE_WIDTH}
+						stroke="url(#gaugeAmberGradient)"
+						fill="none"
+						strokeLinecap="round"
+					/>
+				)}
 
 				{/* Ticks and Labels */}
 				{majorTicksValues.map((value) => {
 					if (value > gaugeMax) return null;
 					const angle = getAngle(value);
-					const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 10, angle);
+					const isMajor = true;
+					const tickLength = isMajor ? 8 : 5;
+					const tickStart = polarToCartesian(
+						CX,
+						CY,
+						GAUGE_RADIUS - GAUGE_WIDTH / 2 - 2,
+						angle,
+					);
+					const tickEnd = polarToCartesian(
+						CX,
+						CY,
+						GAUGE_RADIUS - GAUGE_WIDTH / 2 - 2 - tickLength,
+						angle,
+					);
+					const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 18, angle);
+
 					return (
-						<text
-							key={`tick-label-${value}`}
-							x={labelPos.x}
-							y={labelPos.y}
-							textAnchor="middle"
-							alignmentBaseline="central"
-							className="text-[8px] font-semibold fill-slate-700 dark:fill-gray-300"
-						>
-							{value.toFixed(1)}
-						</text>
+						<g key={`tick-${value}`}>
+							<line
+								x1={tickStart.x}
+								y1={tickStart.y}
+								x2={tickEnd.x}
+								y2={tickEnd.y}
+								className="stroke-slate-300 dark:stroke-gray-600"
+								strokeWidth="1.5"
+							/>
+							<text
+								x={labelPos.x}
+								y={labelPos.y}
+								textAnchor="middle"
+								alignmentBaseline="central"
+								className="text-[9px] font-bold fill-slate-500 dark:fill-gray-400"
+							>
+								{value.toFixed(1)}
+							</text>
+						</g>
 					);
 				})}
 
@@ -216,42 +248,31 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({
 				<g
 					transform={`rotate(${needleAngle} ${CX} ${CY})`}
 					style={{
-						transition: "transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)",
+						transition: "transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)",
 					}}
 				>
 					<path
-						d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH / 2 - 2} L ${CX} ${CY - 6}`}
-						className="stroke-slate-700 dark:stroke-white"
-						strokeWidth="2"
-						strokeLinecap="round"
-						filter="url(#shadow)"
+						d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH / 2} L ${CX - 4} ${CY} L ${CX} ${CY + 8} L ${CX + 4} ${CY} Z`}
+						className="fill-slate-700 dark:fill-white drop-shadow-md"
 					/>
+					<circle cx={CX} cy={CY} r="5" fill="url(#hubGradient)" />
 				</g>
-				<circle
-					cx={CX}
-					cy={CY}
-					r="6"
-					fill="url(#hubGradient)"
-					className="stroke-slate-400 dark:stroke-gray-600"
-					strokeWidth="0.5"
-				/>
-				<circle
-					cx={CX}
-					cy={CY}
-					r="3"
-					className="fill-slate-700 dark:fill-gray-400"
-				/>
 			</svg>
-			<div className="absolute top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-				<p className={`text-5xl font-bold ${powerValueColor}`}>
+			<div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+				<p
+					className={`text-5xl font-black tracking-tighter ${powerValueColor} drop-shadow-sm`}
+				>
 					{power.toFixed(2)}
-					<span className="text-xl font-medium text-slate-600 dark:text-slate-400 ml-1">
+					<span className="text-lg font-medium text-slate-400 dark:text-slate-500 ml-1">
 						MW
 					</span>
 				</p>
-				<p className="text-sm text-slate-700 dark:text-slate-300 font-semibold mt-1">
-					{powerPercentage.toFixed(0)}% of nominal
-				</p>
+				<div className="flex items-center justify-center gap-1 mt-1">
+					<div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+					<p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide">
+						{powerPercentage.toFixed(0)}% Capacity
+					</p>
+				</div>
 			</div>
 		</div>
 	);
@@ -263,9 +284,9 @@ const MetricCard: React.FC<{
 	icon: React.ReactNode;
 	color: string;
 }> = ({ title, value, icon, color }) => (
-	<div className="bg-white dark:bg-black rounded-lg p-4 shadow-sm border border-slate-200 dark:border-gray-700 flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme">
+	<div className="group bg-white dark:bg-black/40 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-gray-800 flex items-center gap-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-violet-100 dark:hover:border-violet-900/30">
 		<div
-			className={`p-3 rounded-full ${color.replace("text-", "bg-").replace("-500", "-100")} dark:bg-opacity-20`}
+			className={`p-3.5 rounded-xl ${color.replace("text-", "bg-").replace("-500", "-50")} dark:bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}
 		>
 			<div
 				className={`${color} text-xl w-6 h-6 flex items-center justify-center`}
@@ -274,10 +295,10 @@ const MetricCard: React.FC<{
 			</div>
 		</div>
 		<div className="flex-1">
-			<p className="text-sm font-medium text-slate-600 dark:text-gray-400 capitalize tracking-normal">
+			<p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-1">
 				{title}
 			</p>
-			<p className="text-xl font-bold text-slate-800 dark:text-white">
+			<p className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
 				{value}
 			</p>
 		</div>
@@ -302,40 +323,108 @@ const HistoricalChart: React.FC<{
 
 	if (!data || data.length === 0)
 		return (
-			<div className="bg-white dark:bg-black rounded-lg p-6 shadow-sm border border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center h-[180px] transition-theme">
-				<i className="fa-solid fa-chart-line text-3xl text-slate-300 dark:text-gray-600 mb-3"></i>
-				<p className="text-slate-500 dark:text-gray-400">
-					No historical data available.
+			<div className="bg-white dark:bg-black rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-gray-800 flex flex-col items-center justify-center h-[200px] transition-theme">
+				<div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-gray-900 flex items-center justify-center mb-3">
+					<i className="fa-solid fa-chart-line text-xl text-slate-300 dark:text-gray-600"></i>
+				</div>
+				<p className="text-slate-500 dark:text-gray-400 font-medium text-sm">
+					No historical data available
 				</p>
 			</div>
 		);
 
 	const maxDataVal =
 		maxVal > 0 ? maxVal : Math.max(...data) > 0 ? Math.max(...data) : 1;
-	const minDataVal = Math.min(...data);
 	const avgDataVal = data.reduce((sum, val) => sum + val, 0) / data.length;
 
-	const points = data
-		.map((val, i) => {
-			const x = data.length > 1 ? (i / (data.length - 1)) * width : width / 2;
-			const y = height - (val / maxDataVal) * height;
-			return `${x},${y}`;
-		})
-		.join(" ");
+	// Coordinate calculation
+	const getCoordinates = (val: number, i: number) => {
+		const x = data.length > 1 ? (i / (data.length - 1)) * width : width / 2;
+		const y = height - (val / maxDataVal) * height;
+		return { x, y };
+	};
 
-	const areaPath = `M${points} L${width},${height} L0,${height} Z`;
-	const linePath = `M${points}`;
+	const points = data.map((val, i) => getCoordinates(val, i));
 
-	const gradientId = `gradient-${color.replace(/\s/g, "-")}`;
+	// Simple smoothing using Catmull-Rom to Cubic Bezier conversion
+	const svgPath = (
+		points: { x: number; y: number }[],
+		command: (
+			point: { x: number; y: number },
+			i: number,
+			a: { x: number; y: number }[],
+		) => string,
+	) => {
+		return points.reduce(
+			(acc, point, i, a) =>
+				i === 0 ? `M ${point.x},${point.y}` : `${acc} ${command(point, i, a)}`,
+			"",
+		);
+	};
 
-	const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
+	const bezierCommand = (
+		_point: { x: number; y: number },
+		i: number,
+		a: { x: number; y: number }[],
+	) => {
+		const cps = (p: { x: number; y: number }[], i: number) => {
+			const p_1 = p[i - 1];
+			const p_2 = p[i - 2] || p[i - 1];
+			const p1 = p[i];
+			const p2 = p[i + 1] || p1;
+
+			const smoothing = 0.2;
+
+			const line = (
+				pA: { x: number; y: number },
+				pB: { x: number; y: number },
+			) => {
+				const lengthX = pB.x - pA.x;
+				const lengthY = pB.y - pA.y;
+				return {
+					length: Math.sqrt(lengthX ** 2 + lengthY ** 2),
+					angle: Math.atan2(lengthY, lengthX),
+				};
+			};
+
+			const controlPoint = (
+				current: { x: number; y: number },
+				previous: { x: number; y: number },
+				next: { x: number; y: number },
+				reverse?: boolean,
+			) => {
+				const p = previous || current;
+				const n = next || current;
+				const o = line(p, n);
+				const angle = o.angle + (reverse ? Math.PI : 0);
+				const length = o.length * smoothing;
+				const x = current.x + Math.cos(angle) * length;
+				const y = current.y + Math.sin(angle) * length;
+				return { x, y };
+			};
+
+			const cp1 = controlPoint(p_1, p_2, p1);
+			const cp2 = controlPoint(p1, p_1, p2, true);
+			return `C ${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${p1.x},${p1.y}`;
+		};
+		return cps(a, i);
+	};
+
+	const linePath = svgPath(points, bezierCommand);
+	const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
+
+	const gradientId = `gradient-${color.replace(/[^a-zA-Z0-9]/g, "-")}`;
+
+	const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
 		const rect = event.currentTarget.getBoundingClientRect();
 		const x = event.clientX - rect.left;
-		const index = Math.round((x / rect.width) * (data.length - 1));
+		const index = Math.min(
+			data.length - 1,
+			Math.max(0, Math.round((x / rect.width) * (data.length - 1))),
+		);
 		const value = data[index];
-		const pointX = (index / (data.length - 1)) * width;
-		const pointY = height - (value / maxDataVal) * height;
-		setHoverData({ x: pointX, y: pointY, value, index });
+		const point = getCoordinates(value, index);
+		setHoverData({ x: point.x, y: point.y, value, index });
 	};
 
 	const handleMouseLeave = () => {
@@ -343,47 +432,110 @@ const HistoricalChart: React.FC<{
 	};
 
 	return (
-		<div className="bg-white dark:bg-black rounded-lg p-6 shadow-sm border border-slate-200 dark:border-gray-700 transition-theme">
-			<div className="flex justify-between items-baseline mb-4">
-				<h4 className="font-semibold text-slate-700 dark:text-gray-300">
-					{title}
-				</h4>
-				<p className="text-sm font-bold" style={{ color: color }}>
-					{data[data.length - 1].toFixed(1)}{" "}
-					<span className="font-medium text-slate-500 dark:text-gray-400">
-						{unit}
-					</span>
-				</p>
+		<div className="bg-white dark:bg-black rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-gray-800 transition-theme hover:shadow-md duration-300">
+			<div className="flex justify-between items-baseline mb-6">
+				<div>
+					<h4 className="font-bold text-slate-700 dark:text-gray-300 text-sm uppercase tracking-wide">
+						{title}
+					</h4>
+					<div className="flex items-baseline gap-2 mt-1">
+						<p className="text-2xl font-black text-slate-900 dark:text-white">
+							{data[data.length - 1].toFixed(1)}
+						</p>
+						<span className="font-bold text-sm text-slate-400 dark:text-gray-500">
+							{unit}
+						</span>
+					</div>
+				</div>
+				<div className="flex gap-2">
+					<div className="text-right">
+						<p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+							Max
+						</p>
+						<p className="text-xs font-bold text-slate-700 dark:text-gray-300">
+							{maxDataVal.toFixed(0)}
+						</p>
+					</div>
+					<div className="text-right pl-2 border-l border-slate-100 dark:border-gray-800">
+						<p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+							Avg
+						</p>
+						<p className="text-xs font-bold text-slate-700 dark:text-gray-300">
+							{avgDataVal.toFixed(1)}
+						</p>
+					</div>
+				</div>
 			</div>
 
-			{/* Statistics Summary */}
-			<div className="flex justify-between text-xs text-slate-500 dark:text-gray-400 mb-3">
-				<span>
-					Min: {minDataVal.toFixed(1)} {unit}
-				</span>
-				<span>
-					Avg: {avgDataVal.toFixed(1)} {unit}
-				</span>
-				<span>
-					Max: {maxDataVal.toFixed(0)} {unit}
-				</span>
-			</div>
-
-			<div className="relative">
+			<div className="relative h-[120px] w-full">
 				<svg
 					viewBox={`0 0 ${width} ${height}`}
-					className="w-full h-auto"
+					className="w-full h-full overflow-visible"
 					preserveAspectRatio="none"
 				>
 					<title>Historical Chart</title>
 					<defs>
 						<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-							<stop offset="0%" stopColor={color} stopOpacity="0.3" />
-							<stop offset="100%" stopColor={color} stopOpacity="0.05" />
+							<stop offset="0%" stopColor={color} stopOpacity="0.2" />
+							<stop offset="100%" stopColor={color} stopOpacity="0" />
 						</linearGradient>
+						<filter
+							id={`glow-${gradientId}`}
+							x="-50%"
+							y="-50%"
+							width="200%"
+							height="200%"
+						>
+							<feGaussianBlur stdDeviation="2" result="coloredBlur" />
+							<feMerge>
+								<feMergeNode in="coloredBlur" />
+								<feMergeNode in="SourceGraphic" />
+							</feMerge>
+						</filter>
 					</defs>
+
+					{/* Grid lines */}
+					<line
+						x1="0"
+						y1={height}
+						x2={width}
+						y2={height}
+						stroke="#e2e8f0"
+						strokeWidth="1"
+						className="dark:stroke-gray-800"
+					/>
+					<line
+						x1="0"
+						y1={0}
+						x2={width}
+						y2={0}
+						stroke="#e2e8f0"
+						strokeWidth="1"
+						strokeDasharray="4 4"
+						className="dark:stroke-gray-800"
+					/>
+					<line
+						x1="0"
+						y1={height / 2}
+						x2={width}
+						y2={height / 2}
+						stroke="#e2e8f0"
+						strokeWidth="1"
+						strokeDasharray="4 4"
+						className="dark:stroke-gray-800"
+					/>
+
 					<path d={areaPath} fill={`url(#${gradientId})`} />
-					<path d={linePath} fill="none" stroke={color} strokeWidth="2" />
+					<path
+						d={linePath}
+						fill="none"
+						stroke={color}
+						strokeWidth="2.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						filter={`url(#glow-${gradientId})`}
+					/>
+
 					{hoverData && (
 						<g>
 							<line
@@ -392,56 +544,56 @@ const HistoricalChart: React.FC<{
 								x2={hoverData.x}
 								y2={height}
 								stroke={color}
-								strokeWidth="1"
-								strokeDasharray="3,3"
+								strokeWidth="1.5"
+								strokeDasharray="4 4"
+								opacity="0.5"
 							/>
 							<circle
 								cx={hoverData.x}
 								cy={hoverData.y}
-								r="4"
+								r="5"
 								fill="white"
 								stroke={color}
-								strokeWidth="2"
+								strokeWidth="3"
+								className="drop-shadow-md"
 							/>
 						</g>
 					)}
 				</svg>
-				<button
-					type="button"
-					className="absolute inset-0 w-full h-full cursor-default"
-					style={{ top: 0, left: 0 }}
+				{/* Interactive Overlay */}
+				<div
+					className="absolute inset-0 cursor-crosshair"
 					onMouseMove={handleMouseMove}
 					onMouseLeave={handleMouseLeave}
+					role="application"
 					aria-label="Chart interaction area"
 				/>
+
+				{/* Tooltip */}
 				{hoverData && (
 					<div
-						className="absolute p-3 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity transition-theme z-10"
+						className="absolute pointer-events-none z-10"
 						style={{
-							left: `${hoverData.x}px`,
-							top: `${hoverData.y}px`,
-							transform: `translate(-50%, -120%) translateX(${hoverData.x / width > 0.5 ? "-20px" : "20px"})`,
+							left: `${(hoverData.x / width) * 100}%`,
+							top: 0,
 						}}
 					>
-						<p className="font-bold">
-							{hoverData.value.toFixed(2)} {unit}
-						</p>
-						<p className="text-slate-300">~{24 - hoverData.index}h ago</p>
+						<div
+							className="absolute bottom-2 transform -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm text-white px-3 py-2 rounded-lg shadow-xl border border-white/10 min-w-[100px]"
+							style={{ bottom: `${height - hoverData.y + 10}px` }}
+						>
+							<p className="text-xs font-medium text-slate-400 mb-0.5">
+								{24 - hoverData.index}h ago
+							</p>
+							<p className="text-lg font-bold leading-none">
+								{hoverData.value.toFixed(2)}{" "}
+								<span className="text-xs font-normal text-slate-400">
+									{unit}
+								</span>
+							</p>
+						</div>
 					</div>
 				)}
-				<div className="absolute top-0 left-0 text-xs text-slate-400">
-					{maxDataVal.toFixed(0)}
-				</div>
-				<div className="absolute bottom-0 left-0 text-xs text-slate-400">0</div>
-				<div className="absolute -bottom-5 right-0 text-xs text-slate-400">
-					Now
-				</div>
-				<div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-slate-400">
-					12h ago
-				</div>
-				<div className="absolute -bottom-5 left-0 text-xs text-slate-400">
-					24h ago
-				</div>
 			</div>
 		</div>
 	);
@@ -450,6 +602,7 @@ const HistoricalChart: React.FC<{
 const SWT_2_3_101_SPECS = {
 	RPM_RANGE: { min: 6, max: 16 },
 	WIND_SPEED_CUT_OUT: 25,
+	MAX_POWER: 2.3,
 };
 
 const generateHistoricalData = (
@@ -870,34 +1023,39 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 				<button
 					type="button"
 					onClick={onBack}
-					className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white mb-4 transition-colors"
+					className="group flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 mb-6 transition-colors pl-1"
 				>
-					<i className="fa-solid fa-arrow-left"></i>
+					<i className="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
 					{savedTurbineId
 						? `Back to Dashboard (from ${savedTurbineId})`
 						: "Back to Dashboard"}
 				</button>
 
-				<div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700 transition-theme">
-					<div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+				<div className="relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/50 transition-theme">
+					<div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+					<div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6">
 						<div>
-							<div className="flex items-center gap-3 mb-2">
-								<h1 className="text-3xl font-bold text-slate-800 dark:text-white">
+							<div className="flex items-center gap-4 mb-3">
+								<h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
 									Turbine {turbine.id}
 								</h1>
 								<span
-									className={`text-sm font-semibold px-3 py-1 rounded-full ${config.classes}`}
+									className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm ${config.classes} ring-1 ring-inset ring-black/5 dark:ring-white/10`}
 								>
 									{config.text}
 								</span>
 							</div>
-							<p className="text-slate-600 dark:text-gray-400">
+							<p className="text-slate-500 dark:text-gray-400 text-lg max-w-2xl">
 								Detailed operational metrics and performance data
 							</p>
 						</div>
-						<div className="flex items-center gap-2">
-							<div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-							<span className="text-sm text-slate-600 dark:text-gray-400">
+						<div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full border border-green-100 dark:border-green-900/30">
+							<div className="relative flex h-3 w-3">
+								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+								<span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+							</div>
+							<span className="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide">
 								Live Data
 							</span>
 						</div>
@@ -906,7 +1064,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 			</div>
 
 			{/* Primary Metrics Section with Power Gauge */}
-			<div className="mb-8">
+			<div
+				className="mb-8 animate-fade-in"
+				style={{ animationDelay: "100ms", animationFillMode: "both" }}
+			>
 				<div className="flex items-center gap-2 mb-4">
 					<div className="w-1 h-6 bg-violet-500 rounded-full"></div>
 					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -982,8 +1143,8 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 									Efficiency
 								</p>
 								<p className="text-xl font-bold text-slate-800 dark:text-white">
-									{turbine.activePower && turbine.maxPower > 0
-										? `${(95 + Math.random() * 3).toFixed(1)}%`
+									{turbine.activePower !== null && turbine.maxPower > 0
+										? `${((turbine.activePower / turbine.maxPower) * 0.1 + 0.9).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 1 })}`
 										: "—"}
 								</p>
 							</div>
@@ -1001,7 +1162,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 			</div>
 
 			{/* Secondary Metrics Section */}
-			<div className="mb-8">
+			<div
+				className="mb-8 animate-fade-in"
+				style={{ animationDelay: "200ms", animationFillMode: "both" }}
+			>
 				<div className="flex items-center gap-2 mb-4">
 					<div className="w-1 h-6 bg-blue-500 rounded-full"></div>
 					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -1054,7 +1218,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 			</div>
 
 			{/* Historical Performance Section */}
-			<div className="mb-8">
+			<div
+				className="mb-8 animate-fade-in"
+				style={{ animationDelay: "300ms", animationFillMode: "both" }}
+			>
 				<div className="flex items-center gap-2 mb-4">
 					<div className="w-1 h-6 bg-green-500 rounded-full"></div>
 					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -1108,7 +1275,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 			</div>
 
 			{/* Alarm History Section */}
-			<div>
+			<div
+				className="animate-fade-in"
+				style={{ animationDelay: "400ms", animationFillMode: "both" }}
+			>
 				<div className="flex items-center gap-2 mb-4">
 					<div className="w-1 h-6 bg-red-500 rounded-full"></div>
 					<h2 className="text-xl font-bold text-slate-800 dark:text-white">

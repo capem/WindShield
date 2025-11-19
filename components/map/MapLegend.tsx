@@ -20,9 +20,9 @@ const MapLegend: React.FC<MapLegendProps> = ({ className = "" }) => {
 		{ status: TurbineStatus.Fault, color: "#dc2626", label: "Fault" },
 		{ status: TurbineStatus.Warning, color: "#f97316", label: "Warning" },
 		{
-			status: TurbineStatus.Curtailement,
+			status: TurbineStatus.Curtailment,
 			color: "#6366f1",
-			label: "Curtailement",
+			label: "Curtailment",
 		},
 	];
 

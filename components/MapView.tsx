@@ -26,7 +26,7 @@ const createTurbineIcon = (status: TurbineStatus) => {
 		[TurbineStatus.Maintenance]: "#8b5cf6", // purple
 		[TurbineStatus.Fault]: "#dc2626", // dark red
 		[TurbineStatus.Warning]: "#f97316", // orange
-		[TurbineStatus.Curtailement]: "#6366f1", // indigo
+		[TurbineStatus.Curtailment]: "#6366f1", // indigo
 	};
 
 	return L.divIcon({
