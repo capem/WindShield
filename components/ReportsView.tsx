@@ -21,6 +21,17 @@ import {
 	ZAxis,
 } from "recharts";
 
+// --- TAREC COLOR PALETTE ---
+const COLORS = {
+	gold: "#CD9745", // Primary Gold
+	skyBlue: "#008CD3", // Sky Blue
+	lightCyan: "#63C3EA", // Light Cyan
+	earthBrown: "#9E6C32", // Earth Brown
+	mediumGrey: "#898989", // Medium Grey
+	slateDark: "#0A0A0A", // Dark background
+	slateLight: "#F8FAFC", // Light background
+};
+
 // --- MOCK DATA FOR REPORT ---
 
 const KPI_DATA = [
@@ -215,7 +226,7 @@ interface CustomTooltipProps {
 	payload?: Array<{
 		name: string;
 		value: number | string;
-		color: string;
+		color?: string;
 	}>;
 	label?: string;
 }
@@ -223,11 +234,26 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 	if (active && payload && payload.length) {
 		return (
-			<div className="bg-white dark:bg-black p-2 border border-slate-200 dark:border-slate-700 shadow-lg rounded text-xs">
-				<p className="font-bold mb-1">{label}</p>
+			<div className="bg-white/90 dark:bg-[#111111]/90 backdrop-blur-sm p-3 border border-slate-200 dark:border-white/10 shadow-xl rounded-lg text-xs">
+				<p className="font-bold mb-2 text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-white/10 pb-1">
+					{label}
+				</p>
 				{payload.map((entry) => (
-					<p key={entry.name} style={{ color: entry.color }}>
-						{entry.name}: {entry.value}
+					<p
+						key={entry.name}
+						className="flex items-center gap-2 mb-1"
+						style={{ color: entry.color }}
+					>
+						<span
+							className="w-2 h-2 rounded-full"
+							style={{ backgroundColor: entry.color }}
+						></span>
+						<span className="font-medium">{entry.name}:</span>
+						<span className="font-bold">
+							{typeof entry.value === "number"
+								? entry.value.toLocaleString()
+								: entry.value}
+						</span>
 					</p>
 				))}
 			</div>
@@ -271,87 +297,145 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 	};
 
 	return (
-		<div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-y-auto p-4 gap-4">
+		<div className="flex flex-col h-full bg-slate-50 dark:bg-[#050505] overflow-y-auto p-4 gap-4 font-sans transition-colors duration-300">
 			{/* --- HEADER --- */}
-			<div className="flex items-center justify-between bg-white dark:bg-black p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 shrink-0">
+			<div className="flex items-center justify-between bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
 				<div className="flex items-center gap-4">
-					<div className="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-sm">
+					<div
+						className="px-3 py-1 rounded text-white font-bold tracking-widest text-sm"
+						style={{ backgroundColor: COLORS.gold }}
+					>
 						TAREC
 					</div>
-					<div className="h-10 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
-					<h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-						Performance Dashboard — November 2025
+					<div className="h-8 w-px bg-slate-200 dark:bg-white/10"></div>
+					<h1 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+						Wind Farm Performance Report
 					</h1>
 				</div>
-				<div className="text-xs font-mono text-slate-500 dark:text-slate-400 text-right">
-					<p>REP-PE-25.11-01-01</p>
-					<p>version 01</p>
-					<p>Page 1 sur 1</p>
+				<div className="flex items-center gap-6 text-sm">
+					<div className="flex flex-col items-end">
+						<span className="text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">
+							Period
+						</span>
+						<span className="font-bold text-slate-700 dark:text-slate-200">
+							October 2025
+						</span>
+					</div>
+					<div className="h-8 w-px bg-slate-200 dark:bg-white/10"></div>
+					<div className="flex flex-col items-end">
+						<span className="text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">
+							Farm Capacity
+						</span>
+						<span className="font-bold text-slate-700 dark:text-slate-200">
+							100 MW
+						</span>
+					</div>
 				</div>
 			</div>
 
-			{/* --- KPI SECTION --- */}
-			<div className="bg-amber-50 dark:bg-amber-900/10 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30 overflow-x-auto shrink-0">
-				<table className="w-full text-xs border-collapse">
-					<thead>
-						<tr>
-							<th className="p-1 text-left w-16"></th>
+			{/* --- KPI TABLE --- */}
+			<div className="bg-white dark:bg-[#111111] rounded-xl border border-slate-200 dark:border-white/10 shadow-sm min-h-[100px]">
+				<table className="w-full text-[9px] tracking-tight">
+					<thead className="bg-slate-50 dark:bg-white/5">
+						<tr className="border-b border-slate-100 dark:border-white/10">
+							<th className="p-0.5 text-left font-bold text-slate-800 dark:text-white uppercase tracking-wider w-20">
+								Key Fig.
+							</th>
 							<th
-								className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold"
-								colSpan={6}
+								colSpan={2}
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
 							>
-								Unavailability
+								Unavail.
 							</th>
-							<th className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
-								Electrical Losses (MWh)
+							<th
+								colSpan={2}
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								TAREC
 							</th>
-							<th className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
-								Power Boost (MWh)
+							<th
+								colSpan={2}
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								SGRE
 							</th>
-							<th className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
-								Avg Turbine Perf (%)
+							<th
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								Losses
 							</th>
-							<th className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
-								MTBF (hours)
+							<th
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								Boost
 							</th>
-							<th className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
-								MTTR (hours)
+							<th
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								Perf
 							</th>
-							<th className="p-1 border border-amber-200 dark:border-amber-800 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
-								MTTI (hours)
+							<th
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								MTBF
+							</th>
+							<th
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								MTTR
+							</th>
+							<th
+								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
+								style={{ color: COLORS.mediumGrey }}
+							>
+								MTTI
 							</th>
 						</tr>
-						<tr className="text-[10px] text-center font-semibold text-amber-800 dark:text-amber-200">
-							<th></th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								Total Time %
+						<tr className="text-[9px] text-center font-medium text-slate-500 dark:text-slate-400">
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10"></th>
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								Time %
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								Total Energy %
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10">
+								Energy %
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								TAREC Time %
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								Time %
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								TAREC Energy %
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10">
+								Energy %
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								SGRE Time %
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								Time %
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								SGRE Energy %
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10">
+								Energy %
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black"></th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black"></th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black"></th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								Mean Time Between Failures
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								(MWh)
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								Mean Time To Repair
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								(MWh)
 							</th>
-							<th className="border border-amber-200 dark:border-amber-800 bg-white dark:bg-black">
-								Mean Time To Intervene
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								(%)
+							</th>
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								(h)
+							</th>
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								(h)
+							</th>
+							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
+								(h)
 							</th>
 						</tr>
 					</thead>
@@ -359,50 +443,55 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 						{KPI_DATA.map((row, index) => (
 							<tr
 								key={row.label}
-								className="text-center bg-white dark:bg-black text-slate-700 dark:text-slate-300"
+								className="text-center hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
 							>
-								<td className="p-2 font-bold text-left border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
-									<div className="flex flex-col">
-										<span className="text-xs">{row.label}</span>
-										<span className="text-[9px] text-slate-400 font-normal">
-											{index === 0 ? "1st - last day" : "Jan 1st - last month"}
+								<td className="p-0.5 text-left border-b border-slate-100 dark:border-white/10">
+									<div
+										className="flex flex-col border-l-2 pl-1"
+										style={{ borderColor: COLORS.gold }}
+									>
+										<span className="text-[9px] font-bold text-slate-800 dark:text-slate-200">
+											{row.label}
+										</span>
+										<span className="text-[8px] font-normal text-slate-500 dark:text-slate-400">
+											{index === 0 ? "1st - last day" : "Jan 1st - last mo"}
 										</span>
 									</div>
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-medium">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-medium text-slate-700 dark:text-slate-300">
 									{row.unavailabilityTotalTime}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-medium">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-medium text-slate-700 dark:text-slate-300">
 									{row.unavailabilityTotalEnergy}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
 									{row.unavailabilityTarecTime}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
 									{row.unavailabilityTarecEnergy}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
 									{row.unavailabilitySgreTime}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
 									{row.unavailabilitySgreEnergy}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-bold">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
 									{row.electricalLosses.toLocaleString()}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-bold">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
 									{row.powerBoost.toLocaleString()}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-bold">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
 									{row.avgTurbinePerformance}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-bold">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
 									{row.mtbf}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-bold">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
 									{row.mttr}
 								</td>
-								<td className="p-2 border border-amber-200 dark:border-amber-800 font-bold">
+								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
 									{row.mtti}
 								</td>
 							</tr>
@@ -412,57 +501,71 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 			</div>
 
 			{/* --- PRODUCTION & CLIMATE SECTION --- */}
-			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Production (GWh)
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<ComposedChart data={PRODUCTION_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="month"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-45}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
 							<YAxis
 								yAxisId="left"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Prod (GWh)",
 									angle: -90,
 									position: "insideLeft",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<YAxis
 								yAxisId="right"
 								orientation="right"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Cumul (GWh)",
 									angle: 90,
 									position: "insideRight",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								yAxisId="left"
 								dataKey="production"
-								barSize={10}
-								fill="#413ea0"
+								barSize={12}
+								fill={COLORS.skyBlue}
 								name="Production"
+								radius={[2, 2, 0, 0]}
 							/>
 							<Line
 								yAxisId="right"
 								type="monotone"
 								dataKey="cumulative"
-								stroke="#ff7300"
+								stroke={COLORS.gold}
+								strokeWidth={2}
 								dot={false}
 								name="Cumulative"
 							/>
@@ -470,34 +573,47 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Local Factor
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<ComposedChart data={LOCAL_FACTOR_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="month"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-45}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
-							<YAxis tick={{ fontSize: 8 }} domain={[90, 100]} />
+							<YAxis
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								domain={[90, 100]}
+								tickLine={false}
+								axisLine={false}
+							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								dataKey="localFactor"
-								barSize={10}
-								fill="#82ca9d"
+								barSize={12}
+								fill={COLORS.lightCyan}
 								name="Local Factor"
+								radius={[2, 2, 0, 0]}
 							/>
 							<Line
 								type="monotone"
 								dataKey="budget"
-								stroke="#ff7300"
+								stroke={COLORS.earthBrown}
+								strokeWidth={2}
 								dot={false}
 								name="Budget"
 							/>
@@ -505,8 +621,8 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm flex flex-col items-center">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col items-center">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Wind Rose
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
@@ -516,31 +632,38 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 							outerRadius="70%"
 							data={WIND_ROSE_DATA}
 						>
-							<PolarGrid />
-							<PolarAngleAxis dataKey="subject" tick={{ fontSize: 8 }} />
+							<PolarGrid stroke="#e2e8f0" />
+							<PolarAngleAxis
+								dataKey="subject"
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+							/>
 							<PolarRadiusAxis
 								angle={30}
 								domain={[0, 150]}
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								axisLine={false}
 							/>
 							<Radar
 								name="Wind"
 								dataKey="A"
-								stroke="#8884d8"
-								fill="#8884d8"
-								fillOpacity={0.6}
+								stroke={COLORS.skyBlue}
+								fill={COLORS.skyBlue}
+								fillOpacity={0.5}
 							/>
 							<Tooltip content={<CustomTooltip />} />
 						</RadarChart>
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-4 shadow-sm flex flex-col">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 border-b pb-1">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-4 border border-slate-100 dark:border-white/10 flex flex-col">
+					<h3
+						className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						Analysis
 					</h3>
 					<textarea
-						className="flex-1 w-full text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed resize-none border-none focus:ring-0 bg-transparent p-0"
+						className="flex-1 w-full text-[11px] font-mono text-slate-600 dark:text-slate-400 leading-relaxed resize-none border-none focus:ring-0 bg-transparent p-0"
 						value={analysisText.production}
 						onChange={(e) => handleAnalysisChange("production", e.target.value)}
 					/>
@@ -548,57 +671,71 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 			</div>
 
 			{/* --- ALARMS ANALYSIS SECTION --- */}
-			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Duration & Freq by Category
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<ComposedChart data={ALARM_CATEGORY_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="category"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-45}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
 							<YAxis
 								yAxisId="left"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Dur (h)",
 									angle: -90,
 									position: "insideLeft",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<YAxis
 								yAxisId="right"
 								orientation="right"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Freq",
 									angle: 90,
 									position: "insideRight",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								yAxisId="left"
 								dataKey="duration"
-								barSize={10}
-								fill="#413ea0"
+								barSize={12}
+								fill={COLORS.earthBrown}
 								name="Duration"
+								radius={[2, 2, 0, 0]}
 							/>
 							<Line
 								yAxisId="right"
 								type="monotone"
 								dataKey="frequency"
-								stroke="#ff7300"
+								stroke={COLORS.skyBlue}
+								strokeWidth={2}
 								dot={false}
 								name="Frequency"
 							/>
@@ -606,56 +743,70 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						MTBF & MTTI by Category
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<ComposedChart data={ALARM_CATEGORY_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="category"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-45}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
 							<YAxis
 								yAxisId="left"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "MTBF (h)",
 									angle: -90,
 									position: "insideLeft",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<YAxis
 								yAxisId="right"
 								orientation="right"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "MTTI (h)",
 									angle: 90,
 									position: "insideRight",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								yAxisId="left"
 								dataKey="mtbf"
-								barSize={10}
-								fill="#82ca9d"
+								barSize={12}
+								fill={COLORS.lightCyan}
 								name="MTBF"
+								radius={[2, 2, 0, 0]}
 							/>
 							<Line
 								yAxisId="right"
 								type="monotone"
 								dataKey="mtti"
-								stroke="#ff7300"
+								stroke={COLORS.gold}
+								strokeWidth={2}
 								dot={false}
 								name="MTTI"
 							/>
@@ -663,56 +814,70 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Duration & Freq by Code
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<ComposedChart data={ALARM_CODE_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="code"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-45}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
 							<YAxis
 								yAxisId="left"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Dur (h)",
 									angle: -90,
 									position: "insideLeft",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<YAxis
 								yAxisId="right"
 								orientation="right"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Freq",
 									angle: 90,
 									position: "insideRight",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								yAxisId="left"
 								dataKey="duration"
-								barSize={10}
-								fill="#8884d8"
+								barSize={12}
+								fill={COLORS.earthBrown}
 								name="Duration"
+								radius={[2, 2, 0, 0]}
 							/>
 							<Line
 								yAxisId="right"
 								type="monotone"
 								dataKey="frequency"
-								stroke="#ff7300"
+								stroke={COLORS.skyBlue}
+								strokeWidth={2}
 								dot={false}
 								name="Frequency"
 							/>
@@ -720,12 +885,15 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-4 shadow-sm flex flex-col">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 border-b pb-1">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-4 border border-slate-100 dark:border-white/10 flex flex-col">
+					<h3
+						className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						Analysis
 					</h3>
 					<textarea
-						className="flex-1 w-full text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed resize-none border-none focus:ring-0 bg-transparent p-0"
+						className="flex-1 w-full text-[11px] font-mono text-slate-600 dark:text-slate-400 leading-relaxed resize-none border-none focus:ring-0 bg-transparent p-0"
 						value={analysisText.alarms}
 						onChange={(e) => handleAnalysisChange("alarms", e.target.value)}
 					/>
@@ -733,57 +901,71 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 			</div>
 
 			{/* --- STOPS & SPARES SECTION --- */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Duration & Freq of Turbines Stopped
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<ComposedChart data={STOPS_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="turbine"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-45}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
 							<YAxis
 								yAxisId="left"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Dur (h)",
 									angle: -90,
 									position: "insideLeft",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<YAxis
 								yAxisId="right"
 								orientation="right"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
 								label={{
 									value: "Freq",
 									angle: 90,
 									position: "insideRight",
-									fontSize: 8,
+									fontSize: 9,
+									fill: "#94a3b8",
 								}}
 							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								yAxisId="left"
 								dataKey="duration"
-								barSize={10}
-								fill="#413ea0"
+								barSize={12}
+								fill={COLORS.earthBrown}
 								name="Duration"
+								radius={[2, 2, 0, 0]}
 							/>
 							<Line
 								yAxisId="right"
 								type="monotone"
 								dataKey="frequency"
-								stroke="#ff7300"
+								stroke={COLORS.skyBlue}
+								strokeWidth={2}
 								dot={false}
 								name="Frequency"
 							/>
@@ -791,48 +973,61 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Spare Parts (24-month total)
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
 						<BarChart data={SPARES_DATA} layout="vertical">
 							<CartesianGrid
-								stroke="#f5f5f5"
+								stroke="#e2e8f0"
+								strokeDasharray="3 3"
 								horizontal={true}
 								vertical={false}
 							/>
-							<XAxis type="number" tick={{ fontSize: 8 }} />
+							<XAxis
+								type="number"
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
+							/>
 							<YAxis
 								dataKey="part"
 								type="category"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								width={80}
+								tickLine={false}
+								axisLine={false}
 							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "8px" }} />
+							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
 							<Bar
 								dataKey="quantity"
-								barSize={10}
-								fill="#82ca9d"
+								barSize={12}
+								fill={COLORS.lightCyan}
 								name="Quantity"
+								radius={[0, 2, 2, 0]}
 							/>
 							<Line
 								type="monotone"
 								dataKey="threshold"
-								stroke="#ff0000"
+								stroke={COLORS.earthBrown}
+								strokeWidth={2}
 								name="Threshold"
 							/>
 						</BarChart>
 					</ResponsiveContainer>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-white dark:bg-black rounded-lg p-4 shadow-sm flex flex-col">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 border-b pb-1">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-4 border border-slate-100 dark:border-white/10 flex flex-col">
+					<h3
+						className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						Analysis
 					</h3>
 					<textarea
-						className="flex-1 w-full text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed resize-none border-none focus:ring-0 bg-transparent p-0"
+						className="flex-1 w-full text-[11px] font-mono text-slate-600 dark:text-slate-400 leading-relaxed resize-none border-none focus:ring-0 bg-transparent p-0"
 						value={analysisText.stops}
 						onChange={(e) => handleAnalysisChange("stops", e.target.value)}
 					/>
@@ -840,42 +1035,63 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 			</div>
 
 			{/* --- ENERGY LOSS SECTION --- */}
-			<div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
-				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+			<div className="bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
+				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 					Energy Lost in MWh
 				</h3>
-				<div className="h-48 bg-white dark:bg-black rounded-lg p-2 shadow-sm">
+				<div className="h-48 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
 					<ResponsiveContainer width="100%" height="100%">
 						<BarChart data={ENERGY_LOSS_DATA}>
-							<CartesianGrid stroke="#f5f5f5" vertical={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="#e2e8f0"
+								vertical={false}
+							/>
 							<XAxis
 								dataKey="turbine"
-								tick={{ fontSize: 8 }}
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
 								interval={0}
 								angle={-90}
 								textAnchor="end"
 								height={40}
+								tickLine={false}
+								axisLine={false}
 							/>
-							<YAxis tick={{ fontSize: 8 }} />
+							<YAxis
+								tick={{ fontSize: 9, fill: "#94a3b8" }}
+								tickLine={false}
+								axisLine={false}
+							/>
 							<Tooltip content={<CustomTooltip />} />
-							<Bar dataKey="loss" fill="#ff8042" name="Energy Loss (MWh)" />
+							<Bar
+								dataKey="loss"
+								fill={COLORS.earthBrown}
+								name="Energy Loss (MWh)"
+								radius={[2, 2, 0, 0]}
+							/>
 						</BarChart>
 					</ResponsiveContainer>
 				</div>
 			</div>
 
 			{/* --- MAINTENANCE & COMMENTS SECTION --- */}
-			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-100 dark:border-amber-900/30">
+			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
 				<div className="p-2">
-					<h3 className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-2 border-b border-amber-200 dark:border-amber-800 pb-1">
+					<h3
+						className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						Turbine Maintenance
 					</h3>
-					<div className="text-[10px] text-slate-700 dark:text-slate-300 space-y-2">
+					<div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-3 font-mono">
 						<div>
-							<span className="font-bold block text-amber-700 dark:text-amber-300">
+							<span
+								className="font-bold block mb-1"
+								style={{ color: COLORS.gold }}
+							>
 								Preventive:
 							</span>
-							<ul className="list-disc pl-3">
+							<ul className="list-disc pl-4 space-y-1">
 								<li>Ground inspections (All)</li>
 								<li>NDT (All Zones)</li>
 								<li>Blade and T&H Zero (selected)</li>
@@ -884,10 +1100,13 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 							</ul>
 						</div>
 						<div>
-							<span className="font-bold block text-amber-700 dark:text-amber-300">
+							<span
+								className="font-bold block mb-1"
+								style={{ color: COLORS.gold }}
+							>
 								Corrective:
 							</span>
-							<ul className="list-disc pl-3">
+							<ul className="list-disc pl-4 space-y-1">
 								<li>Cursor 34 verification</li>
 								<li>MTTI = 0.5 hours</li>
 								<li>MTTR = 1.50 hours</li>
@@ -896,16 +1115,22 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</div>
 				</div>
 
-				<div className="p-2 border-l border-amber-200 dark:border-amber-800">
-					<h3 className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-2 border-b border-amber-200 dark:border-amber-800 pb-1">
+				<div className="p-2 border-l border-slate-100 dark:border-white/10">
+					<h3
+						className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						Substations Maintenance
 					</h3>
-					<div className="text-[10px] text-slate-700 dark:text-slate-300 space-y-2">
+					<div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-3 font-mono">
 						<div>
-							<span className="font-bold block text-amber-700 dark:text-amber-300">
+							<span
+								className="font-bold block mb-1"
+								style={{ color: COLORS.gold }}
+							>
 								Preventive:
 							</span>
-							<ul className="list-disc pl-3">
+							<ul className="list-disc pl-4 space-y-1">
 								<li>
 									Degreasing and lubrication of columns (NORTH 4.0 & 20-10)
 								</li>
@@ -915,10 +1140,13 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 							</ul>
 						</div>
 						<div>
-							<span className="font-bold block text-amber-700 dark:text-amber-300">
+							<span
+								className="font-bold block mb-1"
+								style={{ color: COLORS.gold }}
+							>
 								Corrective:
 							</span>
-							<ul className="list-disc pl-3">
+							<ul className="list-disc pl-4 space-y-1">
 								<li>Alignment/doubling of section switches (NORTH)</li>
 								<li>MTTR = 10.05 hours</li>
 							</ul>
@@ -926,26 +1154,35 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</div>
 				</div>
 
-				<div className="p-2 border-l border-amber-200 dark:border-amber-800">
-					<h3 className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-2 border-b border-amber-200 dark:border-amber-800 pb-1">
+				<div className="p-2 border-l border-slate-100 dark:border-white/10">
+					<h3
+						className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						PPDMs Maintenance
 					</h3>
-					<div className="text-[10px] text-slate-700 dark:text-slate-300 space-y-2">
+					<div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-3 font-mono">
 						<div>
-							<span className="font-bold block text-amber-700 dark:text-amber-300">
+							<span
+								className="font-bold block mb-1"
+								style={{ color: COLORS.gold }}
+							>
 								Preventive:
 							</span>
-							<ul className="list-disc pl-3">
+							<ul className="list-disc pl-4 space-y-1">
 								<li>Regulatory checks of PPDMs</li>
 								<li>Type A, B, PPM fire inspections</li>
 								<li>Inspection of 30kV booths (2024)</li>
 							</ul>
 						</div>
 						<div>
-							<span className="font-bold block text-amber-700 dark:text-amber-300">
+							<span
+								className="font-bold block mb-1"
+								style={{ color: COLORS.gold }}
+							>
 								Corrective:
 							</span>
-							<ul className="list-disc pl-3">
+							<ul className="list-disc pl-4 space-y-1">
 								<li>Checks for buried cables (Line 1)</li>
 								<li>No Downtime</li>
 							</ul>
@@ -953,12 +1190,15 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					</div>
 				</div>
 
-				<div className="p-2 border-l border-amber-200 dark:border-amber-800 flex flex-col h-full">
-					<h3 className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-2 border-b border-amber-200 dark:border-amber-800 pb-1">
+				<div className="p-2 border-l border-slate-100 dark:border-white/10 flex flex-col h-full">
+					<h3
+						className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
+						style={{ borderColor: COLORS.gold }}
+					>
 						Comments
 					</h3>
 					<textarea
-						className="flex-1 w-full text-[10px] text-slate-700 dark:text-slate-300 resize-none border-none focus:ring-0 bg-transparent p-0"
+						className="flex-1 w-full text-[11px] font-mono text-slate-600 dark:text-slate-400 resize-none border-none focus:ring-0 bg-transparent p-0"
 						value={analysisText.comments}
 						onChange={(e) => handleAnalysisChange("comments", e.target.value)}
 					/>
@@ -968,31 +1208,49 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 			{/* --- CONSUMPTION & BOOST SECTION --- */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 				{/* Consumption */}
-				<div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Energy consumed per month (MWh)
 					</h3>
-					<div className="h-40 bg-white dark:bg-black rounded-lg p-2 shadow-sm mb-4">
+					<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4">
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={CONSUMPTION_DATA}>
-								<CartesianGrid stroke="#f5f5f5" vertical={false} />
-								<XAxis dataKey="month" tick={{ fontSize: 8 }} />
-								<YAxis tick={{ fontSize: 8 }} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="month"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+								/>
 								<Tooltip content={<CustomTooltip />} />
-								<Bar dataKey="value" fill="#413ea0" name="Consumption" />
+								<Bar
+									dataKey="value"
+									fill={COLORS.skyBlue}
+									name="Consumption"
+									radius={[2, 2, 0, 0]}
+								/>
 							</BarChart>
 						</ResponsiveContainer>
 					</div>
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Energie consommée par turbine
 					</h3>
-					<div className="h-64 bg-amber-100 dark:bg-amber-900/20 rounded-lg p-2 shadow-sm relative overflow-hidden">
+					<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden">
 						{/* Mock Map Visualization using ScatterChart */}
 						<ResponsiveContainer width="100%" height="100%">
 							<ScatterChart
 								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
 							>
-								<CartesianGrid />
+								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 								<XAxis type="number" dataKey="x" name="Long" hide />
 								<YAxis type="number" dataKey="y" name="Lat" hide />
 								<ZAxis
@@ -1008,10 +1266,10 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 											key={entry.id}
 											fill={
 												entry.z > 80
-													? "#ff0000"
+													? COLORS.earthBrown
 													: entry.z > 50
-														? "#ffa500"
-														: "#00ff00"
+														? COLORS.gold
+														: COLORS.skyBlue
 											}
 										/>
 									))}
@@ -1025,31 +1283,49 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 				</div>
 
 				{/* Boost */}
-				<div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+				<div className="bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Boost per month (MWh)
 					</h3>
-					<div className="h-40 bg-white dark:bg-black rounded-lg p-2 shadow-sm mb-4">
+					<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4">
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={BOOST_DATA}>
-								<CartesianGrid stroke="#f5f5f5" vertical={false} />
-								<XAxis dataKey="month" tick={{ fontSize: 8 }} />
-								<YAxis tick={{ fontSize: 8 }} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="month"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+								/>
 								<Tooltip content={<CustomTooltip />} />
-								<Bar dataKey="value" fill="#413ea0" name="Boost" />
+								<Bar
+									dataKey="value"
+									fill={COLORS.gold}
+									name="Boost"
+									radius={[2, 2, 0, 0]}
+								/>
 							</BarChart>
 						</ResponsiveContainer>
 					</div>
-					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">
+					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Boost par Turbine
 					</h3>
-					<div className="h-64 bg-amber-100 dark:bg-amber-900/20 rounded-lg p-2 shadow-sm relative overflow-hidden">
+					<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden">
 						{/* Mock Map Visualization using ScatterChart */}
 						<ResponsiveContainer width="100%" height="100%">
 							<ScatterChart
 								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
 							>
-								<CartesianGrid />
+								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 								<XAxis type="number" dataKey="x" name="Long" hide />
 								<YAxis type="number" dataKey="y" name="Lat" hide />
 								<ZAxis
@@ -1065,10 +1341,10 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 											key={entry.id}
 											fill={
 												entry.z > 80
-													? "#ff0000"
+													? COLORS.earthBrown
 													: entry.z > 50
-														? "#ffa500"
-														: "#00ff00"
+														? COLORS.gold
+														: COLORS.skyBlue
 											}
 										/>
 									))}
