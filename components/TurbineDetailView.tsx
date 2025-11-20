@@ -9,7 +9,6 @@ interface TurbineDetailViewProps {
 	historicalData?: Array<Record<string, string>>;
 	alarms: Alarm[];
 	onAcknowledgeAlarm: (alarmId: string) => void;
-	savedTurbineId?: string | null;
 }
 
 const statusConfig = {
