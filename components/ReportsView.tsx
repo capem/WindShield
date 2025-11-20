@@ -79,7 +79,7 @@ const PRODUCTION_DATA = [
 	{ month: "Sep 25", production: 100, cumulative: 885, budget: 95 },
 	{ month: "Oct 25", production: 95, cumulative: 980, budget: 90 },
 	{ month: "Nov 25", production: 88, cumulative: 1068, budget: 85 },
-	{ month: "Dec 25", production: null, cumulative: null, budget: 90 },
+	{ month: "Dec 25", production: 0, cumulative: 0, budget: 90 },
 ];
 
 const LOCAL_FACTOR_DATA = [
@@ -94,7 +94,7 @@ const LOCAL_FACTOR_DATA = [
 	{ month: "Sep 25", localFactor: 97, budget: 98 },
 	{ month: "Oct 25", localFactor: 98, budget: 98 },
 	{ month: "Nov 25", localFactor: 98.5, budget: 98 },
-	{ month: "Dec 25", localFactor: null, budget: 98 },
+	{ month: "Dec 25", localFactor: 0, budget: 98 },
 ];
 
 const WIND_ROSE_DATA = [
@@ -130,7 +130,6 @@ const ALARM_CODE_DATA = [
 	{ code: "444", duration: 35, frequency: 6 },
 	{ code: "555", duration: 30, frequency: 15 },
 	{ code: "666", duration: 25, frequency: 5 },
-	{ code: "777", duration: 20, frequency: 9 },
 	{ code: "777", duration: 20, frequency: 9 },
 	{ code: "888", duration: 15, frequency: 4 },
 ];
@@ -178,7 +177,6 @@ const ENERGY_LOSS_DATA = [
 	{ turbine: "T16", loss: 22 },
 	{ turbine: "T17", loss: 14 },
 	{ turbine: "T18", loss: 6 },
-	{ turbine: "T19", loss: 28 },
 	{ turbine: "T19", loss: 28 },
 	{ turbine: "T20", loss: 11 },
 ];
@@ -502,157 +500,172 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 
 			{/* --- PRODUCTION & CLIMATE SECTION --- */}
 			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Production (GWh)
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<ComposedChart data={PRODUCTION_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="month"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-45}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								yAxisId="left"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Prod (GWh)",
-									angle: -90,
-									position: "insideLeft",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<YAxis
-								yAxisId="right"
-								orientation="right"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Cumul (GWh)",
-									angle: 90,
-									position: "insideRight",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-							<Bar
-								yAxisId="left"
-								dataKey="production"
-								barSize={12}
-								fill={COLORS.skyBlue}
-								name="Production"
-								radius={[2, 2, 0, 0]}
-							/>
-							<Line
-								yAxisId="right"
-								type="monotone"
-								dataKey="cumulative"
-								stroke={COLORS.gold}
-								strokeWidth={2}
-								dot={false}
-								name="Cumulative"
-							/>
-						</ComposedChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<ComposedChart data={PRODUCTION_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="month"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-45}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									yAxisId="left"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Prod (GWh)",
+										angle: -90,
+										position: "insideLeft",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<YAxis
+									yAxisId="right"
+									orientation="right"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Cumul (GWh)",
+										angle: 90,
+										position: "insideRight",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Legend
+									wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }}
+								/>
+								<Bar
+									yAxisId="left"
+									dataKey="production"
+									barSize={12}
+									fill={COLORS.skyBlue}
+									name="Production"
+									radius={[2, 2, 0, 0]}
+									isAnimationActive={false}
+								/>
+								<Line
+									yAxisId="right"
+									type="monotone"
+									dataKey="cumulative"
+									stroke={COLORS.gold}
+									strokeWidth={2}
+									dot={false}
+									name="Cumulative"
+									isAnimationActive={false}
+								/>
+							</ComposedChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Local Factor
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<ComposedChart data={LOCAL_FACTOR_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="month"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-45}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								domain={[90, 100]}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-							<Bar
-								dataKey="localFactor"
-								barSize={12}
-								fill={COLORS.lightCyan}
-								name="Local Factor"
-								radius={[2, 2, 0, 0]}
-							/>
-							<Line
-								type="monotone"
-								dataKey="budget"
-								stroke={COLORS.earthBrown}
-								strokeWidth={2}
-								dot={false}
-								name="Budget"
-							/>
-						</ComposedChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<ComposedChart data={LOCAL_FACTOR_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="month"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-45}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									domain={[90, 100]}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Legend
+									wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }}
+								/>
+								<Bar
+									dataKey="localFactor"
+									barSize={12}
+									fill={COLORS.lightCyan}
+									name="Local Factor"
+									radius={[2, 2, 0, 0]}
+									isAnimationActive={false}
+								/>
+								<Line
+									type="monotone"
+									dataKey="budget"
+									stroke={COLORS.earthBrown}
+									strokeWidth={2}
+									dot={false}
+									name="Budget"
+									isAnimationActive={false}
+								/>
+							</ComposedChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
 				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col items-center">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Wind Rose
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<RadarChart
-							cx="50%"
-							cy="50%"
-							outerRadius="70%"
-							data={WIND_ROSE_DATA}
-						>
-							<PolarGrid stroke="#e2e8f0" />
-							<PolarAngleAxis
-								dataKey="subject"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-							/>
-							<PolarRadiusAxis
-								angle={30}
-								domain={[0, 150]}
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								axisLine={false}
-							/>
-							<Radar
-								name="Wind"
-								dataKey="A"
-								stroke={COLORS.skyBlue}
-								fill={COLORS.skyBlue}
-								fillOpacity={0.5}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-						</RadarChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<RadarChart
+								cx="50%"
+								cy="50%"
+								outerRadius="70%"
+								data={WIND_ROSE_DATA}
+							>
+								<PolarGrid stroke="#e2e8f0" />
+								<PolarAngleAxis
+									dataKey="subject"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+								/>
+								<PolarRadiusAxis
+									angle={30}
+									domain={[0, 150]}
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									axisLine={false}
+								/>
+								<Radar
+									name="Wind"
+									dataKey="A"
+									stroke={COLORS.skyBlue}
+									fill={COLORS.skyBlue}
+									fillOpacity={0.5}
+									isAnimationActive={false}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+							</RadarChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
 				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-4 border border-slate-100 dark:border-white/10 flex flex-col">
@@ -672,217 +685,231 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 
 			{/* --- ALARMS ANALYSIS SECTION --- */}
 			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Duration & Freq by Category
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<ComposedChart data={ALARM_CATEGORY_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="category"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-45}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								yAxisId="left"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Dur (h)",
-									angle: -90,
-									position: "insideLeft",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<YAxis
-								yAxisId="right"
-								orientation="right"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Freq",
-									angle: 90,
-									position: "insideRight",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-							<Bar
-								yAxisId="left"
-								dataKey="duration"
-								barSize={12}
-								fill={COLORS.earthBrown}
-								name="Duration"
-								radius={[2, 2, 0, 0]}
-							/>
-							<Line
-								yAxisId="right"
-								type="monotone"
-								dataKey="frequency"
-								stroke={COLORS.skyBlue}
-								strokeWidth={2}
-								dot={false}
-								name="Frequency"
-							/>
-						</ComposedChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<ComposedChart data={ALARM_CATEGORY_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="category"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-45}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									yAxisId="left"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Dur (h)",
+										angle: -90,
+										position: "insideLeft",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<YAxis
+									yAxisId="right"
+									orientation="right"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Freq",
+										angle: 90,
+										position: "insideRight",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Legend
+									wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }}
+								/>
+								<Bar
+									yAxisId="left"
+									dataKey="duration"
+									barSize={12}
+									fill={COLORS.earthBrown}
+									name="Duration"
+									radius={[2, 2, 0, 0]}
+								/>
+								<Line
+									yAxisId="right"
+									type="monotone"
+									dataKey="frequency"
+									stroke={COLORS.skyBlue}
+									strokeWidth={2}
+									dot={false}
+									name="Frequency"
+								/>
+							</ComposedChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						MTBF & MTTI by Category
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<ComposedChart data={ALARM_CATEGORY_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="category"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-45}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								yAxisId="left"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "MTBF (h)",
-									angle: -90,
-									position: "insideLeft",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<YAxis
-								yAxisId="right"
-								orientation="right"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "MTTI (h)",
-									angle: 90,
-									position: "insideRight",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-							<Bar
-								yAxisId="left"
-								dataKey="mtbf"
-								barSize={12}
-								fill={COLORS.lightCyan}
-								name="MTBF"
-								radius={[2, 2, 0, 0]}
-							/>
-							<Line
-								yAxisId="right"
-								type="monotone"
-								dataKey="mtti"
-								stroke={COLORS.gold}
-								strokeWidth={2}
-								dot={false}
-								name="MTTI"
-							/>
-						</ComposedChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<ComposedChart data={ALARM_CATEGORY_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="category"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-45}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									yAxisId="left"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "MTBF (h)",
+										angle: -90,
+										position: "insideLeft",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<YAxis
+									yAxisId="right"
+									orientation="right"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "MTTI (h)",
+										angle: 90,
+										position: "insideRight",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Legend
+									wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }}
+								/>
+								<Bar
+									yAxisId="left"
+									dataKey="mtbf"
+									barSize={12}
+									fill={COLORS.lightCyan}
+									name="MTBF"
+									radius={[2, 2, 0, 0]}
+									isAnimationActive={false}
+								/>
+								<Line
+									yAxisId="right"
+									type="monotone"
+									dataKey="mtti"
+									stroke={COLORS.gold}
+									strokeWidth={2}
+									dot={false}
+									name="MTTI"
+									isAnimationActive={false}
+								/>
+							</ComposedChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
-				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Duration & Freq by Code
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<ComposedChart data={ALARM_CODE_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="code"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-45}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								yAxisId="left"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Dur (h)",
-									angle: -90,
-									position: "insideLeft",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<YAxis
-								yAxisId="right"
-								orientation="right"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Freq",
-									angle: 90,
-									position: "insideRight",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-							<Bar
-								yAxisId="left"
-								dataKey="duration"
-								barSize={12}
-								fill={COLORS.earthBrown}
-								name="Duration"
-								radius={[2, 2, 0, 0]}
-							/>
-							<Line
-								yAxisId="right"
-								type="monotone"
-								dataKey="frequency"
-								stroke={COLORS.skyBlue}
-								strokeWidth={2}
-								dot={false}
-								name="Frequency"
-							/>
-						</ComposedChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<ComposedChart data={ALARM_CODE_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="code"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-45}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									yAxisId="left"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Dur (h)",
+										angle: -90,
+										position: "insideLeft",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<YAxis
+									yAxisId="right"
+									orientation="right"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Freq",
+										angle: 90,
+										position: "insideRight",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Legend
+									wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }}
+								/>
+								<Bar
+									yAxisId="left"
+									dataKey="duration"
+									barSize={12}
+									fill={COLORS.earthBrown}
+									name="Duration"
+									radius={[2, 2, 0, 0]}
+								/>
+								<Line
+									yAxisId="right"
+									type="monotone"
+									dataKey="frequency"
+									stroke={COLORS.skyBlue}
+									strokeWidth={2}
+									dot={false}
+									name="Frequency"
+								/>
+							</ComposedChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
 				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-4 border border-slate-100 dark:border-white/10 flex flex-col">
@@ -902,75 +929,79 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 
 			{/* --- STOPS & SPARES SECTION --- */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
+				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Duration & Freq of Turbines Stopped
 					</h3>
-					<ResponsiveContainer width="100%" height="90%">
-						<ComposedChart data={STOPS_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="turbine"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-45}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								yAxisId="left"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Dur (h)",
-									angle: -90,
-									position: "insideLeft",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<YAxis
-								yAxisId="right"
-								orientation="right"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-								label={{
-									value: "Freq",
-									angle: 90,
-									position: "insideRight",
-									fontSize: 9,
-									fill: "#94a3b8",
-								}}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
-							<Bar
-								yAxisId="left"
-								dataKey="duration"
-								barSize={12}
-								fill={COLORS.earthBrown}
-								name="Duration"
-								radius={[2, 2, 0, 0]}
-							/>
-							<Line
-								yAxisId="right"
-								type="monotone"
-								dataKey="frequency"
-								stroke={COLORS.skyBlue}
-								strokeWidth={2}
-								dot={false}
-								name="Frequency"
-							/>
-						</ComposedChart>
-					</ResponsiveContainer>
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<ComposedChart data={STOPS_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="turbine"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-45}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									yAxisId="left"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Dur (h)",
+										angle: -90,
+										position: "insideLeft",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<YAxis
+									yAxisId="right"
+									orientation="right"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+									label={{
+										value: "Freq",
+										angle: 90,
+										position: "insideRight",
+										fontSize: 9,
+										fill: "#94a3b8",
+									}}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Legend
+									wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }}
+								/>
+								<Bar
+									yAxisId="left"
+									dataKey="duration"
+									barSize={12}
+									fill={COLORS.earthBrown}
+									name="Duration"
+									radius={[2, 2, 0, 0]}
+								/>
+								<Line
+									yAxisId="right"
+									type="monotone"
+									dataKey="frequency"
+									stroke={COLORS.skyBlue}
+									strokeWidth={2}
+									dot={false}
+									name="Frequency"
+								/>
+							</ComposedChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 
 				<div className="lg:col-span-1 h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
@@ -978,7 +1009,12 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 						Spare Parts (24-month total)
 					</h3>
 					<ResponsiveContainer width="100%" height="90%">
-						<BarChart data={SPARES_DATA} layout="vertical">
+						<BarChart
+							width={500}
+							height={300}
+							data={SPARES_DATA}
+							layout="vertical"
+						>
 							<CartesianGrid
 								stroke="#e2e8f0"
 								strokeDasharray="3 3"
@@ -1007,6 +1043,7 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 								fill={COLORS.lightCyan}
 								name="Quantity"
 								radius={[0, 2, 2, 0]}
+								isAnimationActive={false}
 							/>
 							<Line
 								type="monotone"
@@ -1014,6 +1051,7 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 								stroke={COLORS.earthBrown}
 								strokeWidth={2}
 								name="Threshold"
+								isAnimationActive={false}
 							/>
 						</BarChart>
 					</ResponsiveContainer>
@@ -1039,38 +1077,41 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 					Energy Lost in MWh
 				</h3>
-				<div className="h-48 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10">
-					<ResponsiveContainer width="100%" height="100%">
-						<BarChart data={ENERGY_LOSS_DATA}>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="#e2e8f0"
-								vertical={false}
-							/>
-							<XAxis
-								dataKey="turbine"
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								interval={0}
-								angle={-90}
-								textAnchor="end"
-								height={40}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<YAxis
-								tick={{ fontSize: 9, fill: "#94a3b8" }}
-								tickLine={false}
-								axisLine={false}
-							/>
-							<Tooltip content={<CustomTooltip />} />
-							<Bar
-								dataKey="loss"
-								fill={COLORS.earthBrown}
-								name="Energy Loss (MWh)"
-								radius={[2, 2, 0, 0]}
-							/>
-						</BarChart>
-					</ResponsiveContainer>
+				<div className="h-48 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 flex flex-col">
+					<div className="flex-1 min-h-0 w-full">
+						<ResponsiveContainer width="100%" height="100%">
+							<BarChart data={ENERGY_LOSS_DATA}>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="#e2e8f0"
+									vertical={false}
+								/>
+								<XAxis
+									dataKey="turbine"
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									interval={0}
+									angle={-90}
+									textAnchor="end"
+									height={40}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<Tooltip content={<CustomTooltip />} />
+								<Bar
+									dataKey="loss"
+									fill={COLORS.earthBrown}
+									name="Energy Loss (MWh)"
+									radius={[2, 2, 0, 0]}
+									isAnimationActive={false}
+								/>
+							</BarChart>
+						</ResponsiveContainer>
+					</div>
 				</div>
 			</div>
 
@@ -1212,70 +1253,80 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Energy consumed per month (MWh)
 					</h3>
-					<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4">
-						<ResponsiveContainer width="100%" height="100%">
-							<BarChart data={CONSUMPTION_DATA}>
-								<CartesianGrid
-									strokeDasharray="3 3"
-									stroke="#e2e8f0"
-									vertical={false}
-								/>
-								<XAxis
-									dataKey="month"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
-									tickLine={false}
-									axisLine={false}
-								/>
-								<YAxis
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
-									tickLine={false}
-									axisLine={false}
-								/>
-								<Tooltip content={<CustomTooltip />} />
-								<Bar
-									dataKey="value"
-									fill={COLORS.skyBlue}
-									name="Consumption"
-									radius={[2, 2, 0, 0]}
-								/>
-							</BarChart>
-						</ResponsiveContainer>
+					<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4 flex flex-col">
+						<div className="flex-1 min-h-0 w-full">
+							<ResponsiveContainer width="100%" height="100%">
+								<BarChart data={CONSUMPTION_DATA}>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										stroke="#e2e8f0"
+										vertical={false}
+									/>
+									<XAxis
+										dataKey="month"
+										tick={{ fontSize: 9, fill: "#94a3b8" }}
+										tickLine={false}
+										axisLine={false}
+									/>
+									<YAxis
+										tick={{ fontSize: 9, fill: "#94a3b8" }}
+										tickLine={false}
+										axisLine={false}
+									/>
+									<Tooltip content={<CustomTooltip />} />
+									<Bar
+										dataKey="value"
+										fill={COLORS.skyBlue}
+										name="Consumption"
+										radius={[2, 2, 0, 0]}
+										isAnimationActive={false}
+									/>
+								</BarChart>
+							</ResponsiveContainer>
+						</div>
 					</div>
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Energie consommée par turbine
 					</h3>
-					<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden">
+					<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden flex flex-col">
 						{/* Mock Map Visualization using ScatterChart */}
-						<ResponsiveContainer width="100%" height="100%">
-							<ScatterChart
-								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-							>
-								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-								<XAxis type="number" dataKey="x" name="Long" hide />
-								<YAxis type="number" dataKey="y" name="Lat" hide />
-								<ZAxis
-									type="number"
-									dataKey="z"
-									range={[50, 400]}
-									name="Value"
-								/>
-								<Tooltip cursor={{ strokeDasharray: "3 3" }} />
-								<Scatter name="Turbines" data={TURBINE_MAP_DATA} fill="#8884d8">
-									{TURBINE_MAP_DATA.map((entry) => (
-										<Cell
-											key={entry.id}
-											fill={
-												entry.z > 80
-													? COLORS.earthBrown
-													: entry.z > 50
-														? COLORS.gold
-														: COLORS.skyBlue
-											}
-										/>
-									))}
-								</Scatter>
-							</ScatterChart>
-						</ResponsiveContainer>
+						<div className="flex-1 min-h-0 w-full">
+							<ResponsiveContainer width="100%" height="100%">
+								<ScatterChart
+									margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+									<XAxis type="number" dataKey="x" name="Long" hide />
+									<YAxis type="number" dataKey="y" name="Lat" hide />
+									<ZAxis
+										type="number"
+										dataKey="z"
+										range={[50, 400]}
+										name="Value"
+									/>
+									<Tooltip cursor={{ strokeDasharray: "3 3" }} />
+									<Scatter
+										name="Turbines"
+										data={TURBINE_MAP_DATA}
+										fill="#8884d8"
+										isAnimationActive={false}
+									>
+										{TURBINE_MAP_DATA.map((entry) => (
+											<Cell
+												key={entry.id}
+												fill={
+													entry.z > 80
+														? COLORS.earthBrown
+														: entry.z > 50
+															? COLORS.gold
+															: COLORS.skyBlue
+												}
+											/>
+										))}
+									</Scatter>
+								</ScatterChart>
+							</ResponsiveContainer>
+						</div>
 						<div className="absolute bottom-2 right-2 bg-white dark:bg-black p-1 text-[8px] rounded shadow opacity-70">
 							Map Visualization
 						</div>
@@ -1287,70 +1338,80 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Boost per month (MWh)
 					</h3>
-					<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4">
-						<ResponsiveContainer width="100%" height="100%">
-							<BarChart data={BOOST_DATA}>
-								<CartesianGrid
-									strokeDasharray="3 3"
-									stroke="#e2e8f0"
-									vertical={false}
-								/>
-								<XAxis
-									dataKey="month"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
-									tickLine={false}
-									axisLine={false}
-								/>
-								<YAxis
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
-									tickLine={false}
-									axisLine={false}
-								/>
-								<Tooltip content={<CustomTooltip />} />
-								<Bar
-									dataKey="value"
-									fill={COLORS.gold}
-									name="Boost"
-									radius={[2, 2, 0, 0]}
-								/>
-							</BarChart>
-						</ResponsiveContainer>
+					<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4 flex flex-col">
+						<div className="flex-1 min-h-0 w-full">
+							<ResponsiveContainer width="100%" height="100%">
+								<BarChart data={BOOST_DATA}>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										stroke="#e2e8f0"
+										vertical={false}
+									/>
+									<XAxis
+										dataKey="month"
+										tick={{ fontSize: 9, fill: "#94a3b8" }}
+										tickLine={false}
+										axisLine={false}
+									/>
+									<YAxis
+										tick={{ fontSize: 9, fill: "#94a3b8" }}
+										tickLine={false}
+										axisLine={false}
+									/>
+									<Tooltip content={<CustomTooltip />} />
+									<Bar
+										dataKey="value"
+										fill={COLORS.gold}
+										name="Boost"
+										radius={[2, 2, 0, 0]}
+										isAnimationActive={false}
+									/>
+								</BarChart>
+							</ResponsiveContainer>
+						</div>
 					</div>
 					<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
 						Boost par Turbine
 					</h3>
-					<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden">
+					<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden flex flex-col">
 						{/* Mock Map Visualization using ScatterChart */}
-						<ResponsiveContainer width="100%" height="100%">
-							<ScatterChart
-								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-							>
-								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-								<XAxis type="number" dataKey="x" name="Long" hide />
-								<YAxis type="number" dataKey="y" name="Lat" hide />
-								<ZAxis
-									type="number"
-									dataKey="z"
-									range={[50, 400]}
-									name="Value"
-								/>
-								<Tooltip cursor={{ strokeDasharray: "3 3" }} />
-								<Scatter name="Turbines" data={TURBINE_MAP_DATA} fill="#8884d8">
-									{TURBINE_MAP_DATA.map((entry) => (
-										<Cell
-											key={entry.id}
-											fill={
-												entry.z > 80
-													? COLORS.earthBrown
-													: entry.z > 50
-														? COLORS.gold
-														: COLORS.skyBlue
-											}
-										/>
-									))}
-								</Scatter>
-							</ScatterChart>
-						</ResponsiveContainer>
+						<div className="flex-1 min-h-0 w-full">
+							<ResponsiveContainer width="100%" height="100%">
+								<ScatterChart
+									margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+									<XAxis type="number" dataKey="x" name="Long" hide />
+									<YAxis type="number" dataKey="y" name="Lat" hide />
+									<ZAxis
+										type="number"
+										dataKey="z"
+										range={[50, 400]}
+										name="Value"
+									/>
+									<Tooltip cursor={{ strokeDasharray: "3 3" }} />
+									<Scatter
+										name="Turbines"
+										data={TURBINE_MAP_DATA}
+										fill="#8884d8"
+										isAnimationActive={false}
+									>
+										{TURBINE_MAP_DATA.map((entry) => (
+											<Cell
+												key={entry.id}
+												fill={
+													entry.z > 80
+														? COLORS.earthBrown
+														: entry.z > 50
+															? COLORS.gold
+															: COLORS.skyBlue
+												}
+											/>
+										))}
+									</Scatter>
+								</ScatterChart>
+							</ResponsiveContainer>
+						</div>
 						<div className="absolute bottom-2 right-2 bg-white dark:bg-black p-1 text-[8px] rounded shadow opacity-70">
 							Map Visualization
 						</div>
