@@ -117,7 +117,14 @@ const TurbineStatusSummaryCard: React.FC<{
 		{
 			name: "Curtailment",
 			count: counts.curtailment,
-			icon: <i className="fa-solid fa-hand"></i>,
+			icon: (
+				<i
+					className="material-symbols-outlined"
+					style={{ fontSize: "16px", lineHeight: "1" }}
+				>
+					stat_minus_3
+				</i>
+			),
 			color: "text-indigo-500",
 		},
 	];
