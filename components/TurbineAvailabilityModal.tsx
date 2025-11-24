@@ -1,12 +1,14 @@
-import type React from "react";
+import React from "react";
 import { useMemo, useState } from "react";
 import {
-  generateAlarmData,
-  generateTimestampData,
+	generateAlarmData,
+	generateTimestampData,
 } from "../availabilityDataUtils";
 import type { TurbineAvailabilityModalProps } from "../availabilityTypes";
 import AlarmView from "./AlarmView";
 import TimestampView from "./TimestampView";
+import { Modal, Tabs, Group, Text } from "@mantine/core";
+import { IconBell, IconClock } from "@tabler/icons-react";
 
 const TurbineAvailabilityModal: React.FC<TurbineAvailabilityModalProps> = ({
 	turbineId,
@@ -14,89 +16,54 @@ const TurbineAvailabilityModal: React.FC<TurbineAvailabilityModalProps> = ({
 	onClose,
 	initialView = "alarm",
 }) => {
-	const [activeView, setActiveView] = useState<"alarm" | "timestamp">(
-		initialView,
-	);
+	const [activeView, setActiveView] = useState<string>(initialView);
 
 	// Generate mock data for the selected turbine
 	const alarmData = useMemo(() => generateAlarmData(turbineId), [turbineId]);
-	const timestampData = useMemo(
-		() => generateTimestampData(),
-		[],
-	);
+	const timestampData = useMemo(() => generateTimestampData(), []);
 
-	if (!isOpen) return null;
-
+	// Keep content mounted to avoid re-rendering heavy views when switching tabs
 	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto">
-			<div className="flex min-h-screen items-center justify-center p-4">
-				<button
-					type="button"
-					className="fixed inset-0 bg-black opacity-30 transition-opacity"
-					onClick={onClose}
-					onKeyDown={(e) => {
-						if (e.key === 'Escape') {
-							onClose();
-						}
-					}}
-					aria-label="Close modal"
-				></button>
+		<Modal
+			opened={isOpen}
+			onClose={onClose}
+			title={
+				<Text fw={700} size="lg">
+					Turbine {turbineId} Availability Analysis
+				</Text>
+			}
+			size="xl"
+			padding="lg"
+			overlayProps={{
+				backgroundOpacity: 0.55,
+			}}
+			transitionProps={{ duration: 0 }}
+			keepMounted
+		>
+			<Tabs
+				value={activeView}
+				onChange={(value) => setActiveView(value || "alarm")}
+				keepMounted={true}
+			>
+				<Tabs.List mb="md">
+					<Tabs.Tab value="alarm" leftSection={<IconBell size={16} />}>
+						Alarm View
+					</Tabs.Tab>
+					<Tabs.Tab value="timestamp" leftSection={<IconClock size={16} />}>
+						10-Minute Timestamp View
+					</Tabs.Tab>
+				</Tabs.List>
 
-				<div className="relative w-full max-w-7xl bg-white dark:bg-black rounded-lg shadow-xl transition-theme">
-					{/* Modal Header */}
-					<div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-gray-700">
-						<h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-							Turbine {turbineId} Availability Analysis
-						</h2>
-						<button
-							type="button"
-							className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-							onClick={onClose}
-							aria-label="Close modal"
-						>
-							<i className="fa-solid fa-times text-xl"></i>
-						</button>
-					</div>
+				<Tabs.Panel value="alarm">
+					<AlarmView data={alarmData} />
+				</Tabs.Panel>
 
-					{/* View Switcher */}
-					<div className="flex border-b border-slate-200 dark:border-gray-700">
-						<button
-							type="button"
-							className={`px-6 py-3 font-medium text-sm transition-colors ${
-								activeView === "alarm"
-									? "text-violet-600 border-b-2 border-violet-600 dark:text-violet-400"
-									: "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-							}`}
-							onClick={() => setActiveView("alarm")}
-						>
-							Alarm View
-						</button>
-						<button
-							type="button"
-							className={`px-6 py-3 font-medium text-sm transition-colors ${
-								activeView === "timestamp"
-									? "text-violet-600 border-b-2 border-violet-600 dark:text-violet-400"
-									: "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-							}`}
-							onClick={() => setActiveView("timestamp")}
-						>
-							10-Minute Timestamp View
-						</button>
-					</div>
-
-					{/* Content Area */}
-					<div className="p-6 max-h-[70vh] overflow-y-auto">
-						{activeView === "alarm" ? (
-							<AlarmView data={alarmData} />
-						) : (
-							<TimestampView data={timestampData} />
-						)}
-					</div>
-				</div>
-			</div>
-		</div>
+				<Tabs.Panel value="timestamp">
+					<TimestampView data={timestampData} />
+				</Tabs.Panel>
+			</Tabs>
+		</Modal>
 	);
 };
 
-export default TurbineAvailabilityModal;
-
+export default React.memo(TurbineAvailabilityModal);

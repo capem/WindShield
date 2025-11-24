@@ -1,5 +1,6 @@
 import React from "react";
 import { COLORS } from "./Shared";
+import { Grid, Card, Text, Textarea, Title, List, Box } from "@mantine/core";
 
 interface MaintenanceSectionProps {
 	analysisText: string;
@@ -8,142 +9,181 @@ interface MaintenanceSectionProps {
 
 const MaintenanceLists = React.memo(() => {
 	return (
-		<React.Fragment>
-			<div className="p-2">
-				<h3
-					className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
-					style={{ borderColor: COLORS.gold }}
-				>
-					Turbine Maintenance
-				</h3>
-				<div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-3 font-mono">
-					<div>
-						<span
-							className="font-bold block mb-1"
-							style={{ color: COLORS.gold }}
-						>
-							Preventive:
-						</span>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>Ground inspections (All)</li>
-							<li>NDT (All Zones)</li>
-							<li>Blade and T&H Zero (selected)</li>
-							<li>One-Stop inspections</li>
-							<li>HV pylon and OH line annual check</li>
-						</ul>
-					</div>
-					<div>
-						<span
-							className="font-bold block mb-1"
-							style={{ color: COLORS.gold }}
-						>
-							Corrective:
-						</span>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>Cursor 34 verification</li>
-							<li>MTTI = 0.5 hours</li>
-							<li>MTTR = 1.50 hours</li>
-						</ul>
-					</div>
-				</div>
-			</div>
+		<>
+			<Grid.Col span={{ base: 12, lg: 3 }}>
+				<Box p="xs">
+					<Title
+						order={6}
+						mb="xs"
+						tt="uppercase"
+						style={{
+							borderBottom: `2px solid ${COLORS.gold}`,
+							paddingBottom: 4,
+						}}
+					>
+						Turbine Maintenance
+					</Title>
+					<Box style={{ fontSize: 11, fontFamily: "monospace" }}>
+						<Box mb="xs">
+							<Text size="xs" fw={700} mb={4} style={{ color: COLORS.gold }}>
+								Preventive:
+							</Text>
+							<List size="xs" spacing={2} withPadding>
+								<List.Item>Ground inspections (All)</List.Item>
+								<List.Item>NDT (All Zones)</List.Item>
+								<List.Item>Blade and T&H Zero (selected)</List.Item>
+								<List.Item>One-Stop inspections</List.Item>
+								<List.Item>HV pylon and OH line annual check</List.Item>
+							</List>
+						</Box>
+						<Box>
+							<Text size="xs" fw={700} mb={4} style={{ color: COLORS.gold }}>
+								Corrective:
+							</Text>
+							<List size="xs" spacing={2} withPadding>
+								<List.Item>Cursor 34 verification</List.Item>
+								<List.Item>MTTI = 0.5 hours</List.Item>
+								<List.Item>MTTR = 1.50 hours</List.Item>
+							</List>
+						</Box>
+					</Box>
+				</Box>
+			</Grid.Col>
 
-			<div className="p-2 border-l border-slate-100 dark:border-white/10">
-				<h3
-					className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
-					style={{ borderColor: COLORS.gold }}
+			<Grid.Col span={{ base: 12, lg: 3 }}>
+				<Box
+					p="xs"
+					style={{ borderLeft: "1px solid var(--mantine-color-gray-2)" }}
 				>
-					Substations Maintenance
-				</h3>
-				<div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-3 font-mono">
-					<div>
-						<span
-							className="font-bold block mb-1"
-							style={{ color: COLORS.gold }}
-						>
-							Preventive:
-						</span>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>Degreasing and lubrication of columns (NORTH 4.0 & 20-10)</li>
-							<li>Type B maintenance (TAH)</li>
-							<li>High Pylon test</li>
-							<li>MTTM = 2.85 hours</li>
-						</ul>
-					</div>
-					<div>
-						<span
-							className="font-bold block mb-1"
-							style={{ color: COLORS.gold }}
-						>
-							Corrective:
-						</span>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>Alignment/doubling of section switches (NORTH)</li>
-							<li>MTTR = 10.05 hours</li>
-						</ul>
-					</div>
-				</div>
-			</div>
+					<Title
+						order={6}
+						mb="xs"
+						tt="uppercase"
+						style={{
+							borderBottom: `2px solid ${COLORS.gold}`,
+							paddingBottom: 4,
+						}}
+					>
+						Substations Maintenance
+					</Title>
+					<Box style={{ fontSize: 11, fontFamily: "monospace" }}>
+						<Box mb="xs">
+							<Text size="xs" fw={700} mb={4} style={{ color: COLORS.gold }}>
+								Preventive:
+							</Text>
+							<List size="xs" spacing={2} withPadding>
+								<List.Item>
+									Degreasing and lubrication of columns (NORTH 4.0 & 20-10)
+								</List.Item>
+								<List.Item>Type B maintenance (TAH)</List.Item>
+								<List.Item>High Pylon test</List.Item>
+								<List.Item>MTTM = 2.85 hours</List.Item>
+							</List>
+						</Box>
+						<Box>
+							<Text size="xs" fw={700} mb={4} style={{ color: COLORS.gold }}>
+								Corrective:
+							</Text>
+							<List size="xs" spacing={2} withPadding>
+								<List.Item>
+									Alignment/doubling of section switches (NORTH)
+								</List.Item>
+								<List.Item>MTTR = 10.05 hours</List.Item>
+							</List>
+						</Box>
+					</Box>
+				</Box>
+			</Grid.Col>
 
-			<div className="p-2 border-l border-slate-100 dark:border-white/10">
-				<h3
-					className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
-					style={{ borderColor: COLORS.gold }}
+			<Grid.Col span={{ base: 12, lg: 3 }}>
+				<Box
+					p="xs"
+					style={{ borderLeft: "1px solid var(--mantine-color-gray-2)" }}
 				>
-					PPDMs Maintenance
-				</h3>
-				<div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-3 font-mono">
-					<div>
-						<span
-							className="font-bold block mb-1"
-							style={{ color: COLORS.gold }}
-						>
-							Preventive:
-						</span>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>Regulatory checks of PPDMs</li>
-							<li>Type A, B, PPM fire inspections</li>
-							<li>Inspection of 30kV booths (2024)</li>
-						</ul>
-					</div>
-					<div>
-						<span
-							className="font-bold block mb-1"
-							style={{ color: COLORS.gold }}
-						>
-							Corrective:
-						</span>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>Checks for buried cables (Line 1)</li>
-							<li>No Downtime</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</React.Fragment>
+					<Title
+						order={6}
+						mb="xs"
+						tt="uppercase"
+						style={{
+							borderBottom: `2px solid ${COLORS.gold}`,
+							paddingBottom: 4,
+						}}
+					>
+						PPDMs Maintenance
+					</Title>
+					<Box style={{ fontSize: 11, fontFamily: "monospace" }}>
+						<Box mb="xs">
+							<Text size="xs" fw={700} mb={4} style={{ color: COLORS.gold }}>
+								Preventive:
+							</Text>
+							<List size="xs" spacing={2} withPadding>
+								<List.Item>Regulatory checks of PPDMs</List.Item>
+								<List.Item>Type A, B, PPM fire inspections</List.Item>
+								<List.Item>Inspection of 30kV booths (2024)</List.Item>
+							</List>
+						</Box>
+						<Box>
+							<Text size="xs" fw={700} mb={4} style={{ color: COLORS.gold }}>
+								Corrective:
+							</Text>
+							<List size="xs" spacing={2} withPadding>
+								<List.Item>Checks for buried cables (Line 1)</List.Item>
+								<List.Item>No Downtime</List.Item>
+							</List>
+						</Box>
+					</Box>
+				</Box>
+			</Grid.Col>
+		</>
 	);
 });
 
 const MaintenanceSection = React.memo(
 	({ analysisText, onAnalysisChange }: MaintenanceSectionProps) => {
 		return (
-			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-				<MaintenanceLists />
+			<Card shadow="sm" padding="md" radius="md" withBorder>
+				<Grid gutter="md">
+					<MaintenanceLists />
 
-				<div className="p-2 border-l border-slate-100 dark:border-white/10 flex flex-col h-full">
-					<h3
-						className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 border-b pb-2 uppercase tracking-wider"
-						style={{ borderColor: COLORS.gold }}
-					>
-						Comments
-					</h3>
-					<textarea
-						className="flex-1 w-full text-[11px] font-mono text-slate-600 dark:text-slate-400 resize-none border-none focus:ring-0 bg-transparent p-0"
-						value={analysisText}
-						onChange={(e) => onAnalysisChange(e.target.value)}
-					/>
-				</div>
-			</div>
+					<Grid.Col span={{ base: 12, lg: 3 }}>
+						<Box
+							p="xs"
+							style={{
+								borderLeft: "1px solid var(--mantine-color-gray-2)",
+								height: "100%",
+							}}
+						>
+							<Title
+								order={6}
+								mb="xs"
+								tt="uppercase"
+								style={{
+									borderBottom: `2px solid ${COLORS.gold}`,
+									paddingBottom: 4,
+								}}
+							>
+								Comments
+							</Title>
+							<Textarea
+								variant="unstyled"
+								size="xs"
+								styles={{
+									input: {
+										fontSize: 11,
+										fontFamily: "monospace",
+										lineHeight: 1.5,
+										padding: 0,
+									},
+								}}
+								value={analysisText}
+								onChange={(e) => onAnalysisChange(e.target.value)}
+								autosize
+								minRows={10}
+							/>
+						</Box>
+					</Grid.Col>
+				</Grid>
+			</Card>
 		);
 	},
 );

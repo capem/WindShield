@@ -1,4 +1,5 @@
 import React from "react";
+import { Paper, Text, Group, ColorSwatch, Stack, Box } from "@mantine/core";
 
 // --- TAREC COLOR PALETTE ---
 export const COLORS = {
@@ -28,29 +29,43 @@ export const CustomTooltip = ({
 }: CustomTooltipProps) => {
 	if (active && payload && payload.length) {
 		return (
-			<div className="bg-white/90 dark:bg-[#111111]/90 backdrop-blur-sm p-3 border border-slate-200 dark:border-white/10 shadow-xl rounded-lg text-xs">
-				<p className="font-bold mb-2 text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-white/10 pb-1">
+			<Paper
+				p="xs"
+				shadow="xl"
+				radius="md"
+				withBorder
+				style={{
+					backgroundColor: "rgba(255, 255, 255, 0.9)",
+					backdropFilter: "blur(4px)",
+				}}
+			>
+				<Text
+					size="xs"
+					fw={700}
+					mb={4}
+					style={{
+						borderBottom: "1px solid var(--mantine-color-gray-2)",
+						paddingBottom: 4,
+					}}
+				>
 					{label}
-				</p>
-				{payload.map((entry) => (
-					<p
-						key={entry.name}
-						className="flex items-center gap-2 mb-1"
-						style={{ color: entry.color }}
-					>
-						<span
-							className="w-2 h-2 rounded-full"
-							style={{ backgroundColor: entry.color }}
-						></span>
-						<span className="font-medium">{entry.name}:</span>
-						<span className="font-bold">
-							{typeof entry.value === "number"
-								? entry.value.toLocaleString()
-								: entry.value}
-						</span>
-					</p>
-				))}
-			</div>
+				</Text>
+				<Stack gap={2}>
+					{payload.map((entry) => (
+						<Group key={entry.name} gap="xs">
+							<ColorSwatch color={entry.color || "gray"} size={8} />
+							<Text size="xs" fw={500}>
+								{entry.name}:
+							</Text>
+							<Text size="xs" fw={700}>
+								{typeof entry.value === "number"
+									? entry.value.toLocaleString()
+									: entry.value}
+							</Text>
+						</Group>
+					))}
+				</Stack>
+			</Paper>
 		);
 	}
 	return null;

@@ -12,19 +12,20 @@ import {
 	YAxis,
 	ZAxis,
 } from "recharts";
+import { Grid, Card, Title, Box, Badge } from "@mantine/core";
 import { COLORS, CustomTooltip } from "./Shared";
 import { BOOST_DATA, CONSUMPTION_DATA, TURBINE_MAP_DATA } from "./reportsData";
 
 const ConsumptionSection = React.memo(() => {
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+		<Grid gutter="md">
 			{/* Consumption */}
-			<div className="bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
-					Energy consumed per month (MWh)
-				</h3>
-				<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4 flex flex-col">
-					<div className="flex-1 min-h-0 w-full">
+			<Grid.Col span={{ base: 12, lg: 6 }}>
+				<Card shadow="sm" padding="md" radius="md" withBorder>
+					<Title order={6} ta="center" tt="uppercase" c="dimmed" mb="xs">
+						Energy consumed per month (MWh)
+					</Title>
+					<Box h={160} mb="md" style={{ minHeight: 0, width: "100%" }}>
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={CONSUMPTION_DATA}>
 								<CartesianGrid
@@ -53,14 +54,16 @@ const ConsumptionSection = React.memo(() => {
 								/>
 							</BarChart>
 						</ResponsiveContainer>
-					</div>
-				</div>
-				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
-					Energie consommée par turbine
-				</h3>
-				<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden flex flex-col">
-					{/* Mock Map Visualization using ScatterChart */}
-					<div className="flex-1 min-h-0 w-full">
+					</Box>
+
+					<Title order={6} ta="center" tt="uppercase" c="dimmed" mb="xs">
+						Energie consommée par turbine
+					</Title>
+					<Box
+						h={256}
+						pos="relative"
+						style={{ minHeight: 0, width: "100%", overflow: "hidden" }}
+					>
 						<ResponsiveContainer width="100%" height="100%">
 							<ScatterChart
 								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -96,20 +99,28 @@ const ConsumptionSection = React.memo(() => {
 								</Scatter>
 							</ScatterChart>
 						</ResponsiveContainer>
-					</div>
-					<div className="absolute bottom-2 right-2 bg-white dark:bg-black p-1 text-[8px] rounded shadow opacity-70">
-						Map Visualization
-					</div>
-				</div>
-			</div>
+						<Badge
+							size="xs"
+							variant="light"
+							color="gray"
+							pos="absolute"
+							bottom={8}
+							right={8}
+							style={{ opacity: 0.7 }}
+						>
+							Map Visualization
+						</Badge>
+					</Box>
+				</Card>
+			</Grid.Col>
 
 			{/* Boost */}
-			<div className="bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
-					Boost per month (MWh)
-				</h3>
-				<div className="h-40 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 mb-4 flex flex-col">
-					<div className="flex-1 min-h-0 w-full">
+			<Grid.Col span={{ base: 12, lg: 6 }}>
+				<Card shadow="sm" padding="md" radius="md" withBorder>
+					<Title order={6} ta="center" tt="uppercase" c="dimmed" mb="xs">
+						Boost per month (MWh)
+					</Title>
+					<Box h={160} mb="md" style={{ minHeight: 0, width: "100%" }}>
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={BOOST_DATA}>
 								<CartesianGrid
@@ -138,14 +149,16 @@ const ConsumptionSection = React.memo(() => {
 								/>
 							</BarChart>
 						</ResponsiveContainer>
-					</div>
-				</div>
-				<h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 text-center uppercase tracking-wider">
-					Boost par Turbine
-				</h3>
-				<div className="h-64 bg-slate-50 dark:bg-black/50 rounded-lg p-3 border border-slate-100 dark:border-white/10 relative overflow-hidden flex flex-col">
-					{/* Mock Map Visualization using ScatterChart */}
-					<div className="flex-1 min-h-0 w-full">
+					</Box>
+
+					<Title order={6} ta="center" tt="uppercase" c="dimmed" mb="xs">
+						Boost par Turbine
+					</Title>
+					<Box
+						h={256}
+						pos="relative"
+						style={{ minHeight: 0, width: "100%", overflow: "hidden" }}
+					>
 						<ResponsiveContainer width="100%" height="100%">
 							<ScatterChart
 								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -181,13 +194,21 @@ const ConsumptionSection = React.memo(() => {
 								</Scatter>
 							</ScatterChart>
 						</ResponsiveContainer>
-					</div>
-					<div className="absolute bottom-2 right-2 bg-white dark:bg-black p-1 text-[8px] rounded shadow opacity-70">
-						Map Visualization
-					</div>
-				</div>
-			</div>
-		</div>
+						<Badge
+							size="xs"
+							variant="light"
+							color="gray"
+							pos="absolute"
+							bottom={8}
+							right={8}
+							style={{ opacity: 0.7 }}
+						>
+							Map Visualization
+						</Badge>
+					</Box>
+				</Card>
+			</Grid.Col>
+		</Grid>
 	);
 });
 

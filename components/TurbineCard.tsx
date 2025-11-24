@@ -1,5 +1,7 @@
-import type React from "react";
+import React from "react";
 import { Link } from "react-router-dom";
+import { Card, Text, Badge, Group, Stack, Box, Center } from "@mantine/core";
+import { IconAlertTriangle, IconInfoCircle } from "@tabler/icons-react";
 import type { Turbine } from "../types";
 import { AlarmSeverity, TurbineStatus } from "../types";
 
@@ -17,20 +19,19 @@ const AnimatedTurbineIcon: React.FC<{
 	maxPower: number;
 }> = ({ status, activePower, maxPower }) => {
 	const baseColor = {
-		[TurbineStatus.Producing]: "text-green-500",
-		[TurbineStatus.Available]: "text-blue-500",
-		[TurbineStatus.Offline]: "text-red-400",
-		[TurbineStatus.Stopped]: "text-yellow-500",
-		[TurbineStatus.Maintenance]: "text-purple-500",
-		[TurbineStatus.Fault]: "text-red-600",
-		[TurbineStatus.Warning]: "text-orange-500",
-		[TurbineStatus.Curtailment]: "text-indigo-500",
+		[TurbineStatus.Producing]: "var(--mantine-color-green-filled)",
+		[TurbineStatus.Available]: "var(--mantine-color-blue-filled)",
+		[TurbineStatus.Offline]: "var(--mantine-color-red-filled)",
+		[TurbineStatus.Stopped]: "var(--mantine-color-yellow-filled)",
+		[TurbineStatus.Maintenance]: "var(--mantine-color-grape-filled)",
+		[TurbineStatus.Fault]: "var(--mantine-color-red-filled)",
+		[TurbineStatus.Warning]: "var(--mantine-color-orange-filled)",
+		[TurbineStatus.Curtailment]: "var(--mantine-color-indigo-filled)",
 	}[status];
 
 	let animationStyle: React.CSSProperties = {};
 
 	if (status === TurbineStatus.Producing && activePower && maxPower) {
-		// Faster spin for higher power output. Duration from 4s (low power) to 0.5s (max power)
 		const powerRatio = activePower / maxPower;
 		const duration = Math.max(0.5, 4 - powerRatio * 3.5);
 		animationStyle = {
@@ -41,7 +42,7 @@ const AnimatedTurbineIcon: React.FC<{
 	}
 
 	const blades = (
-		<g style={animationStyle} className="origin-center">
+		<g style={{ ...animationStyle, transformOrigin: "center" }}>
 			<path
 				d="M12 12 L12 2"
 				stroke="currentColor"
@@ -64,26 +65,25 @@ const AnimatedTurbineIcon: React.FC<{
 	);
 
 	return (
-		<svg
-			viewBox="0 0 24 24"
-			className={`w-full h-full ${baseColor}`}
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<title>Turbine Status Icon</title>
-			{/* Tower */}
-			<path
-				d="M12 22 L11 12.5 h2 L12 22"
-				fill="currentColor"
-				stroke="currentColor"
-				strokeWidth="0.5"
-				strokeLinejoin="round"
-			/>
-			{/* Blades */}
-			{blades}
-			{/* Hub */}
-			<circle cx="12" cy="12" r="1.5" fill="currentColor" />
-		</svg>
+		<Box c={baseColor} w="100%" h="100%">
+			<svg
+				viewBox="0 0 24 24"
+				style={{ width: "100%", height: "100%" }}
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<title>Turbine Status Icon</title>
+				<path
+					d="M12 22 L11 12.5 h2 L12 22"
+					fill="currentColor"
+					stroke="currentColor"
+					strokeWidth="0.5"
+					strokeLinejoin="round"
+				/>
+				{blades}
+				<circle cx="12" cy="12" r="1.5" fill="currentColor" />
+			</svg>
+		</Box>
 	);
 };
 
@@ -95,194 +95,197 @@ const TurbineCard: React.FC<TurbineCardProps> = ({
 	activeAlarmSeverity = null,
 }) => {
 	const statusConfig = {
-		[TurbineStatus.Producing]: {
-			text: "Producing",
-			classes:
-				"text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 border-green-500",
-		},
-		[TurbineStatus.Available]: {
-			text: "Available",
-			classes:
-				"text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 border-blue-500",
-		},
-		[TurbineStatus.Offline]: {
-			text: "Offline",
-			classes:
-				"text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 border-red-500",
-		},
-		[TurbineStatus.Stopped]: {
-			text: "Stopped",
-			classes:
-				"text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 border-yellow-500",
-		},
-		[TurbineStatus.Maintenance]: {
-			text: "Maintenance",
-			classes:
-				"text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/30 border-purple-500",
-		},
-		[TurbineStatus.Fault]: {
-			text: "Fault",
-			classes:
-				"text-red-800 dark:text-red-200 bg-red-200 dark:bg-red-900/40 border-red-600",
-		},
-		[TurbineStatus.Warning]: {
-			text: "Warning",
-			classes:
-				"text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 border-orange-500",
-		},
-		[TurbineStatus.Curtailment]: {
-			text: "Curtailment",
-			classes:
-				"text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500",
-		},
+		[TurbineStatus.Producing]: { text: "Producing", color: "green" },
+		[TurbineStatus.Available]: { text: "Available", color: "blue" },
+		[TurbineStatus.Offline]: { text: "Offline", color: "red" },
+		[TurbineStatus.Stopped]: { text: "Stopped", color: "yellow" },
+		[TurbineStatus.Maintenance]: { text: "Maintenance", color: "grape" },
+		[TurbineStatus.Fault]: { text: "Fault", color: "red" },
+		[TurbineStatus.Warning]: { text: "Warning", color: "orange" },
+		[TurbineStatus.Curtailment]: { text: "Curtailment", color: "indigo" },
 	};
 
-	const alarmConfig: {
-		[key in AlarmSeverity]: { icon: string; color: string };
-	} = {
-		[AlarmSeverity.Critical]: {
-			icon: "fa-triangle-exclamation",
-			color: "text-red-500",
-		},
-		[AlarmSeverity.Warning]: {
-			icon: "fa-triangle-exclamation",
-			color: "text-yellow-500",
-		},
-		[AlarmSeverity.Info]: { icon: "fa-circle-info", color: "text-blue-500" },
+	const alarmConfig = {
+		[AlarmSeverity.Critical]: { icon: IconAlertTriangle, color: "red" },
+		[AlarmSeverity.Warning]: { icon: IconAlertTriangle, color: "yellow" },
+		[AlarmSeverity.Info]: { icon: IconInfoCircle, color: "blue" },
 	};
 
 	const config = statusConfig[turbine.status];
-	const statusClasses = config.classes
-		.split(" ")
-		.filter((c) => !c.startsWith("border-"));
-	const borderClass = config.classes
-		.split(" ")
-		.find((c) => c.startsWith("border-"));
 
 	const CardContent = () => (
 		<>
 			{isCompact ? (
-				<>
-					<div className="flex justify-between items-center mb-0.5">
-						<div className="flex items-center gap-1">
+				<Stack gap={2} h="100%" justify="space-between">
+					<Group justify="space-between" wrap="nowrap" gap={4}>
+						<Group gap={2} wrap="nowrap">
 							{activeAlarmSeverity && (
-								<i
-									className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color} text-xs`}
-									title={`${activeAlarmSeverity} Alarm Active`}
-								></i>
+								<Box c={alarmConfig[activeAlarmSeverity].color}>
+									{React.createElement(alarmConfig[activeAlarmSeverity].icon, {
+										size: 12,
+									})}
+								</Box>
 							)}
-							<h3 className="font-bold text-slate-800 dark:text-white text-[10px]">
+							<Text size="xs" fw={700} style={{ fontSize: 10 }}>
 								{turbine.id}
-							</h3>
-						</div>
-						<span
-							className={`text-[8px] font-bold px-1 py-0 rounded-full ${statusClasses.join(" ")}`}
+							</Text>
+						</Group>
+						<Badge
+							color={config.color}
+							variant="light"
+							size="xs"
+							p={0}
+							px={4}
+							style={{ fontSize: 8, height: 14 }}
 						>
 							{config.text}
-						</span>
-					</div>
-					<div className="flex items-center justify-around gap-1 mt-0.5 flex-grow">
-						<div className="w-6 h-6 flex-shrink-0">
+						</Badge>
+					</Group>
+					<Group justify="space-around" align="center" gap={4} flex={1}>
+						<Box w={24} h={24}>
 							<AnimatedTurbineIcon
 								status={turbine.status}
 								activePower={turbine.activePower}
 								maxPower={turbine.maxPower}
 							/>
-						</div>
-						<div className="text-[8px] text-center space-y-0">
-							<div>
-								<p className="text-slate-500 dark:text-gray-400 text-[8px] leading-none">
+						</Box>
+						<Stack gap={0} align="center">
+							<Box>
+								<Text
+									size="xs"
+									c="dimmed"
+									style={{ fontSize: 8, lineHeight: 1 }}
+								>
 									Pwr
-								</p>
-								<p className="font-bold text-slate-900 dark:text-white text-[9px] leading-tight">
+								</Text>
+								<Text
+									size="xs"
+									fw={700}
+									style={{ fontSize: 9, lineHeight: 1.2 }}
+								>
 									{turbine.activePower !== null
 										? `${turbine.activePower.toFixed(1)}`
 										: "-"}
-								</p>
-							</div>
-							<div>
-								<p className="text-slate-500 dark:text-gray-400 text-[8px] leading-none">
+								</Text>
+							</Box>
+							<Box>
+								<Text
+									size="xs"
+									c="dimmed"
+									style={{ fontSize: 8, lineHeight: 1 }}
+								>
 									Wind
-								</p>
-								<p className="font-bold text-slate-900 dark:text-white text-[9px] leading-tight">
+								</Text>
+								<Text
+									size="xs"
+									fw={700}
+									style={{ fontSize: 9, lineHeight: 1.2 }}
+								>
 									{turbine.windSpeed !== null
 										? `${turbine.windSpeed.toFixed(1)}`
 										: "-"}
-								</p>
-							</div>
-						</div>
-					</div>
-				</>
+								</Text>
+							</Box>
+						</Stack>
+					</Group>
+				</Stack>
 			) : (
-				<>
-					<div>
-						<div className="flex justify-between items-center mb-1">
-							<div className="flex items-center gap-1.5">
-								{activeAlarmSeverity && (
-									<i
-										className={`fa-solid ${alarmConfig[activeAlarmSeverity].icon} ${alarmConfig[activeAlarmSeverity].color} text-xs`}
-										title={`${activeAlarmSeverity} Alarm Active`}
-									></i>
-								)}
-								<h3 className="font-bold text-slate-800 dark:text-white text-xs">
-									{turbine.id}
-								</h3>
-							</div>
-							<span
-								className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${statusClasses.join(" ")}`}
-							>
-								{config.text}
-							</span>
-						</div>
-						<div className="flex justify-center items-center my-1 h-10">
-							<div className="w-10 h-10">
-								<AnimatedTurbineIcon
-									status={turbine.status}
-									activePower={turbine.activePower}
-									maxPower={turbine.maxPower}
-								/>
-							</div>
-						</div>
-					</div>
+				<Stack gap="xs" h="100%">
+					<Group justify="space-between" wrap="nowrap">
+						<Group gap="xs">
+							{activeAlarmSeverity && (
+								<Box c={alarmConfig[activeAlarmSeverity].color}>
+									{React.createElement(alarmConfig[activeAlarmSeverity].icon, {
+										size: 16,
+									})}
+								</Box>
+							)}
+							<Text fw={700} size="sm">
+								{turbine.id}
+							</Text>
+						</Group>
+						<Badge color={config.color} variant="light" size="sm">
+							{config.text}
+						</Badge>
+					</Group>
 
-					<div className="text-[10px] text-center space-y-0.5 mt-1">
-						<div className="flex justify-between items-end border-b border-slate-100 dark:border-gray-800 pb-0.5">
-							<p className="text-slate-500 dark:text-gray-400">Power</p>
-							<p className="font-bold text-slate-900 dark:text-white">
+					<Center h={40} my={4}>
+						<Box w={40} h={40}>
+							<AnimatedTurbineIcon
+								status={turbine.status}
+								activePower={turbine.activePower}
+								maxPower={turbine.maxPower}
+							/>
+						</Box>
+					</Center>
+
+					<Stack gap={4}>
+						<Group justify="space-between">
+							<Text size="xs" c="dimmed">
+								Power
+							</Text>
+							<Text size="sm" fw={700}>
 								{turbine.activePower !== null
 									? `${turbine.activePower.toFixed(1)} MW`
 									: "-"}
-							</p>
-						</div>
-						<div className="flex justify-between items-end pt-0.5">
-							<p className="text-slate-500 dark:text-gray-400">Wind</p>
-							<p className="font-bold text-slate-900 dark:text-white">
+							</Text>
+						</Group>
+						<Group justify="space-between">
+							<Text size="xs" c="dimmed">
+								Wind
+							</Text>
+							<Text size="sm" fw={700}>
 								{turbine.windSpeed !== null
 									? `${turbine.windSpeed.toFixed(1)} m/s`
 									: "-"}
-							</p>
-						</div>
-					</div>
-				</>
+							</Text>
+						</Group>
+					</Stack>
+				</Stack>
 			)}
 		</>
 	);
 
-	const className = `bg-white dark:bg-black rounded-lg ${isCompact ? "p-1.5" : "p-2"} shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${borderClass} border-l-4 flex flex-col justify-between text-left w-full ${isCompact ? "h-full" : ""} transition-theme-fast block`;
+	const cardProps = {
+		padding: isCompact ? 6 : "xs",
+		radius: "md",
+		withBorder: true,
+		style: {
+			borderLeftWidth: 4,
+			borderLeftColor: `var(--mantine-color-${config.color}-filled)`,
+			cursor: onClick || to ? "pointer" : "default",
+			height: isCompact ? "100%" : "auto",
+		},
+	};
 
 	if (to) {
 		return (
-			<Link to={to} className={className}>
+			<Card
+				component={Link}
+				to={to}
+				{...cardProps}
+				className="turbine-card-hover"
+			>
 				<CardContent />
-			</Link>
+			</Card>
 		);
 	}
 
 	return (
-		<button type="button" onClick={onClick} className={className}>
+		<Card
+			component={onClick ? "button" : "div"}
+			onClick={onClick}
+			{...cardProps}
+			className="turbine-card-hover"
+		>
 			<CardContent />
-		</button>
+		</Card>
 	);
 };
 
-export default TurbineCard;
+// Add hover effect style globally or in a CSS module if not using sx/styles prop extensively
+// For now, relying on Mantine's default hover or adding a simple className if needed.
+// But Mantine Card component doesn't have built-in hover lift.
+// I'll add a style tag or class in global css for .turbine-card-hover
+
+export default React.memo(TurbineCard);

@@ -1,5 +1,43 @@
-import type React from "react";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import {
+	Grid,
+	Card,
+	Stack,
+	Group,
+	Title,
+	Text,
+	Badge,
+	Button,
+	ActionIcon,
+	ThemeIcon,
+	Table,
+	SegmentedControl,
+	Box,
+	rem,
+	Paper,
+	RingProgress,
+	Center,
+	SimpleGrid,
+} from "@mantine/core";
+import {
+	IconArrowLeft,
+	IconBolt,
+	IconChartLine,
+	IconWaveSine,
+	IconWind,
+	IconCompass,
+	IconTemperature,
+	IconArrowsShuffle,
+	IconGauge,
+	IconTag,
+	IconFilter,
+	IconDownload,
+	IconSortAscending,
+	IconSortDescending,
+	IconCheck,
+	IconAlertTriangle,
+	IconInfoCircle,
+} from "@tabler/icons-react";
 import type { Alarm, Turbine } from "../types";
 import { AlarmSeverity, TurbineStatus } from "../types";
 
@@ -9,45 +47,41 @@ interface TurbineDetailViewProps {
 	historicalData?: Array<Record<string, string>>;
 	alarms: Alarm[];
 	onAcknowledgeAlarm: (alarmId: string) => void;
+	savedTurbineId?: string;
 }
 
 const statusConfig = {
 	[TurbineStatus.Producing]: {
 		text: "Producing",
-		classes:
-			"text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30",
+		color: "green",
 	},
 	[TurbineStatus.Available]: {
 		text: "Available",
-		classes: "text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30",
+		color: "blue",
 	},
 	[TurbineStatus.Offline]: {
 		text: "Offline",
-		classes: "text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30",
+		color: "red",
 	},
 	[TurbineStatus.Stopped]: {
 		text: "Stopped",
-		classes:
-			"text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30",
+		color: "yellow",
 	},
 	[TurbineStatus.Maintenance]: {
 		text: "Maintenance",
-		classes:
-			"text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/30",
+		color: "grape",
 	},
 	[TurbineStatus.Fault]: {
 		text: "Fault",
-		classes: "text-red-800 dark:text-red-200 bg-red-200 dark:bg-red-900/40",
+		color: "red",
 	},
 	[TurbineStatus.Warning]: {
 		text: "Warning",
-		classes:
-			"text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30",
+		color: "orange",
 	},
 	[TurbineStatus.Curtailment]: {
 		text: "Curtailment",
-		classes:
-			"text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30",
+		color: "indigo",
 	},
 };
 
@@ -55,225 +89,49 @@ const PowerGauge: React.FC<{ power: number; nominalMaxPower: number }> = ({
 	power,
 	nominalMaxPower,
 }) => {
-	const GAUGE_MAX_POWER_FACTOR = 1.15;
-	const GAUGE_RADIUS = 75;
-	const GAUGE_WIDTH = 20;
-	const VIEW_BOX_WIDTH = 180;
-	const VIEW_BOX_HEIGHT = 110;
-	const CX = VIEW_BOX_WIDTH / 2;
-	const CY = VIEW_BOX_HEIGHT - 15;
-
-	const gaugeMax = nominalMaxPower * GAUGE_MAX_POWER_FACTOR;
-	const clampedPower = Math.max(0, Math.min(power, gaugeMax));
 	const powerPercentage =
 		nominalMaxPower > 0 ? (power / nominalMaxPower) * 100 : 0;
 
-	const getAngle = (value: number) => (value / gaugeMax) * 180 - 90;
-
-	const needleAngle = getAngle(clampedPower);
-	const nominalMaxAngle = getAngle(nominalMaxPower);
-
-	const polarToCartesian = (
-		centerX: number,
-		centerY: number,
-		radius: number,
-		angleInDegrees: number,
-	) => {
-		const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
-		return {
-			x: centerX + radius * Math.cos(angleInRadians),
-			y: centerY + radius * Math.sin(angleInRadians),
-		};
-	};
-
-	const describeArc = (
-		x: number,
-		y: number,
-		radius: number,
-		startAngle: number,
-		endAngle: number,
-	) => {
-		const start = polarToCartesian(x, y, radius, endAngle);
-		const end = polarToCartesian(x, y, radius, startAngle);
-		const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-		return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
-	};
-
-	const powerValueColor =
-		power > nominalMaxPower ? "text-amber-500" : "text-emerald-500";
-	const majorTicksValues = [0, 0.5, 1.0, 1.5, 2.0, 2.5];
+	const color = power > nominalMaxPower ? "orange" : "teal";
 
 	return (
-		<div className="relative w-full group">
-			<svg
-				viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`}
-				className="w-full overflow-visible drop-shadow-xl"
-			>
-				<title>Power Gauge</title>
-				<defs>
-					<linearGradient
-						id="gaugeGreenGradient"
-						gradientUnits="userSpaceOnUse"
-						x1={CX - GAUGE_RADIUS}
-						y1="0"
-						x2={CX + GAUGE_RADIUS}
-						y2="0"
-					>
-						<stop offset="0%" stopColor="#10b981" />
-						<stop offset="50%" stopColor="#34d399" />
-						<stop offset="100%" stopColor="#059669" />
-					</linearGradient>
-					<linearGradient
-						id="gaugeAmberGradient"
-						gradientUnits="userSpaceOnUse"
-						x1={CX - GAUGE_RADIUS}
-						y1="0"
-						x2={CX + GAUGE_RADIUS}
-						y2="0"
-					>
-						<stop offset="0%" stopColor="#f59e0b" />
-						<stop offset="100%" stopColor="#d97706" />
-					</linearGradient>
-					<radialGradient id="hubGradient">
-						<stop offset="0%" stopColor="#f3f4f6" />
-						<stop offset="90%" stopColor="#d1d5db" />
-						<stop offset="100%" stopColor="#9ca3af" />
-					</radialGradient>
-				</defs>
-
-				{/* Gauge Background Arc */}
-				<path
-					d={describeArc(CX, CY, GAUGE_RADIUS, -90, 90)}
-					strokeWidth={GAUGE_WIDTH}
-					className="stroke-slate-100 dark:stroke-gray-800"
-					fill="none"
-					strokeLinecap="round"
+		<Box pos="relative">
+			<Center>
+				<RingProgress
+					size={220}
+					thickness={20}
+					roundCaps
+					sections={[{ value: powerPercentage, color: color }]}
+					label={
+						<Center>
+							<Stack gap={0} align="center">
+								<Text fw={900} size={rem(32)} lh={1}>
+									{power.toFixed(2)}
+								</Text>
+								<Text size="sm" c="dimmed" fw={700}>
+									MW
+								</Text>
+							</Stack>
+						</Center>
+					}
 				/>
-
-				{/* Gauge Value Arcs - Glow Layer */}
-				<path
-					d={describeArc(
-						CX,
-						CY,
-						GAUGE_RADIUS,
-						-90,
-						Math.min(needleAngle, nominalMaxAngle),
-					)}
-					strokeWidth={GAUGE_WIDTH + 4}
-					stroke="url(#gaugeGreenGradient)"
-					fill="none"
-					strokeLinecap="round"
-					className="opacity-15 blur-sm"
-				/>
-				{clampedPower > nominalMaxPower && (
-					<path
-						d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, needleAngle)}
-						strokeWidth={GAUGE_WIDTH + 4}
-						stroke="url(#gaugeAmberGradient)"
-						fill="none"
-						strokeLinecap="round"
-						className="opacity-15 blur-sm"
+			</Center>
+			<Center mt="sm">
+				<Group gap={6}>
+					<Box
+						w={8}
+						h={8}
+						style={{
+							borderRadius: "50%",
+							backgroundColor: "var(--mantine-color-teal-5)",
+						}}
 					/>
-				)}
-
-				{/* Gauge Value Arcs - Main Layer */}
-				<path
-					d={describeArc(
-						CX,
-						CY,
-						GAUGE_RADIUS,
-						-90,
-						Math.min(needleAngle, nominalMaxAngle),
-					)}
-					strokeWidth={GAUGE_WIDTH}
-					stroke="url(#gaugeGreenGradient)"
-					fill="none"
-					strokeLinecap="round"
-				/>
-				{clampedPower > nominalMaxPower && (
-					<path
-						d={describeArc(CX, CY, GAUGE_RADIUS, nominalMaxAngle, needleAngle)}
-						strokeWidth={GAUGE_WIDTH}
-						stroke="url(#gaugeAmberGradient)"
-						fill="none"
-						strokeLinecap="round"
-					/>
-				)}
-
-				{/* Ticks and Labels */}
-				{majorTicksValues.map((value) => {
-					if (value > gaugeMax) return null;
-					const angle = getAngle(value);
-					const isMajor = true;
-					const tickLength = isMajor ? 8 : 5;
-					const tickStart = polarToCartesian(
-						CX,
-						CY,
-						GAUGE_RADIUS - GAUGE_WIDTH / 2 - 2,
-						angle,
-					);
-					const tickEnd = polarToCartesian(
-						CX,
-						CY,
-						GAUGE_RADIUS - GAUGE_WIDTH / 2 - 2 - tickLength,
-						angle,
-					);
-					const labelPos = polarToCartesian(CX, CY, GAUGE_RADIUS + 18, angle);
-
-					return (
-						<g key={`tick-${value}`}>
-							<line
-								x1={tickStart.x}
-								y1={tickStart.y}
-								x2={tickEnd.x}
-								y2={tickEnd.y}
-								className="stroke-slate-300 dark:stroke-gray-600"
-								strokeWidth="1.5"
-							/>
-							<text
-								x={labelPos.x}
-								y={labelPos.y}
-								textAnchor="middle"
-								alignmentBaseline="central"
-								className="text-[9px] font-bold fill-slate-500 dark:fill-gray-400"
-							>
-								{value.toFixed(1)}
-							</text>
-						</g>
-					);
-				})}
-
-				{/* Needle */}
-				<g
-					transform={`rotate(${needleAngle} ${CX} ${CY})`}
-					style={{
-						transition: "transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)",
-					}}
-				>
-					<path
-						d={`M ${CX} ${CY - GAUGE_RADIUS + GAUGE_WIDTH / 2} L ${CX - 4} ${CY} L ${CX} ${CY + 8} L ${CX + 4} ${CY} Z`}
-						className="fill-slate-700 dark:fill-white drop-shadow-md"
-					/>
-					<circle cx={CX} cy={CY} r="5" fill="url(#hubGradient)" />
-				</g>
-			</svg>
-			<div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-				<p
-					className={`text-5xl font-black tracking-tighter ${powerValueColor} drop-shadow-sm`}
-				>
-					{power.toFixed(2)}
-					<span className="text-lg font-medium text-slate-400 dark:text-slate-500 ml-1">
-						MW
-					</span>
-				</p>
-				<div className="flex items-center justify-center gap-1 mt-1">
-					<div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-					<p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide">
+					<Text size="xs" fw={700} tt="uppercase" c="dimmed">
 						{powerPercentage.toFixed(0)}% Capacity
-					</p>
-				</div>
-			</div>
-		</div>
+					</Text>
+				</Group>
+			</Center>
+		</Box>
 	);
 };
 
@@ -283,25 +141,21 @@ const MetricCard: React.FC<{
 	icon: React.ReactNode;
 	color: string;
 }> = ({ title, value, icon, color }) => (
-	<div className="group bg-white dark:bg-black/40 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-gray-800 flex items-center gap-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-violet-100 dark:hover:border-violet-900/30">
-		<div
-			className={`p-3.5 rounded-xl ${color.replace("text-", "bg-").replace("-500", "-50")} dark:bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}
-		>
-			<div
-				className={`${color} text-xl w-6 h-6 flex items-center justify-center`}
-			>
+	<Card shadow="sm" padding="lg" radius="md" withBorder>
+		<Group wrap="nowrap">
+			<ThemeIcon size="xl" radius="md" variant="light" color={color}>
 				{icon}
+			</ThemeIcon>
+			<div>
+				<Text size="xs" tt="uppercase" fw={700} c="dimmed">
+					{title}
+				</Text>
+				<Text size="xl" fw={700}>
+					{value}
+				</Text>
 			</div>
-		</div>
-		<div className="flex-1">
-			<p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-1">
-				{title}
-			</p>
-			<p className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
-				{value}
-			</p>
-		</div>
-	</div>
+		</Group>
+	</Card>
 );
 
 const HistoricalChart: React.FC<{
@@ -322,21 +176,24 @@ const HistoricalChart: React.FC<{
 
 	if (!data || data.length === 0)
 		return (
-			<div className="bg-white dark:bg-black rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-gray-800 flex flex-col items-center justify-center h-[200px] transition-theme">
-				<div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-gray-900 flex items-center justify-center mb-3">
-					<i className="fa-solid fa-chart-line text-xl text-slate-300 dark:text-gray-600"></i>
-				</div>
-				<p className="text-slate-500 dark:text-gray-400 font-medium text-sm">
-					No historical data available
-				</p>
-			</div>
+			<Card shadow="sm" padding="lg" radius="md" withBorder h={200}>
+				<Center h="100%">
+					<Stack align="center" gap="xs">
+						<ThemeIcon size="xl" radius="xl" variant="light" color="gray">
+							<IconChartLine />
+						</ThemeIcon>
+						<Text size="sm" c="dimmed">
+							No historical data available
+						</Text>
+					</Stack>
+				</Center>
+			</Card>
 		);
 
 	const maxDataVal =
 		maxVal > 0 ? maxVal : Math.max(...data) > 0 ? Math.max(...data) : 1;
 	const avgDataVal = data.reduce((sum, val) => sum + val, 0) / data.length;
 
-	// Coordinate calculation
 	const getCoordinates = (val: number, i: number) => {
 		const x = data.length > 1 ? (i / (data.length - 1)) * width : width / 2;
 		const y = height - (val / maxDataVal) * height;
@@ -345,7 +202,6 @@ const HistoricalChart: React.FC<{
 
 	const points = data.map((val, i) => getCoordinates(val, i));
 
-	// Simple smoothing using Catmull-Rom to Cubic Bezier conversion
 	const svgPath = (
 		points: { x: number; y: number }[],
 		command: (
@@ -371,9 +227,7 @@ const HistoricalChart: React.FC<{
 			const p_2 = p[i - 2] || p[i - 1];
 			const p1 = p[i];
 			const p2 = p[i + 1] || p1;
-
 			const smoothing = 0.2;
-
 			const line = (
 				pA: { x: number; y: number },
 				pB: { x: number; y: number },
@@ -385,7 +239,6 @@ const HistoricalChart: React.FC<{
 					angle: Math.atan2(lengthY, lengthX),
 				};
 			};
-
 			const controlPoint = (
 				current: { x: number; y: number },
 				previous: { x: number; y: number },
@@ -401,7 +254,6 @@ const HistoricalChart: React.FC<{
 				const y = current.y + Math.sin(angle) * length;
 				return { x, y };
 			};
-
 			const cp1 = controlPoint(p_1, p_2, p1);
 			const cp2 = controlPoint(p1, p_1, p2, true);
 			return `C ${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${p1.x},${p1.y}`;
@@ -411,8 +263,6 @@ const HistoricalChart: React.FC<{
 
 	const linePath = svgPath(points, bezierCommand);
 	const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
-
-	const gradientId = `gradient-${color.replace(/[^a-zA-Z0-9]/g, "-")}`;
 
 	const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
 		const rect = event.currentTarget.getBoundingClientRect();
@@ -431,100 +281,67 @@ const HistoricalChart: React.FC<{
 	};
 
 	return (
-		<div className="bg-white dark:bg-black rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-gray-800 transition-theme hover:shadow-md duration-300">
-			<div className="flex justify-between items-baseline mb-6">
+		<Card shadow="sm" padding="lg" radius="md" withBorder>
+			<Group justify="space-between" align="flex-start" mb="md">
 				<div>
-					<h4 className="font-bold text-slate-700 dark:text-gray-300 text-sm uppercase tracking-wide">
+					<Text size="xs" fw={700} tt="uppercase" c="dimmed">
 						{title}
-					</h4>
-					<div className="flex items-baseline gap-2 mt-1">
-						<p className="text-2xl font-black text-slate-900 dark:text-white">
+					</Text>
+					<Group align="baseline" gap={4}>
+						<Text size="xl" fw={900}>
 							{data[data.length - 1].toFixed(1)}
-						</p>
-						<span className="font-bold text-sm text-slate-400 dark:text-gray-500">
+						</Text>
+						<Text size="xs" fw={700} c="dimmed">
 							{unit}
-						</span>
-					</div>
+						</Text>
+					</Group>
 				</div>
-				<div className="flex gap-2">
-					<div className="text-right">
-						<p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+				<Group gap="xs">
+					<Stack gap={0} align="flex-end">
+						<Text size="xs" fw={700} c="dimmed" tt="uppercase">
 							Max
-						</p>
-						<p className="text-xs font-bold text-slate-700 dark:text-gray-300">
+						</Text>
+						<Text size="sm" fw={700}>
 							{maxDataVal.toFixed(0)}
-						</p>
-					</div>
-					<div className="text-right pl-2 border-l border-slate-100 dark:border-gray-800">
-						<p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+						</Text>
+					</Stack>
+					<Stack
+						gap={0}
+						align="flex-end"
+						style={{
+							borderLeft: "1px solid var(--mantine-color-gray-3)",
+							paddingLeft: 8,
+						}}
+					>
+						<Text size="xs" fw={700} c="dimmed" tt="uppercase">
 							Avg
-						</p>
-						<p className="text-xs font-bold text-slate-700 dark:text-gray-300">
+						</Text>
+						<Text size="sm" fw={700}>
 							{avgDataVal.toFixed(1)}
-						</p>
-					</div>
-				</div>
-			</div>
+						</Text>
+					</Stack>
+				</Group>
+			</Group>
 
-			<div className="relative h-[120px] w-full">
+			<Box h={120} w="100%" pos="relative">
 				<svg
 					viewBox={`0 0 ${width} ${height}`}
-					className="w-full h-full overflow-visible"
+					style={{ width: "100%", height: "100%", overflow: "visible" }}
 					preserveAspectRatio="none"
 				>
-					<title>Historical Chart</title>
 					<defs>
-						<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+						<linearGradient
+							id={`gradient-${title}`}
+							x1="0"
+							y1="0"
+							x2="0"
+							y2="1"
+						>
 							<stop offset="0%" stopColor={color} stopOpacity="0.2" />
 							<stop offset="100%" stopColor={color} stopOpacity="0" />
 						</linearGradient>
-						<filter
-							id={`glow-${gradientId}`}
-							x="-50%"
-							y="-50%"
-							width="200%"
-							height="200%"
-						>
-							<feGaussianBlur stdDeviation="2" result="coloredBlur" />
-							<feMerge>
-								<feMergeNode in="coloredBlur" />
-								<feMergeNode in="SourceGraphic" />
-							</feMerge>
-						</filter>
 					</defs>
-
-					{/* Grid lines */}
-					<line
-						x1="0"
-						y1={height}
-						x2={width}
-						y2={height}
-						stroke="#e2e8f0"
-						strokeWidth="1"
-						className="dark:stroke-gray-800"
-					/>
-					<line
-						x1="0"
-						y1={0}
-						x2={width}
-						y2={0}
-						stroke="#e2e8f0"
-						strokeWidth="1"
-						strokeDasharray="4 4"
-						className="dark:stroke-gray-800"
-					/>
-					<line
-						x1="0"
-						y1={height / 2}
-						x2={width}
-						y2={height / 2}
-						stroke="#e2e8f0"
-						strokeWidth="1"
-						strokeDasharray="4 4"
-						className="dark:stroke-gray-800"
-					/>
-
-					<path d={areaPath} fill={`url(#${gradientId})`} />
+					<path d={areaPath} fill={`url(#gradient-${title})`} />
 					<path
 						d={linePath}
 						fill="none"
@@ -532,9 +349,7 @@ const HistoricalChart: React.FC<{
 						strokeWidth="2.5"
 						strokeLinecap="round"
 						strokeLinejoin="round"
-						filter={`url(#glow-${gradientId})`}
 					/>
-
 					{hoverData && (
 						<g>
 							<line
@@ -554,47 +369,44 @@ const HistoricalChart: React.FC<{
 								fill="white"
 								stroke={color}
 								strokeWidth="3"
-								className="drop-shadow-md"
 							/>
 						</g>
 					)}
 				</svg>
-				{/* Interactive Overlay */}
 				<div
-					className="absolute inset-0 cursor-crosshair"
+					style={{ position: "absolute", inset: 0, cursor: "crosshair" }}
 					onMouseMove={handleMouseMove}
 					onMouseLeave={handleMouseLeave}
-					role="application"
-					aria-label="Chart interaction area"
 				/>
-
-				{/* Tooltip */}
 				{hoverData && (
-					<div
-						className="absolute pointer-events-none z-10"
+					<Paper
+						shadow="md"
+						p="xs"
+						radius="sm"
+						withBorder
+						pos="absolute"
 						style={{
 							left: `${(hoverData.x / width) * 100}%`,
 							top: 0,
+							transform: "translateX(-50%) translateY(-100%)",
+							pointerEvents: "none",
+							zIndex: 10,
+							marginTop: -10,
 						}}
 					>
-						<div
-							className="absolute bottom-2 transform -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm text-white px-3 py-2 rounded-lg shadow-xl border border-white/10 min-w-[100px]"
-							style={{ bottom: `${height - hoverData.y + 10}px` }}
-						>
-							<p className="text-xs font-medium text-slate-400 mb-0.5">
-								{24 - hoverData.index}h ago
-							</p>
-							<p className="text-lg font-bold leading-none">
-								{hoverData.value.toFixed(2)}{" "}
-								<span className="text-xs font-normal text-slate-400">
-									{unit}
-								</span>
-							</p>
-						</div>
-					</div>
+						<Text size="xs" c="dimmed" fw={500}>
+							{24 - hoverData.index}h ago
+						</Text>
+						<Text fw={700}>
+							{hoverData.value.toFixed(2)}{" "}
+							<Text span size="xs" fw={400} c="dimmed">
+								{unit}
+							</Text>
+						</Text>
+					</Paper>
 				)}
-			</div>
-		</div>
+			</Box>
+		</Card>
 	);
 };
 
@@ -622,7 +434,7 @@ const generateHistoricalData = (
 
 	for (let i = 0; i < dataPoints; i++) {
 		const factor =
-			Math.sin((i / dataPoints) * Math.PI * 2 - Math.PI / 2) * 0.4 + 0.6; // Simulate daily cycle
+			Math.sin((i / dataPoints) * Math.PI * 2 - Math.PI / 2) * 0.4 + 0.6;
 		const randomFluctuation = 1 + (Math.random() - 0.5) * 0.2;
 
 		const p = Math.max(
@@ -640,20 +452,19 @@ const generateHistoricalData = (
 				SWT_2_3_101_SPECS.WIND_SPEED_CUT_OUT,
 				(turbine.windSpeed ?? 0) * factor * randomFluctuation,
 			),
-		); // Cap at cut-out speed
+		);
 		wind.push(w);
 
 		let r = 0;
 		if (p > 0.1) {
-			// Only have RPM if producing power
 			const powerRatio = p / turbine.maxPower;
 			r =
 				SWT_2_3_101_SPECS.RPM_RANGE.min +
 				powerRatio *
-					(SWT_2_3_101_SPECS.RPM_RANGE.max - SWT_2_3_101_SPECS.RPM_RANGE.min); // Base RPM on generated power for consistency
+					(SWT_2_3_101_SPECS.RPM_RANGE.max - SWT_2_3_101_SPECS.RPM_RANGE.min);
 			r *= randomFluctuation;
 		}
-		r = Math.max(0, Math.min(SWT_2_3_101_SPECS.RPM_RANGE.max, r)); // Cap RPM between 0 and max
+		r = Math.max(0, Math.min(SWT_2_3_101_SPECS.RPM_RANGE.max, r));
 		rpm.push(r);
 	}
 	return { power, wind, rpm };
@@ -716,9 +527,9 @@ const AlarmHistory: React.FC<{
 			});
 		} else {
 			sortableAlarms.sort((a, b) => {
-				if (!a.timeOff && b.timeOff) return -1; // Active alarms first
+				if (!a.timeOff && b.timeOff) return -1;
 				if (a.timeOff && !b.timeOff) return 1;
-				return b.timeOn.getTime() - a.timeOn.getTime(); // Then by most recent
+				return b.timeOn.getTime() - a.timeOn.getTime();
 			});
 		}
 		return sortableAlarms;
@@ -726,9 +537,8 @@ const AlarmHistory: React.FC<{
 
 	const requestSort = (key: string) => {
 		if (sortConfig && sortConfig.key === key) {
-			// If same key, toggle direction or remove sort
 			if (sortConfig.direction === "desc") {
-				setSortConfig(null); // Return to default sort
+				setSortConfig(null);
 			} else {
 				setSortConfig({ key, direction: "desc" });
 			}
@@ -739,36 +549,30 @@ const AlarmHistory: React.FC<{
 
 	const getSortIcon = (key: string) => {
 		if (!sortConfig || sortConfig.key !== key) {
-			return <i className="fa-solid fa-sort sort-icon ml-1 text-xs"></i>;
-		}
-		if (sortConfig.direction === "asc") {
 			return (
-				<i className="fa-solid fa-sort-up sort-icon active ml-1 text-xs"></i>
+				<IconSortAscending
+					style={{ width: rem(12), height: rem(12), opacity: 0.3 }}
+				/>
 			);
 		}
-		return (
-			<i className="fa-solid fa-sort-down sort-icon active ml-1 text-xs"></i>
-		);
+		if (sortConfig.direction === "asc") {
+			return <IconSortAscending style={{ width: rem(12), height: rem(12) }} />;
+		}
+		return <IconSortDescending style={{ width: rem(12), height: rem(12) }} />;
 	};
 
 	const severityConfig = {
 		[AlarmSeverity.Critical]: {
-			icon: "fa-triangle-exclamation",
-			color: "text-red-600 dark:text-red-400",
-			bg: "bg-red-50 dark:bg-red-900/20",
-			border: "border-l-red-500",
+			icon: IconAlertTriangle,
+			color: "red",
 		},
 		[AlarmSeverity.Warning]: {
-			icon: "fa-triangle-exclamation",
-			color: "text-yellow-600 dark:text-yellow-400",
-			bg: "bg-yellow-50 dark:bg-yellow-900/20",
-			border: "border-l-yellow-500",
+			icon: IconAlertTriangle,
+			color: "yellow",
 		},
 		[AlarmSeverity.Info]: {
-			icon: "fa-circle-info",
-			color: "text-blue-600 dark:text-blue-400",
-			bg: "bg-blue-50 dark:bg-blue-900/20",
-			border: "border-l-blue-500",
+			icon: IconInfoCircle,
+			color: "blue",
 		},
 	};
 
@@ -788,208 +592,194 @@ const AlarmHistory: React.FC<{
 
 	if (alarms.length === 0) {
 		return (
-			<div className="bg-white dark:bg-black rounded-lg p-8 shadow-sm border border-slate-200 dark:border-gray-700 text-center transition-theme">
-				<i className="fa-solid fa-check-circle text-4xl text-green-500 mb-4"></i>
-				<p className="text-slate-600 dark:text-gray-400 font-medium">
-					No alarms recorded for this turbine.
-				</p>
-				<p className="text-sm text-slate-500 dark:text-gray-500 mt-2">
-					System is operating normally.
-				</p>
-			</div>
+			<Card shadow="sm" padding="xl" radius="md" withBorder>
+				<Center>
+					<Stack align="center">
+						<ThemeIcon size={64} radius="xl" variant="light" color="green">
+							<IconCheck style={{ width: rem(32), height: rem(32) }} />
+						</ThemeIcon>
+						<Text fw={500} c="dimmed">
+							No alarms recorded for this turbine.
+						</Text>
+						<Text size="sm" c="dimmed">
+							System is operating normally.
+						</Text>
+					</Stack>
+				</Center>
+			</Card>
 		);
 	}
 
 	return (
-		<div className="bg-white dark:bg-black rounded-lg shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden transition-theme">
-			{/* Alarm Summary Bar */}
-			<div className="bg-slate-50 dark:bg-gray-900 px-6 py-3 border-b border-slate-200 dark:border-gray-700">
-				<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-					<div className="flex gap-4 text-sm">
-						<div className="flex items-center gap-2">
-							<span className="font-medium text-slate-700 dark:text-gray-300">
+		<Card shadow="sm" padding="md" radius="md" withBorder>
+			<Box
+				p="md"
+				style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}
+			>
+				<Group justify="space-between">
+					<Group gap="xl">
+						<Group gap="xs">
+							<Text size="sm" fw={500} c="dimmed">
 								Total:
-							</span>
-							<span className="font-bold text-slate-800 dark:text-white">
+							</Text>
+							<Text size="sm" fw={700}>
 								{alarms.length}
-							</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="font-medium text-slate-700 dark:text-gray-300">
+							</Text>
+						</Group>
+						<Group gap="xs">
+							<Text size="sm" fw={500} c="dimmed">
 								Active:
-							</span>
-							<span
-								className={`font-bold ${activeCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
-							>
+							</Text>
+							<Text size="sm" fw={700} c={activeCount > 0 ? "red" : "green"}>
 								{activeCount}
-							</span>
-						</div>
+							</Text>
+						</Group>
 						{criticalCount > 0 && (
-							<div className="flex items-center gap-2">
-								<span className="font-medium text-slate-700 dark:text-gray-300">
+							<Group gap="xs">
+								<Text size="sm" fw={500} c="dimmed">
 									Critical:
-								</span>
-								<span className="font-bold text-red-600 dark:text-red-400">
+								</Text>
+								<Text size="sm" fw={700} c="red">
 									{criticalCount}
-								</span>
-							</div>
+								</Text>
+							</Group>
 						)}
-					</div>
-					<div className="flex gap-2">
-						<button
-							type="button"
-							onClick={() => setFilter("all")}
-							className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
-								filter === "all"
-									? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
-									: "text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800"
-							}`}
+					</Group>
+					<Group>
+						<SegmentedControl
+							size="xs"
+							value={filter}
+							onChange={(val) => setFilter(val as any)}
+							data={[
+								{ label: "All", value: "all" },
+								{ label: "Active", value: "active" },
+								{ label: "Critical", value: "critical" },
+							]}
+						/>
+						<Button
+							variant="light"
+							size="xs"
+							leftSection={<IconDownload size={14} />}
 						>
-							All
-						</button>
-						<button
-							type="button"
-							onClick={() => setFilter("active")}
-							className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
-								filter === "active"
-									? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
-									: "text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800"
-							}`}
-						>
-							Active
-						</button>
-						<button
-							type="button"
-							onClick={() => setFilter("critical")}
-							className={`px-3 py-1 text-xs font-medium rounded-md transition-theme ${
-								filter === "critical"
-									? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
-									: "text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800"
-							}`}
-						>
-							Critical
-						</button>
-					</div>
-				</div>
-			</div>
+							Export
+						</Button>
+					</Group>
+				</Group>
+			</Box>
 
-			{/* Table */}
-			<div className="overflow-x-auto">
-				<table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
-					<thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase border-b border-slate-200 dark:border-gray-700">
-						<tr>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+			<Table.ScrollContainer minWidth={800}>
+				<Table verticalSpacing="sm" highlightOnHover>
+					<Table.Thead>
+						<Table.Tr>
+							<Table.Th
 								onClick={() => requestSort("severity")}
+								style={{ cursor: "pointer" }}
 							>
-								<div className="flex items-center">
-									Severity {getSortIcon("severity")}
-								</div>
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+								<Group gap={4}>Severity {getSortIcon("severity")}</Group>
+							</Table.Th>
+							<Table.Th
 								onClick={() => requestSort("description")}
+								style={{ cursor: "pointer" }}
 							>
-								<div className="flex items-center">
-									Description {getSortIcon("description")}
-								</div>
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+								<Group gap={4}>Description {getSortIcon("description")}</Group>
+							</Table.Th>
+							<Table.Th
 								onClick={() => requestSort("timeOn")}
+								style={{ cursor: "pointer" }}
 							>
-								<div className="flex items-center">
-									Start Time {getSortIcon("timeOn")}
-								</div>
-							</th>
-							<th scope="col" className="px-6 py-3">
-								Duration
-							</th>
-							<th scope="col" className="px-6 py-3">
-								Status
-							</th>
-							<th scope="col" className="px-6 py-3 text-right">
-								Action
-							</th>
-						</tr>
-					</thead>
-					<tbody>
+								<Group gap={4}>Start Time {getSortIcon("timeOn")}</Group>
+							</Table.Th>
+							<Table.Th>Duration</Table.Th>
+							<Table.Th>Status</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>Action</Table.Th>
+						</Table.Tr>
+					</Table.Thead>
+					<Table.Tbody>
 						{sortedAlarms.map((alarm) => {
 							const config = severityConfig[alarm.severity];
 							const isActive = !alarm.timeOff;
+							const Icon = config.icon;
 							return (
-								<tr
+								<Table.Tr
 									key={alarm.id}
-									className={`border-b border-slate-100 dark:border-gray-800 hover:bg-slate-50 dark:hover:bg-gray-900/50 transition-colors ${isActive ? config.bg : ""} ${isActive ? config.border : "border-l-transparent"} border-l-4`}
+									bg={
+										isActive
+											? `var(--mantine-color-${config.color}-0)`
+											: undefined
+									}
 								>
-									<td className="px-6 py-4 font-medium">
-										<div className={`flex items-center gap-2 ${config.color}`}>
-											<i className={`fa-solid ${config.icon}`}></i>
-											<span className="font-semibold">{alarm.severity}</span>
-										</div>
-									</td>
-									<td className="px-6 py-4">
-										<div>
-											<p className="font-medium text-slate-800 dark:text-white">
-												{alarm.description}
-											</p>
-											<p className="text-xs text-slate-500 dark:text-gray-500 mt-1">
-												Code: {alarm.code}
-											</p>
-										</div>
-									</td>
-									<td className="px-6 py-4 text-slate-700 dark:text-gray-300">
-										<div>
-											<p>{alarm.timeOn.toLocaleDateString()}</p>
-											<p className="text-xs text-slate-500 dark:text-gray-500">
-												{alarm.timeOn.toLocaleTimeString()}
-											</p>
-										</div>
-									</td>
-									<td className="px-6 py-4 font-medium text-slate-700 dark:text-gray-300">
-										{formatDuration(alarm.timeOn, alarm.timeOff)}
-									</td>
-									<td className="px-6 py-4">
+									<Table.Td>
+										<Group gap="xs">
+											<ThemeIcon color={config.color} variant="light" size="sm">
+												<Icon style={{ width: rem(12), height: rem(12) }} />
+											</ThemeIcon>
+											<Text size="sm" fw={600}>
+												{alarm.severity}
+											</Text>
+										</Group>
+									</Table.Td>
+									<Table.Td>
+										<Text size="sm" fw={500}>
+											{alarm.description}
+										</Text>
+										<Text size="xs" c="dimmed">
+											Code: {alarm.code}
+										</Text>
+									</Table.Td>
+									<Table.Td>
+										<Text size="sm">{alarm.timeOn.toLocaleDateString()}</Text>
+										<Text size="xs" c="dimmed">
+											{alarm.timeOn.toLocaleTimeString()}
+										</Text>
+									</Table.Td>
+									<Table.Td>
+										<Text size="sm" fw={500}>
+											{formatDuration(alarm.timeOn, alarm.timeOff)}
+										</Text>
+									</Table.Td>
+									<Table.Td>
 										{isActive ? (
-											<span
-												className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-													alarm.acknowledged
-														? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-														: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-												}`}
+											<Badge
+												color={alarm.acknowledged ? "green" : "yellow"}
+												variant="light"
+												leftSection={
+													!alarm.acknowledged && (
+														<Box
+															w={6}
+															h={6}
+															bg="yellow"
+															style={{ borderRadius: "50%" }}
+														/>
+													)
+												}
 											>
-												<span
-													className={`w-2 h-2 mr-1.5 rounded-full ${alarm.acknowledged ? "bg-green-400" : "bg-yellow-400 animate-pulse"}`}
-												></span>
 												{alarm.acknowledged ? "Acknowledged" : "New"}
-											</span>
+											</Badge>
 										) : (
-											<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300">
+											<Badge color="gray" variant="light">
 												Resolved
-											</span>
+											</Badge>
 										)}
-									</td>
-									<td className="px-6 py-4 text-right">
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
 										{isActive && !alarm.acknowledged && (
-											<button
-												type="button"
+											<Button
+												size="xs"
+												variant="light"
+												color="violet"
 												onClick={() => onAcknowledge(alarm.id)}
-												className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 px-3 py-1.5 rounded-md transition-colors text-xs"
 											>
 												Acknowledge
-											</button>
+											</Button>
 										)}
-									</td>
-								</tr>
+									</Table.Td>
+								</Table.Tr>
 							);
 						})}
-					</tbody>
-				</table>
-			</div>
-		</div>
+					</Table.Tbody>
+				</Table>
+			</Table.ScrollContainer>
+		</Card>
 	);
 };
 
@@ -1016,292 +806,280 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 	const config = statusConfig[turbine.status];
 
 	return (
-		<div className="animate-fade-in px-4 py-6 lg:px-8 max-w-7xl mx-auto">
-			{/* Enhanced Header Section */}
-			<div className="mb-8">
-				<button
-					type="button"
+		<Stack gap="lg" p="md">
+			{/* Header */}
+			<Box>
+				<Button
+					variant="subtle"
+					color="gray"
+					leftSection={<IconArrowLeft size={16} />}
 					onClick={onBack}
-					className="group flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 mb-6 transition-colors pl-1"
+					mb="md"
 				>
-					<i className="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
 					{savedTurbineId
 						? `Back to Dashboard (from ${savedTurbineId})`
 						: "Back to Dashboard"}
-				</button>
+				</Button>
 
-				<div className="relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/50 transition-theme">
-					<div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-					<div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6">
+				<Paper
+					radius="lg"
+					p="xl"
+					withBorder
+					shadow="sm"
+					pos="relative"
+					style={{ overflow: "hidden" }}
+				>
+					<Box
+						pos="absolute"
+						top={0}
+						right={0}
+						w={300}
+						h={300}
+						style={{
+							background:
+								"radial-gradient(circle, var(--mantine-color-violet-1) 0%, transparent 70%)",
+							transform: "translate(30%, -30%)",
+							pointerEvents: "none",
+						}}
+					/>
+					<Group justify="space-between" align="flex-start">
 						<div>
-							<div className="flex items-center gap-4 mb-3">
-								<h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-									Turbine {turbine.id}
-								</h1>
-								<span
-									className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm ${config.classes} ring-1 ring-inset ring-black/5 dark:ring-white/10`}
-								>
+							<Group mb="xs">
+								<Title order={1}>Turbine {turbine.id}</Title>
+								<Badge size="lg" color={config.color} variant="light">
 									{config.text}
-								</span>
-							</div>
-							<p className="text-slate-500 dark:text-gray-400 text-lg max-w-2xl">
+								</Badge>
+							</Group>
+							<Text c="dimmed" size="lg">
 								Detailed operational metrics and performance data
-							</p>
+							</Text>
 						</div>
-						<div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full border border-green-100 dark:border-green-900/30">
-							<div className="relative flex h-3 w-3">
-								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-								<span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-							</div>
-							<span className="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide">
-								Live Data
-							</span>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			{/* Primary Metrics Section with Power Gauge */}
-			<div
-				className="mb-8 animate-fade-in"
-				style={{ animationDelay: "100ms", animationFillMode: "both" }}
-			>
-				<div className="flex items-center gap-2 mb-4">
-					<div className="w-1 h-6 bg-violet-500 rounded-full"></div>
-					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
-						Primary Metrics
-					</h2>
-				</div>
-
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-					{/* Power Gauge with Integrated Metrics */}
-					<div className="lg:col-span-2 bg-white dark:bg-black rounded-xl p-6 shadow-sm border border-slate-200 dark:border-gray-700 transition-theme">
-						<div className="flex flex-col lg:flex-row items-center gap-6">
-							<div className="w-full lg:w-1/2">
-								<PowerGauge
-									power={turbine.activePower ?? 0}
-									nominalMaxPower={turbine.maxPower}
+						<Badge
+							size="xl"
+							variant="outline"
+							color="green"
+							leftSection={
+								<Box
+									w={8}
+									h={8}
+									bg="green"
+									style={{ borderRadius: "50%" }}
+									className="animate-pulse"
 								/>
-							</div>
-							<div className="w-full lg:w-1/2 grid grid-cols-2 gap-4">
-								<MetricCard
-									title="Reactive Power"
-									value={
-										turbine.reactivePower !== null
-											? `${turbine.reactivePower} MVar`
-											: "—"
-									}
-									icon={<i className="fa-solid fa-bolt-lightning"></i>}
-									color="text-blue-500"
-								/>
-								<MetricCard
-									title="Apparent Power"
-									value={
-										turbine.activePower !== null &&
-										turbine.reactivePower !== null
-											? `${Math.sqrt(turbine.activePower ** 2 + turbine.reactivePower ** 2).toFixed(2)} MVA`
-											: "—"
-									}
-									icon={<i className="fa-solid fa-bolt"></i>}
-									color="text-amber-500"
-								/>
-								<MetricCard
-									title="Capacity Factor"
-									value={
-										turbine.activePower !== null && turbine.maxPower > 0
-											? `${((turbine.activePower / turbine.maxPower) * 100).toFixed(1)}%`
-											: "—"
-									}
-									icon={<i className="fa-solid fa-chart-line"></i>}
-									color="text-violet-500"
-								/>
-								<MetricCard
-									title="Power Factor"
-									value={
-										turbine.activePower !== null &&
-										turbine.reactivePower !== null
-											? `${(turbine.activePower / Math.sqrt(turbine.activePower ** 2 + turbine.reactivePower ** 2)).toFixed(3)}`
-											: "—"
-									}
-									icon={<i className="fa-solid fa-wave-square"></i>}
-									color="text-emerald-500"
-								/>
-							</div>
-						</div>
-					</div>
+							}
+							pl="md"
+						>
+							Live Data
+						</Badge>
+					</Group>
+				</Paper>
+			</Box>
 
-					{/* Key Performance Indicator */}
-					<div className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 rounded-xl p-6 border border-violet-200 dark:border-violet-700 transition-theme">
-						<h3 className="text-lg font-semibold text-slate-700 dark:text-gray-300 mb-4">
-							Performance
-						</h3>
-						<div className="space-y-4">
-							<div>
-								<p className="text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">
-									Efficiency
-								</p>
-								<p className="text-xl font-bold text-slate-800 dark:text-white">
-									{turbine.activePower !== null && turbine.maxPower > 0
-										? `${((turbine.activePower / turbine.maxPower) * 0.1 + 0.9).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 1 })}`
-										: "—"}
-								</p>
-							</div>
-							<div>
-								<p className="text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">
-									Availability
-								</p>
-								<p className="text-xl font-bold text-slate-800 dark:text-white">
-									98.5%
-								</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+			{/* Primary Metrics */}
+			<Box>
+				<Group mb="md">
+					<Box w={4} h={24} bg="violet" style={{ borderRadius: 4 }} />
+					<Title order={3}>Primary Metrics</Title>
+				</Group>
 
-			{/* Secondary Metrics Section */}
-			<div
-				className="mb-8 animate-fade-in"
-				style={{ animationDelay: "200ms", animationFillMode: "both" }}
-			>
-				<div className="flex items-center gap-2 mb-4">
-					<div className="w-1 h-6 bg-blue-500 rounded-full"></div>
-					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
-						Environmental & Mechanical Metrics
-					</h2>
-				</div>
+				<Grid>
+					<Grid.Col span={{ base: 12, lg: 8 }}>
+						<Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+							<Grid align="center" gutter="xl">
+								<Grid.Col span={{ base: 12, md: 6 }}>
+									<PowerGauge
+										power={turbine.activePower ?? 0}
+										nominalMaxPower={turbine.maxPower}
+									/>
+								</Grid.Col>
+								<Grid.Col span={{ base: 12, md: 6 }}>
+									<SimpleGrid cols={2} spacing="md">
+										<MetricCard
+											title="Reactive Power"
+											value={
+												turbine.reactivePower !== null
+													? `${turbine.reactivePower} MVar`
+													: "—"
+											}
+											icon={<IconBolt />}
+											color="blue"
+										/>
+										<MetricCard
+											title="Apparent Power"
+											value={
+												turbine.activePower !== null &&
+												turbine.reactivePower !== null
+													? `${Math.sqrt(turbine.activePower ** 2 + turbine.reactivePower ** 2).toFixed(2)} MVA`
+													: "—"
+											}
+											icon={<IconBolt />}
+											color="orange"
+										/>
+										<MetricCard
+											title="Capacity Factor"
+											value={
+												turbine.activePower !== null && turbine.maxPower > 0
+													? `${((turbine.activePower / turbine.maxPower) * 100).toFixed(1)}%`
+													: "—"
+											}
+											icon={<IconChartLine />}
+											color="violet"
+										/>
+										<MetricCard
+											title="Power Factor"
+											value={
+												turbine.activePower !== null &&
+												turbine.reactivePower !== null
+													? `${(turbine.activePower / Math.sqrt(turbine.activePower ** 2 + turbine.reactivePower ** 2)).toFixed(3)}`
+													: "—"
+											}
+											icon={<IconWaveSine />}
+											color="teal"
+										/>
+									</SimpleGrid>
+								</Grid.Col>
+							</Grid>
+						</Card>
+					</Grid.Col>
+					<Grid.Col span={{ base: 12, lg: 4 }}>
+						<Card
+							shadow="sm"
+							padding="lg"
+							radius="md"
+							withBorder
+							h="100%"
+							bg="var(--mantine-color-violet-0)"
+						>
+							<Title order={4} mb="md">
+								Performance
+							</Title>
+							<Stack gap="lg">
+								<div>
+									<Text size="sm" fw={500} c="dimmed">
+										Efficiency
+									</Text>
+									<Text size="xl" fw={700}>
+										{turbine.activePower !== null && turbine.maxPower > 0
+											? `${((turbine.activePower / turbine.maxPower) * 0.1 + 0.9).toLocaleString(undefined, { style: "percent", minimumFractionDigits: 1 })}`
+											: "—"}
+									</Text>
+								</div>
+								<div>
+									<Text size="sm" fw={500} c="dimmed">
+										Availability
+									</Text>
+									<Text size="xl" fw={700}>
+										98.5%
+									</Text>
+								</div>
+							</Stack>
+						</Card>
+					</Grid.Col>
+				</Grid>
+			</Box>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+			{/* Secondary Metrics */}
+			<Box>
+				<Group mb="md">
+					<Box w={4} h={24} bg="blue" style={{ borderRadius: 4 }} />
+					<Title order={3}>Environmental & Mechanical Metrics</Title>
+				</Group>
+
+				<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
 					<MetricCard
 						title="Wind Speed"
 						value={
 							turbine.windSpeed !== null ? `${turbine.windSpeed} m/s` : "—"
 						}
-						icon={<i className="fa-solid fa-wind"></i>}
-						color="text-pink-500"
+						icon={<IconWind />}
+						color="pink"
 					/>
 					<MetricCard
 						title="Direction"
 						value={turbine.direction !== null ? `${turbine.direction}°` : "—"}
-						icon={<i className="fa-solid fa-compass"></i>}
-						color="text-teal-500"
+						icon={<IconCompass />}
+						color="teal"
 					/>
 					<MetricCard
 						title="Temperature"
 						value={
 							turbine.temperature !== null ? `${turbine.temperature}°C` : "—"
 						}
-						icon={<i className="fa-solid fa-temperature-half"></i>}
-						color="text-orange-500"
+						icon={<IconTemperature />}
+						color="orange"
 					/>
 					<MetricCard
 						title="Rotor Speed"
 						value={turbine.rpm !== null ? `${turbine.rpm} RPM` : "—"}
-						icon={<i className="fa-solid fa-arrows-spin"></i>}
-						color="text-indigo-500"
+						icon={<IconArrowsShuffle />}
+						color="indigo"
 					/>
 					<MetricCard
 						title="Max Power"
 						value={`${turbine.maxPower} MW`}
-						icon={<i className="fa-solid fa-gauge-high"></i>}
-						color="text-cyan-500"
+						icon={<IconGauge />}
+						color="cyan"
 					/>
 					<MetricCard
 						title="Turbine Type"
 						value="SWT-2.3-101"
-						icon={<i className="fa-solid fa-tag"></i>}
-						color="text-purple-500"
+						icon={<IconTag />}
+						color="grape"
 					/>
-				</div>
-			</div>
+				</SimpleGrid>
+			</Box>
 
-			{/* Historical Performance Section */}
-			<div
-				className="mb-8 animate-fade-in"
-				style={{ animationDelay: "300ms", animationFillMode: "both" }}
-			>
-				<div className="flex items-center gap-2 mb-4">
-					<div className="w-1 h-6 bg-green-500 rounded-full"></div>
-					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
-						Historical Performance
-					</h2>
-					<div className="ml-auto flex gap-2">
-						<button
-							type="button"
-							className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-md transition-theme"
-						>
-							24h
-						</button>
-						<button
-							type="button"
-							className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme"
-						>
-							7d
-						</button>
-						<button
-							type="button"
-							className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme"
-						>
-							30d
-						</button>
-					</div>
-				</div>
+			{/* Historical Performance */}
+			<Box>
+				<Group mb="md" justify="space-between">
+					<Group>
+						<Box w={4} h={24} bg="green" style={{ borderRadius: 4 }} />
+						<Title order={3}>Historical Performance</Title>
+					</Group>
+					<SegmentedControl
+						size="xs"
+						data={["24h", "7d", "30d"]}
+						defaultValue="24h"
+					/>
+				</Group>
 
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<SimpleGrid cols={{ base: 1, lg: 3 }} spacing="md">
 					<HistoricalChart
 						title="Power Output"
 						data={chartData.power}
 						unit="MW"
-						color="#10b981"
+						color="var(--mantine-color-teal-6)"
 						maxVal={turbine.maxPower}
 					/>
 					<HistoricalChart
 						title="Wind Speed"
 						data={chartData.wind}
 						unit="m/s"
-						color="#ec4899"
+						color="var(--mantine-color-pink-6)"
 						maxVal={30}
 					/>
 					<HistoricalChart
 						title="Rotor Speed"
 						data={chartData.rpm}
 						unit="RPM"
-						color="#6366f1"
+						color="var(--mantine-color-indigo-6)"
 						maxVal={SWT_2_3_101_SPECS.RPM_RANGE.max + 4}
 					/>
-				</div>
-			</div>
+				</SimpleGrid>
+			</Box>
 
-			{/* Alarm History Section */}
-			<div
-				className="animate-fade-in"
-				style={{ animationDelay: "400ms", animationFillMode: "both" }}
-			>
-				<div className="flex items-center gap-2 mb-4">
-					<div className="w-1 h-6 bg-red-500 rounded-full"></div>
-					<h2 className="text-xl font-bold text-slate-800 dark:text-white">
-						Alarm History & Status
-					</h2>
-					<div className="ml-auto flex gap-2">
-						<button
-							type="button"
-							className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme"
-						>
-							<i className="fa-solid fa-filter mr-1"></i> Filter
-						</button>
-						<button
-							type="button"
-							className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md transition-theme"
-						>
-							<i className="fa-solid fa-download mr-1"></i> Export
-						</button>
-					</div>
-				</div>
+			{/* Alarm History */}
+			<Box>
+				<Group mb="md" justify="space-between">
+					<Group>
+						<Box w={4} h={24} bg="red" style={{ borderRadius: 4 }} />
+						<Title order={3}>Alarm History & Status</Title>
+					</Group>
+				</Group>
 
 				<AlarmHistory alarms={alarms} onAcknowledge={onAcknowledgeAlarm} />
-			</div>
-		</div>
+			</Box>
+		</Stack>
 	);
 };
 

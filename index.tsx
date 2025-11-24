@@ -1,9 +1,10 @@
+import "@mantine/core/styles.css";
+import "./styles/index.css";
+
+import { MantineProvider } from "@mantine/core";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "./styles/index.css";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import "./styles/theme.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -13,6 +14,8 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
 	<React.StrictMode>
-		<App />
+		<MantineProvider>
+			<App />
+		</MantineProvider>
 	</React.StrictMode>,
 );

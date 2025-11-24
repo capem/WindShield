@@ -1,8 +1,44 @@
-import type React from "react";
+import React from "react";
 import { useSearchParams } from "react-router-dom";
+import {
+	Grid,
+	SimpleGrid,
+	Card,
+	Group,
+	Stack,
+	Title,
+	Text,
+	TextInput,
+	Select,
+	SegmentedControl,
+	Box,
+	rem,
+	ThemeIcon,
+	Paper,
+	Center,
+} from "@mantine/core";
+import {
+	IconSearch,
+	IconLayoutGrid,
+	IconList,
+	IconMap,
+	IconBolt,
+	IconWind,
+	IconTemperature,
+	IconGauge,
+	IconChartLine,
+	IconCheck,
+	IconInfoCircle,
+	IconPlayerPause,
+	IconX,
+	IconTool,
+	IconAlertTriangle,
+	IconAlertCircle,
+} from "@tabler/icons-react";
 import MapView from "./MapView";
 import TurbineCard from "./TurbineCard";
 import TurbineList from "./TurbineList";
+import TurbineGridView from "./TurbineGridView";
 import { turbineCoordinates } from "../data/turbineCoordinates";
 import { layout } from "../data/mockData";
 import {
@@ -12,21 +48,6 @@ import {
 	type Turbine,
 } from "../types";
 
-const iconColorMap: { [key: string]: string } = {
-	"text-violet-600":
-		"bg-gradient-to-br from-violet-100 to-violet-200 dark:from-violet-900/50 dark:to-violet-800/60",
-	"text-cyan-500":
-		"bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/50 dark:to-cyan-800/60",
-	"text-purple-600":
-		"bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/50 dark:to-purple-800/60",
-	"text-green-600":
-		"bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/60",
-	"text-pink-500":
-		"bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/50 dark:to-pink-800/60",
-	"text-orange-500":
-		"bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/50 dark:to-orange-800/60",
-};
-
 const SummaryCard: React.FC<{
 	title: string;
 	value: string;
@@ -34,28 +55,26 @@ const SummaryCard: React.FC<{
 	icon: React.ReactNode;
 	color: string;
 }> = ({ title, value, unit, icon, color }) => (
-	<div className="bg-white dark:bg-black p-2 rounded-lg shadow-sm flex items-center justify-between transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme-fast">
-		<div>
-			<p className="text-[10px] text-slate-500 dark:text-gray-400 uppercase tracking-wide">
-				{title}
-			</p>
-			<p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
-				{value}{" "}
-				<span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-					{unit}
-				</span>
-			</p>
-		</div>
-		<div
-			className={`p-1.5 rounded-md ${iconColorMap[color] || "bg-slate-100 dark:bg-slate-700"}`}
-		>
-			<div
-				className={`${color} text-sm w-5 h-5 flex items-center justify-center`}
-			>
+	<Card shadow="sm" padding="xs" radius="md" withBorder>
+		<Group justify="space-between" align="flex-start" wrap="nowrap">
+			<Stack gap={0}>
+				<Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+					{title}
+				</Text>
+				<Group align="baseline" gap={4}>
+					<Text size="xl" fw={700}>
+						{value}
+					</Text>
+					<Text size="xs" c="dimmed" fw={500}>
+						{unit}
+					</Text>
+				</Group>
+			</Stack>
+			<ThemeIcon size="lg" radius="md" variant="light" color={color}>
 				{icon}
-			</div>
-		</div>
-	</div>
+			</ThemeIcon>
+		</Group>
+	</Card>
 );
 
 const TurbineStatusSummaryCard: React.FC<{
@@ -75,85 +94,83 @@ const TurbineStatusSummaryCard: React.FC<{
 		{
 			name: "Producing",
 			count: counts.producing,
-			icon: <i className="fa-solid fa-circle-check"></i>,
-			color: "text-green-500",
+			icon: IconCheck,
+			color: "green",
 		},
 		{
 			name: "Available",
 			count: counts.available,
-			icon: <i className="fa-solid fa-circle-info"></i>,
-			color: "text-blue-500",
+			icon: IconInfoCircle,
+			color: "blue",
 		},
 		{
 			name: "Stopped",
 			count: counts.stopped,
-			icon: <i className="fa-solid fa-circle-pause"></i>,
-			color: "text-yellow-500",
+			icon: IconPlayerPause,
+			color: "yellow",
 		},
 		{
 			name: "Offline",
 			count: counts.offline,
-			icon: <i className="fa-solid fa-circle-xmark"></i>,
-			color: "text-red-500",
+			icon: IconX,
+			color: "red",
 		},
 		{
 			name: "Maintenance",
 			count: counts.maintenance,
-			icon: <i className="fa-solid fa-wrench"></i>,
-			color: "text-purple-500",
+			icon: IconTool,
+			color: "grape",
 		},
 		{
 			name: "Fault",
 			count: counts.fault,
-			icon: <i className="fa-solid fa-triangle-exclamation"></i>,
-			color: "text-red-600",
+			icon: IconAlertTriangle,
+			color: "red",
 		},
 		{
 			name: "Warning",
 			count: counts.warning,
-			icon: <i className="fa-solid fa-exclamation-triangle"></i>,
-			color: "text-orange-500",
+			icon: IconAlertCircle,
+			color: "orange",
 		},
 		{
 			name: "Curtailment",
 			count: counts.curtailment,
-			icon: (
-				<i
-					className="material-symbols-outlined"
-					style={{ fontSize: "16px", lineHeight: "1" }}
-				>
-					stat_minus_3
-				</i>
-			),
-			color: "text-indigo-500",
+			icon: IconChartLine, // Placeholder for curtailment
+			color: "indigo",
 		},
 	];
 
 	return (
-		<div
-			className={`bg-white dark:bg-black p-2 rounded-lg shadow-sm h-full flex flex-col ${className} transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 transition-theme-fast`}
+		<Card
+			shadow="sm"
+			padding="xs"
+			radius="md"
+			withBorder
+			className={className}
+			h="100%"
 		>
-			<p className="text-[10px] text-slate-500 dark:text-gray-400 font-medium mb-1 uppercase tracking-wide">
+			<Text size="xs" c="dimmed" tt="uppercase" fw={700} mb="xs">
 				Turbine Status
-			</p>
-			<div className="flex-grow grid grid-cols-2 gap-x-4 gap-y-0.5">
+			</Text>
+			<SimpleGrid cols={2} spacing="xs" verticalSpacing={4}>
 				{statusItems.map((item) => (
-					<div key={item.name} className="flex justify-between items-center">
-						<div
-							className={`flex items-center gap-1.5 font-medium ${item.color}`}
-						>
-							<span className="text-xs w-3 text-center">{item.icon}</span>
-							<span className="text-[10px] text-slate-700 dark:text-slate-300 font-semibold">
+					<Group key={item.name} justify="space-between" wrap="nowrap">
+						<Group gap={6} wrap="nowrap">
+							<Box c={item.color}>
+								<item.icon style={{ width: rem(14), height: rem(14) }} />
+							</Box>
+							<Text size="xs" fw={600} c="dimmed">
 								{item.name}
-							</span>
-						</div>
-						<span className="font-bold text-xs text-slate-800 dark:text-white">
+							</Text>
+						</Group>
+						<Text size="xs" fw={700}>
 							{item.count}
-						</span>
-					</div>
+						</Text>
+					</Group>
 				))}
-			</div>
-		</div>
+			</SimpleGrid>
+		</Card>
 	);
 };
 
@@ -202,115 +219,151 @@ const Dashboard: React.FC<DashboardProps> = ({
 	};
 
 	// --- COHERENT DATA CALCULATIONS ---
-	const onlineTurbines = turbines.filter(
-		(t) => t.status !== TurbineStatus.Offline,
+	const {
+		totalActivePower,
+		totalReactivePower,
+		turbineStatusCounts,
+		loadFactor,
+		productionTodayMWh,
+		averageWindSpeed,
+		averageTemperature,
+	} = React.useMemo(() => {
+		const onlineTurbines = turbines.filter(
+			(t) => t.status !== TurbineStatus.Offline,
+		);
+		const totalActivePower = onlineTurbines.reduce(
+			(sum, t) => sum + (t.activePower || 0),
+			0,
+		);
+		const totalReactivePower = onlineTurbines.reduce(
+			(sum, t) => sum + (t.reactivePower || 0),
+			0,
+		);
+
+		const turbineStatusCounts = {
+			producing: turbines.filter((t) => t.status === TurbineStatus.Producing)
+				.length,
+			available: turbines.filter((t) => t.status === TurbineStatus.Available)
+				.length,
+			stopped: turbines.filter((t) => t.status === TurbineStatus.Stopped)
+				.length,
+			offline: turbines.filter((t) => t.status === TurbineStatus.Offline)
+				.length,
+			maintenance: turbines.filter(
+				(t) => t.status === TurbineStatus.Maintenance,
+			).length,
+			fault: turbines.filter((t) => t.status === TurbineStatus.Fault).length,
+			warning: turbines.filter((t) => t.status === TurbineStatus.Warning)
+				.length,
+			curtailment: turbines.filter(
+				(t) => t.status === TurbineStatus.Curtailment,
+			).length,
+		};
+
+		const totalInstalledCapacity = turbines.reduce(
+			(sum, t) => sum + t.maxPower,
+			0,
+		);
+		const loadFactor =
+			totalInstalledCapacity > 0
+				? (totalActivePower / totalInstalledCapacity) * 100
+				: 0;
+
+		const hoursToday = currentTime.getHours() + currentTime.getMinutes() / 60;
+		const productionTodayMWh = totalActivePower * hoursToday;
+
+		const onlineTurbinesWithWind = onlineTurbines.filter(
+			(t) => t.windSpeed !== null,
+		);
+		const averageWindSpeed =
+			onlineTurbinesWithWind.length > 0
+				? onlineTurbinesWithWind.reduce(
+						(sum, t) => sum + (t.windSpeed ?? 0),
+						0,
+					) / onlineTurbinesWithWind.length
+				: 0;
+
+		const onlineTurbinesWithTemp = onlineTurbines.filter(
+			(t) => t.temperature !== null,
+		);
+		const averageTemperature =
+			onlineTurbinesWithTemp.length > 0
+				? onlineTurbinesWithTemp.reduce(
+						(sum, t) => sum + (t.temperature ?? 0),
+						0,
+					) / onlineTurbinesWithTemp.length
+				: 0;
+
+		return {
+			totalActivePower,
+			totalReactivePower,
+			turbineStatusCounts,
+			loadFactor,
+			productionTodayMWh,
+			averageWindSpeed,
+			averageTemperature,
+		};
+	}, [turbines, currentTime]);
+
+	const summaryDataTop = React.useMemo(
+		() => [
+			{
+				title: "Active Power",
+				value: totalActivePower.toFixed(1),
+				unit: "MW",
+				icon: <IconBolt style={{ width: rem(20), height: rem(20) }} />,
+				color: "violet",
+			},
+			{
+				title: "Reactive Power",
+				value: totalReactivePower.toFixed(1),
+				unit: "MVar",
+				icon: <IconBolt style={{ width: rem(20), height: rem(20) }} />,
+				color: "cyan",
+			},
+		],
+		[totalActivePower, totalReactivePower],
 	);
-	const totalActivePower = onlineTurbines.reduce(
-		(sum, t) => sum + (t.activePower || 0),
-		0,
+
+	const summaryDataMiddle = React.useMemo(
+		() => [
+			{
+				title: "Avg Wind Speed",
+				value: averageWindSpeed.toFixed(1),
+				unit: "m/s",
+				icon: <IconWind style={{ width: rem(20), height: rem(20) }} />,
+				color: "pink",
+			},
+			{
+				title: "Avg Temperature",
+				value: averageTemperature.toFixed(0),
+				unit: "°C",
+				icon: <IconTemperature style={{ width: rem(20), height: rem(20) }} />,
+				color: "orange",
+			},
+		],
+		[averageWindSpeed, averageTemperature],
 	);
-	const totalReactivePower = onlineTurbines.reduce(
-		(sum, t) => sum + (t.reactivePower || 0),
-		0,
+
+	const summaryDataBottom = React.useMemo(
+		() => [
+			{
+				title: "Load Factor",
+				value: loadFactor.toFixed(1),
+				unit: "%",
+				icon: <IconGauge style={{ width: rem(20), height: rem(20) }} />,
+				color: "grape",
+			},
+			{
+				title: "Production",
+				value: productionTodayMWh.toFixed(1),
+				unit: "MWh",
+				icon: <IconChartLine style={{ width: rem(20), height: rem(20) }} />,
+				color: "green",
+			},
+		],
+		[loadFactor, productionTodayMWh],
 	);
-
-	const turbineStatusCounts = {
-		producing: turbines.filter((t) => t.status === TurbineStatus.Producing)
-			.length,
-		available: turbines.filter((t) => t.status === TurbineStatus.Available)
-			.length,
-		stopped: turbines.filter((t) => t.status === TurbineStatus.Stopped).length,
-		offline: turbines.filter((t) => t.status === TurbineStatus.Offline).length,
-		maintenance: turbines.filter((t) => t.status === TurbineStatus.Maintenance)
-			.length,
-		fault: turbines.filter((t) => t.status === TurbineStatus.Fault).length,
-		warning: turbines.filter((t) => t.status === TurbineStatus.Warning).length,
-		curtailment: turbines.filter((t) => t.status === TurbineStatus.Curtailment)
-			.length,
-	};
-
-	const totalInstalledCapacity = turbines.reduce(
-		(sum, t) => sum + t.maxPower,
-		0,
-	);
-	const loadFactor =
-		totalInstalledCapacity > 0
-			? (totalActivePower / totalInstalledCapacity) * 100
-			: 0;
-
-	const hoursToday = currentTime.getHours() + currentTime.getMinutes() / 60;
-	const productionTodayMWh = totalActivePower * hoursToday;
-
-	const onlineTurbinesWithWind = onlineTurbines.filter(
-		(t) => t.windSpeed !== null,
-	);
-	const averageWindSpeed =
-		onlineTurbinesWithWind.length > 0
-			? onlineTurbinesWithWind.reduce((sum, t) => sum + (t.windSpeed ?? 0), 0) /
-				onlineTurbinesWithWind.length
-			: 0;
-
-	const onlineTurbinesWithTemp = onlineTurbines.filter(
-		(t) => t.temperature !== null,
-	);
-	const averageTemperature =
-		onlineTurbinesWithTemp.length > 0
-			? onlineTurbinesWithTemp.reduce(
-					(sum, t) => sum + (t.temperature ?? 0),
-					0,
-				) / onlineTurbinesWithTemp.length
-			: 0;
-
-	const summaryDataTop = [
-		{
-			title: "Active Power",
-			value: totalActivePower.toFixed(1),
-			unit: "MW",
-			icon: <i className="fa-solid fa-bolt"></i>,
-			color: "text-violet-600",
-		},
-		{
-			title: "Reactive Power",
-			value: totalReactivePower.toFixed(1),
-			unit: "MVar",
-			icon: <i className="fa-solid fa-bolt-lightning"></i>,
-			color: "text-cyan-500",
-		},
-	];
-
-	const summaryDataMiddle = [
-		{
-			title: "Average Wind Speed",
-			value: averageWindSpeed.toFixed(1),
-			unit: "m/s",
-			icon: <i className="fa-solid fa-wind"></i>,
-			color: "text-pink-500",
-		},
-		{
-			title: "Average Temperature",
-			value: averageTemperature.toFixed(0),
-			unit: "°C",
-			icon: <i className="fa-solid fa-temperature-half"></i>,
-			color: "text-orange-500",
-		},
-	];
-
-	const summaryDataBottom = [
-		{
-			title: "Load Factor",
-			value: loadFactor.toFixed(1),
-			unit: "%",
-			icon: <i className="fa-solid fa-gauge-high"></i>,
-			color: "text-purple-600",
-		},
-		{
-			title: "Production (Today)",
-			value: productionTodayMWh.toFixed(1),
-			unit: "MWh",
-			icon: <i className="fa-solid fa-chart-line"></i>,
-			color: "text-green-600",
-		},
-	];
 
 	const weekday = currentTime.toLocaleDateString("en-US", {
 		weekday: "long",
@@ -322,229 +375,186 @@ const Dashboard: React.FC<DashboardProps> = ({
 	const formattedTime = currentTime.toLocaleTimeString("fr-FR");
 
 	// Filter turbines
-	const filteredTurbines = turbines.filter((turbine) => {
-		const matchesSearch = turbine.id
-			.toLowerCase()
-			.includes(searchQuery.toLowerCase());
-		const matchesStatus =
-			statusFilter === "All" || turbine.status === statusFilter;
-		return matchesSearch && matchesStatus;
-	});
+	const filteredTurbines = React.useMemo(
+		() =>
+			turbines.filter((turbine) => {
+				const matchesSearch = turbine.id
+					.toLowerCase()
+					.includes(searchQuery.toLowerCase());
+				const matchesStatus =
+					statusFilter === "All" || turbine.status === statusFilter;
+				return matchesSearch && matchesStatus;
+			}),
+		[turbines, searchQuery, statusFilter],
+	);
+
+	// State to keep track of rendered views to prevent re-rendering when switching
+	const [renderedViews, setRenderedViews] = React.useState(new Set([viewMode]));
+	React.useEffect(() => {
+		setRenderedViews((prev) => new Set(prev).add(viewMode));
+	}, [viewMode]);
 
 	return (
-		<div className="flex flex-col h-full">
-			<h1 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white transition-theme shrink-0">
-				Dashboard
-			</h1>
+		<Stack h="100%" gap="md">
+			<Title order={2}>Dashboard</Title>
 
-			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 shrink-0">
-				<div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					{summaryDataTop.map((data) => (
-						<SummaryCard key={data.title} {...data} />
-					))}
-					{summaryDataMiddle.map((data) => (
-						<SummaryCard key={data.title} {...data} />
-					))}
-					{summaryDataBottom.map((data) => (
-						<SummaryCard key={data.title} {...data} />
-					))}
-				</div>
-				<TurbineStatusSummaryCard
-					counts={turbineStatusCounts}
-					className="lg:col-span-1"
-				/>
-			</div>
+			<Grid>
+				<Grid.Col span={{ base: 12, lg: 9 }}>
+					<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+						{summaryDataTop.map((data) => (
+							<SummaryCard key={data.title} {...data} />
+						))}
+						{summaryDataMiddle.map((data) => (
+							<SummaryCard key={data.title} {...data} />
+						))}
+						{summaryDataBottom.map((data) => (
+							<SummaryCard key={data.title} {...data} />
+						))}
+					</SimpleGrid>
+				</Grid.Col>
+				<Grid.Col span={{ base: 12, lg: 3 }}>
+					<TurbineStatusSummaryCard counts={turbineStatusCounts} />
+				</Grid.Col>
+			</Grid>
 
-			<div className="bg-white dark:bg-black rounded-lg shadow-sm p-3 mt-4 transition-theme flex-1 flex flex-col">
-				<div className="pb-3 mb-3 border-b border-slate-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-3 shrink-0">
-					<div className="flex items-center gap-4 w-full md:w-auto">
-						<div className="relative flex-1 md:w-64">
-							<i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-							<input
-								type="text"
-								placeholder="Search turbine..."
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-100 dark:bg-gray-900 border-none rounded-md text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none transition-theme"
-							/>
-						</div>
-						<div className="relative">
-							<select
-								value={statusFilter}
-								onChange={(e) =>
-									setStatusFilter(e.target.value as TurbineStatus | "All")
-								}
-								className="pl-3 pr-8 py-1.5 text-sm bg-slate-100 dark:bg-gray-900 border-none rounded-md text-slate-700 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 outline-none appearance-none cursor-pointer transition-theme"
-							>
-								<option value="All">All Statuses</option>
-								{Object.values(TurbineStatus).map((status) => (
-									<option key={status} value={status}>
-										{status}
-									</option>
-								))}
-							</select>
-							<i className="fa-solid fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-						</div>
-					</div>
+			<Paper
+				shadow="sm"
+				radius="md"
+				p="md"
+				withBorder
+				style={{ flex: 1, display: "flex", flexDirection: "column" }}
+			>
+				<Group justify="space-between" mb="md">
+					<Group>
+						<TextInput
+							placeholder="Search turbine..."
+							leftSection={
+								<IconSearch style={{ width: rem(16), height: rem(16) }} />
+							}
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+						/>
+						<Select
+							value={statusFilter}
+							onChange={(value) => setStatusFilter(value || "All")}
+							data={[
+								{ value: "All", label: "All Statuses" },
+								...Object.values(TurbineStatus).map((status) => ({
+									value: status,
+									label: status,
+								})),
+							]}
+							allowDeselect={false}
+						/>
+					</Group>
 
-					<div className="flex items-center bg-slate-100 dark:bg-gray-900 rounded-lg p-1 transition-theme">
-						<button
-							type="button"
-							onClick={() => setViewMode("grid")}
-							className={`p-1.5 rounded-md transition-all ${
-								viewMode === "grid"
-									? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
-									: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
-							}`}
-							title="Grid View"
-						>
-							<i className="fa-solid fa-border-all"></i>
-						</button>
-						<button
-							type="button"
-							onClick={() => setViewMode("list")}
-							className={`p-1.5 rounded-md transition-all ${
-								viewMode === "list"
-									? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
-									: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
-							}`}
-							title="List View"
-						>
-							<i className="fa-solid fa-list"></i>
-						</button>
-						<button
-							type="button"
-							onClick={() => setViewMode("map")}
-							className={`p-1.5 rounded-md transition-all ${
-								viewMode === "map"
-									? "bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm"
-									: "text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
-							}`}
-							title="Map View"
-						>
-							<i className="fa-solid fa-map"></i>
-						</button>
-					</div>
-				</div>
+					<SegmentedControl
+						value={viewMode}
+						onChange={setViewMode}
+						data={[
+							{
+								value: "grid",
+								label: (
+									<Center>
+										<IconLayoutGrid
+											style={{ width: rem(16), height: rem(16) }}
+										/>
+									</Center>
+								),
+							},
+							{
+								value: "list",
+								label: (
+									<Center>
+										<IconList style={{ width: rem(16), height: rem(16) }} />
+									</Center>
+								),
+							},
+							{
+								value: "map",
+								label: (
+									<Center>
+										<IconMap style={{ width: rem(16), height: rem(16) }} />
+									</Center>
+								),
+							},
+						]}
+					/>
+				</Group>
 
-				<div className="flex justify-between items-center text-xs mb-3 text-slate-500 dark:text-gray-400 shrink-0">
-					<span>
+				<Group justify="space-between" mb="md">
+					<Text size="xs" c="dimmed">
 						{uploadedFileName ? (
 							<>
 								Displaying data from{" "}
-								<span className="text-violet-500 font-bold">
+								<Text span c="violet" fw={700}>
 									{uploadedFileName}
-								</span>
+								</Text>
 							</>
 						) : (
 							<>
 								{formattedDate} at {formattedTime}
 							</>
 						)}
-					</span>
-					<span>
+					</Text>
+					<Text size="xs" c="dimmed">
 						Last updated:{" "}
 						{currentTime.toLocaleTimeString("fr-FR", {
 							hour: "2-digit",
 							minute: "2-digit",
 							second: "2-digit",
 						})}
-					</span>
-				</div>
+					</Text>
+				</Group>
 
-				{viewMode === "map" ? (
-					<div className="flex-1 min-h-[500px] rounded-lg overflow-hidden border border-slate-200 dark:border-gray-800 relative">
-						<div className="absolute inset-0">
-							<MapView
-								turbines={filteredTurbines.map((turbine) => ({
-									...turbine,
-									latitude: turbineCoordinates[turbine.id]?.lat,
-									longitude: turbineCoordinates[turbine.id]?.lng,
-								}))}
-								onTurbineSelect={onSelectTurbine}
+				<Box style={{ flex: 1, position: "relative" }}>
+					{(viewMode === "map" || renderedViews.has("map")) && (
+						<Box
+							style={{
+								display: viewMode === "map" ? "block" : "none",
+								height: "100%",
+							}}
+						>
+							<Paper
+								withBorder
+								radius="md"
+								style={{ height: 500, overflow: "hidden" }}
+							>
+								<MapView
+									turbines={filteredTurbines.map((turbine) => ({
+										...turbine,
+										latitude: turbineCoordinates[turbine.id]?.lat,
+										longitude: turbineCoordinates[turbine.id]?.lng,
+									}))}
+									onTurbineSelect={onSelectTurbine}
+								/>
+							</Paper>
+						</Box>
+					)}
+
+					{(viewMode === "list" || renderedViews.has("list")) && (
+						<Box style={{ display: viewMode === "list" ? "block" : "none" }}>
+							<TurbineList
+								turbines={filteredTurbines}
+								onSelect={onSelectTurbine}
+								layout={layout}
 							/>
-						</div>
-					</div>
-				) : viewMode === "list" ? (
-					<TurbineList
-						turbines={filteredTurbines}
-						onSelect={onSelectTurbine}
-						layout={layout}
-					/>
-				) : (
-					<div className="space-y-6">
-						{Object.entries(layout).map(([zoneName, lines]) => {
-							// Filter lines to only include turbines that match the filter
-							const visibleLines = lines
-								.map((line) => {
-									const lineTurbines = line.ids
-										.map((id) =>
-											filteredTurbines.find(
-												(t) => t.id === `T ${String(id).padStart(3, "0")}`,
-											),
-										)
-										.filter((t): t is Turbine => !!t);
-									return { ...line, turbines: lineTurbines };
-								})
-								.filter((line) => line.turbines.length > 0);
+						</Box>
+					)}
 
-							if (visibleLines.length === 0) return null;
-
-							return (
-								<div key={zoneName}>
-									<h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3 pb-1 border-b border-violet-200 dark:border-violet-700">
-										{zoneName}
-									</h2>
-									<div className="space-y-4">
-										{visibleLines.map((line) => (
-											<div key={line.name}>
-												<h3 className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
-													{line.name}
-												</h3>
-												<div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-													{line.turbines.map((turbine) => {
-														const activeAlarms = alarms.filter(
-															(a) => a.turbineId === turbine.id && !a.timeOff,
-														);
-														let activeAlarmSeverity: AlarmSeverity | null =
-															null;
-														if (activeAlarms.length > 0) {
-															if (
-																activeAlarms.some(
-																	(a) => a.severity === AlarmSeverity.Critical,
-																)
-															)
-																activeAlarmSeverity = AlarmSeverity.Critical;
-															else if (
-																activeAlarms.some(
-																	(a) => a.severity === AlarmSeverity.Warning,
-																)
-															)
-																activeAlarmSeverity = AlarmSeverity.Warning;
-															else activeAlarmSeverity = AlarmSeverity.Info;
-														}
-
-														return (
-															<TurbineCard
-																key={turbine.id}
-																turbine={turbine}
-																to={`/turbine/${encodeURIComponent(turbine.id)}`}
-																isCompact={isCompactView}
-																activeAlarmSeverity={activeAlarmSeverity}
-															/>
-														);
-													})}
-												</div>
-											</div>
-										))}
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				)}
-			</div>
-		</div>
+					{(viewMode === "grid" || renderedViews.has("grid")) && (
+						<Box style={{ display: viewMode === "grid" ? "block" : "none" }}>
+							<TurbineGridView
+								layout={layout}
+								filteredTurbines={filteredTurbines}
+								alarms={alarms}
+								isCompactView={isCompactView}
+							/>
+						</Box>
+					)}
+				</Box>
+			</Paper>
+		</Stack>
 	);
 };
 

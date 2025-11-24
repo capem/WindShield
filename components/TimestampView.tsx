@@ -1,6 +1,23 @@
-import type React from "react";
+import React from "react";
 import { useMemo, useState } from "react";
 import type { TimestampData } from "../availabilityTypes";
+import {
+	Stack,
+	Group,
+	TextInput,
+	Select,
+	NumberInput,
+	Table,
+	Pagination,
+	UnstyledButton,
+	Text,
+	Paper,
+} from "@mantine/core";
+import {
+	IconSortAscending,
+	IconSortDescending,
+	IconArrowsSort,
+} from "@tabler/icons-react";
 
 interface TimestampViewProps {
 	data: TimestampData[];
@@ -87,12 +104,14 @@ const TimestampView: React.FC<TimestampViewProps> = ({ data }) => {
 
 	const getSortIcon = (key: keyof TimestampData) => {
 		if (!sortConfig || sortConfig.key !== key) {
-			return <i className="fa-solid fa-sort ml-2"></i>;
+			return (
+				<IconArrowsSort size={14} style={{ marginLeft: 4, opacity: 0.5 }} />
+			);
 		}
 		return sortConfig.direction === "asc" ? (
-			<i className="fa-solid fa-sort-up ml-2"></i>
+			<IconSortAscending size={14} style={{ marginLeft: 4 }} />
 		) : (
-			<i className="fa-solid fa-sort-down ml-2"></i>
+			<IconSortDescending size={14} style={{ marginLeft: 4 }} />
 		);
 	};
 
@@ -101,20 +120,13 @@ const TimestampView: React.FC<TimestampViewProps> = ({ data }) => {
 	};
 
 	return (
-		<div>
+		<Stack gap="md">
 			{/* Filters */}
-			<div className="mb-4 flex flex-wrap gap-4">
-				<div>
-					<label
-						htmlFor="start-date"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						Start Date
-					</label>
-					<input
-						id="start-date"
+			<Paper p="md" radius="md" withBorder shadow="sm">
+				<Group align="flex-end">
+					<TextInput
+						label="Start Date"
 						type="datetime-local"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
 						value={filter.dateRange.start}
 						onChange={(e) =>
 							setFilter({
@@ -123,19 +135,9 @@ const TimestampView: React.FC<TimestampViewProps> = ({ data }) => {
 							})
 						}
 					/>
-				</div>
-
-				<div>
-					<label
-						htmlFor="end-date"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						End Date
-					</label>
-					<input
-						id="end-date"
+					<TextInput
+						label="End Date"
 						type="datetime-local"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
 						value={filter.dateRange.end}
 						onChange={(e) =>
 							setFilter({
@@ -144,197 +146,193 @@ const TimestampView: React.FC<TimestampViewProps> = ({ data }) => {
 							})
 						}
 					/>
-				</div>
-
-				<div>
-					<label
-						htmlFor="min-wind-speed"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						Min Wind Speed (m/s)
-					</label>
-					<input
-						id="min-wind-speed"
-						type="number"
-						min="0"
-						step="0.1"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
+					<NumberInput
+						label="Min Wind Speed (m/s)"
+						min={0}
+						step={0.1}
 						value={filter.minWindSpeed}
-						onChange={(e) =>
+						onChange={(value) =>
 							setFilter({
 								...filter,
-								minWindSpeed: parseFloat(e.target.value) || 0,
+								minWindSpeed: Number(value) || 0,
 							})
 						}
 					/>
-				</div>
-
-				<div>
-					<label
-						htmlFor="active-alarms"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						Active Alarms
-					</label>
-					<select
-						id="active-alarms"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
+					<Select
+						label="Active Alarms"
+						data={[
+							{ value: "all", label: "All" },
+							{ value: "yes", label: "Has Alarms" },
+							{ value: "no", label: "No Alarms" },
+						]}
 						value={filter.hasAlarms}
-						onChange={(e) =>
+						onChange={(value) =>
 							setFilter({
 								...filter,
-								hasAlarms: e.target.value as "all" | "yes" | "no",
+								hasAlarms: value || "all",
 							})
 						}
-					>
-						<option value="all">All</option>
-						<option value="yes">Has Alarms</option>
-						<option value="no">No Alarms</option>
-					</select>
-				</div>
-			</div>
+					/>
+				</Group>
+			</Paper>
 
 			{/* Table */}
-			<div className="overflow-x-auto">
-				<table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
-					<thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
-						<tr>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("timestamp")}
-							>
-								Timestamp {getSortIcon("timestamp")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("averagePower")}
-							>
-								Average Power (kW) {getSortIcon("averagePower")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("averageWindSpeed")}
-							>
-								Average Wind Speed (m/s) {getSortIcon("averageWindSpeed")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("energyProduced")}
-							>
-								Energy Produced (kWh) {getSortIcon("energyProduced")}
-							</th>
-							<th scope="col" className="px-6 py-3">
-								Active Alarms
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("nonExcusableEnergyLost")}
-							>
-								Non-Excusable Energy Lost (kWh){" "}
-								{getSortIcon("nonExcusableEnergyLost")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("excusableEnergyLost")}
-							>
-								Excusable Energy Lost (kWh) {getSortIcon("excusableEnergyLost")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("totalEnergyLost")}
-							>
-								Total Energy Lost (kWh) {getSortIcon("totalEnergyLost")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("energyLostUndefined")}
-							>
-								Energy Lost Undefined (kWh) {getSortIcon("energyLostUndefined")}
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{paginatedData.map((item) => (
-							<tr
-								key={item.timestamp.toString()}
-								className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50 transition-colors"
-							>
-								<td className="px-6 py-4">{formatTimestamp(item.timestamp)}</td>
-								<td className="px-6 py-4 text-right">
-									{item.averagePower.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right">
-									{item.averageWindSpeed.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right">
-									{item.energyProduced.toFixed(2)}
-								</td>
-								<td className="px-6 py-4">
-									{item.activeAlarms.length > 0
-										? item.activeAlarms.join(", ")
-										: "None"}
-								</td>
-								<td className="px-6 py-4 text-right">
-									{item.nonExcusableEnergyLost.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right">
-									{item.excusableEnergyLost.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right font-medium">
-									{item.totalEnergyLost.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right">
-									{item.energyLostUndefined.toFixed(2)}
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
+				<Table.ScrollContainer minWidth={1200}>
+					<Table striped highlightOnHover verticalSpacing="sm">
+						<Table.Thead bg="var(--mantine-color-gray-0)">
+							<Table.Tr>
+								<Table.Th>
+									<UnstyledButton onClick={() => requestSort("timestamp")}>
+										<Group gap={0}>
+											<Text fw={700} size="sm">
+												Timestamp
+											</Text>
+											{getSortIcon("timestamp")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton onClick={() => requestSort("averagePower")}>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Average Power (kW)
+											</Text>
+											{getSortIcon("averagePower")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("averageWindSpeed")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Average Wind Speed (m/s)
+											</Text>
+											{getSortIcon("averageWindSpeed")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton onClick={() => requestSort("energyProduced")}>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Energy Produced (kWh)
+											</Text>
+											{getSortIcon("energyProduced")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th>
+									<Text fw={700} size="sm">
+										Active Alarms
+									</Text>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("nonExcusableEnergyLost")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Non-Excusable Energy Lost (kWh)
+											</Text>
+											{getSortIcon("nonExcusableEnergyLost")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("excusableEnergyLost")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Excusable Energy Lost (kWh)
+											</Text>
+											{getSortIcon("excusableEnergyLost")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("totalEnergyLost")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Total Energy Lost (kWh)
+											</Text>
+											{getSortIcon("totalEnergyLost")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("energyLostUndefined")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Energy Lost Undefined (kWh)
+											</Text>
+											{getSortIcon("energyLostUndefined")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+							</Table.Tr>
+						</Table.Thead>
+						<Table.Tbody>
+							{paginatedData.map((item) => (
+								<Table.Tr key={item.timestamp.toString()}>
+									<Table.Td>{formatTimestamp(item.timestamp)}</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{item.averagePower.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{item.averageWindSpeed.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{item.energyProduced.toFixed(2)}
+									</Table.Td>
+									<Table.Td>
+										{item.activeAlarms.length > 0
+											? item.activeAlarms.join(", ")
+											: "None"}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{item.nonExcusableEnergyLost.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{item.excusableEnergyLost.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right", fontWeight: 700 }}>
+										{item.totalEnergyLost.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{item.energyLostUndefined.toFixed(2)}
+									</Table.Td>
+								</Table.Tr>
+							))}
+						</Table.Tbody>
+					</Table>
+				</Table.ScrollContainer>
+			</Paper>
 
 			{/* Pagination */}
 			{totalPages > 1 && (
-				<div className="mt-4 flex items-center justify-between">
-					<div className="text-sm text-slate-700 dark:text-slate-300">
+				<Group justify="space-between">
+					<Text size="sm" c="dimmed">
 						Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
 						{Math.min(currentPage * itemsPerPage, processedData.length)} of{" "}
 						{processedData.length} entries
-					</div>
-					<div className="flex gap-2">
-						<button
-							type="button"
-							className="px-3 py-1 text-sm border border-slate-300 rounded-md hover:bg-slate-50 dark:border-gray-700 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-							onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-							disabled={currentPage === 1}
-						>
-							Previous
-						</button>
-						<span className="px-3 py-1 text-sm">
-							{currentPage} of {totalPages}
-						</span>
-						<button
-							type="button"
-							className="px-3 py-1 text-sm border border-slate-300 rounded-md hover:bg-slate-50 dark:border-gray-700 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-							onClick={() =>
-								setCurrentPage(Math.min(totalPages, currentPage + 1))
-							}
-							disabled={currentPage === totalPages}
-						>
-							Next
-						</button>
-					</div>
-				</div>
+					</Text>
+					<Pagination
+						total={totalPages}
+						value={currentPage}
+						onChange={setCurrentPage}
+					/>
+				</Group>
 			)}
-		</div>
+		</Stack>
 	);
 };
 
-export default TimestampView;
+export default React.memo(TimestampView);

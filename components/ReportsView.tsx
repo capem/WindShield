@@ -1,4 +1,16 @@
 import { useCallback, useState } from "react";
+import {
+	Stack,
+	Group,
+	Title,
+	Text,
+	Badge,
+	Table,
+	Paper,
+	Box,
+	Divider,
+	rem,
+} from "@mantine/core";
 import AlarmsSection from "./reports/AlarmsSection";
 import ConsumptionSection from "./reports/ConsumptionSection";
 import EnergyLossSection from "./reports/EnergyLossSection";
@@ -52,208 +64,201 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 	}, []);
 
 	return (
-		<div className="flex flex-col h-full bg-slate-50 dark:bg-[#050505] overflow-y-auto p-4 gap-4 font-sans transition-colors duration-300">
+		<Stack gap="md" p="md" h="100%" style={{ overflowY: "auto" }}>
 			{/* --- HEADER --- */}
-			<div className="flex items-center justify-between bg-white dark:bg-[#111111] p-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
-				<div className="flex items-center gap-4">
-					<div
-						className="px-3 py-1 rounded text-white font-bold tracking-widest text-sm"
-						style={{ backgroundColor: COLORS.gold }}
-					>
-						TAREC
-					</div>
-					<div className="h-8 w-px bg-slate-200 dark:bg-white/10"></div>
-					<h1 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
-						Wind Farm Performance Report
-					</h1>
-				</div>
-				<div className="flex items-center gap-6 text-sm">
-					<div className="flex flex-col items-end">
-						<span className="text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">
-							Period
-						</span>
-						<span className="font-bold text-slate-700 dark:text-slate-200">
-							October 2025
-						</span>
-					</div>
-					<div className="h-8 w-px bg-slate-200 dark:bg-white/10"></div>
-					<div className="flex flex-col items-end">
-						<span className="text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">
-							Farm Capacity
-						</span>
-						<span className="font-bold text-slate-700 dark:text-slate-200">
-							100 MW
-						</span>
-					</div>
-				</div>
-			</div>
+			<Paper p="md" radius="md" withBorder shadow="sm">
+				<Group justify="space-between">
+					<Group gap="md">
+						<Badge
+							size="lg"
+							radius="sm"
+							variant="filled"
+							color="yellow"
+							style={{
+								backgroundColor: COLORS.gold,
+								color: "white",
+								letterSpacing: 2,
+							}}
+						>
+							TAREC
+						</Badge>
+						<Divider orientation="vertical" />
+						<Title order={3}>Wind Farm Performance Report</Title>
+					</Group>
+					<Group gap="xl">
+						<Stack gap={0} align="flex-end">
+							<Text size="xs" fw={700} c="dimmed" tt="uppercase">
+								Period
+							</Text>
+							<Text fw={700}>October 2025</Text>
+						</Stack>
+						<Divider orientation="vertical" />
+						<Stack gap={0} align="flex-end">
+							<Text size="xs" fw={700} c="dimmed" tt="uppercase">
+								Farm Capacity
+							</Text>
+							<Text fw={700}>100 MW</Text>
+						</Stack>
+					</Group>
+				</Group>
+			</Paper>
 
 			{/* --- KPI TABLE --- */}
-			<div className="bg-white dark:bg-[#111111] rounded-xl border border-slate-200 dark:border-white/10 shadow-sm min-h-[100px]">
-				<table className="w-full text-[9px] tracking-tight">
-					<thead className="bg-slate-50 dark:bg-white/5">
-						<tr className="border-b border-slate-100 dark:border-white/10">
-							<th className="p-0.5 text-left font-bold text-slate-800 dark:text-white uppercase tracking-wider w-20">
-								Key Fig.
-							</th>
-							<th
-								colSpan={2}
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								Unavail.
-							</th>
-							<th
-								colSpan={2}
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								TAREC
-							</th>
-							<th
-								colSpan={2}
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								SGRE
-							</th>
-							<th
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								Losses
-							</th>
-							<th
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								Boost
-							</th>
-							<th
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								Perf
-							</th>
-							<th
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								MTBF
-							</th>
-							<th
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								MTTR
-							</th>
-							<th
-								className="p-0.5 text-center font-semibold uppercase tracking-wider border-l border-slate-100 dark:border-white/10"
-								style={{ color: COLORS.mediumGrey }}
-							>
-								MTTI
-							</th>
-						</tr>
-						<tr className="text-[9px] text-center font-medium text-slate-500 dark:text-slate-400">
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10"></th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								Time %
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10">
-								Energy %
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								Time %
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10">
-								Energy %
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								Time %
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10">
-								Energy %
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								(MWh)
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								(MWh)
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								(%)
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								(h)
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								(h)
-							</th>
-							<th className="p-0.5 border-b border-slate-100 dark:border-white/10 border-l border-slate-100 dark:border-white/10">
-								(h)
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{KPI_DATA.map((row, index) => (
-							<tr
-								key={row.label}
-								className="text-center hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-							>
-								<td className="p-0.5 text-left border-b border-slate-100 dark:border-white/10">
-									<div
-										className="flex flex-col border-l-2 pl-1"
-										style={{ borderColor: COLORS.gold }}
-									>
-										<span className="text-[9px] font-bold text-slate-800 dark:text-slate-200">
-											{row.label}
-										</span>
-										<span className="text-[8px] font-normal text-slate-500 dark:text-slate-400">
-											{index === 0 ? "1st - last day" : "Jan 1st - last mo"}
-										</span>
-									</div>
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-medium text-slate-700 dark:text-slate-300">
-									{row.unavailabilityTotalTime}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-medium text-slate-700 dark:text-slate-300">
-									{row.unavailabilityTotalEnergy}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
-									{row.unavailabilityTarecTime}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
-									{row.unavailabilityTarecEnergy}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
-									{row.unavailabilitySgreTime}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400">
-									{row.unavailabilitySgreEnergy}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
-									{row.electricalLosses.toLocaleString()}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
-									{row.powerBoost.toLocaleString()}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
-									{row.avgTurbinePerformance}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
-									{row.mtbf}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
-									{row.mttr}
-								</td>
-								<td className="p-0.5 border-b border-slate-100 dark:border-white/10 font-bold text-slate-800 dark:text-slate-200">
-									{row.mtti}
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
+				<Table.ScrollContainer minWidth={800}>
+					<Table withTableBorder withColumnBorders striped highlightOnHover>
+						<Table.Thead bg="var(--mantine-color-gray-0)">
+							<Table.Tr>
+								<Table.Th w={80}>Key Fig.</Table.Th>
+								<Table.Th
+									colSpan={2}
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									Unavail.
+								</Table.Th>
+								<Table.Th
+									colSpan={2}
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									TAREC
+								</Table.Th>
+								<Table.Th
+									colSpan={2}
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									SGRE
+								</Table.Th>
+								<Table.Th
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									Losses
+								</Table.Th>
+								<Table.Th
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									Boost
+								</Table.Th>
+								<Table.Th
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									Perf
+								</Table.Th>
+								<Table.Th
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									MTBF
+								</Table.Th>
+								<Table.Th
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									MTTR
+								</Table.Th>
+								<Table.Th
+									style={{ textAlign: "center", color: COLORS.mediumGrey }}
+								>
+									MTTI
+								</Table.Th>
+							</Table.Tr>
+							<Table.Tr>
+								<Table.Th></Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									Time %
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									Energy %
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									Time %
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									Energy %
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									Time %
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									Energy %
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									(MWh)
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									(MWh)
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									(%)
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									(h)
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									(h)
+								</Table.Th>
+								<Table.Th style={{ textAlign: "center", fontSize: 10 }}>
+									(h)
+								</Table.Th>
+							</Table.Tr>
+						</Table.Thead>
+						<Table.Tbody>
+							{KPI_DATA.map((row, index) => (
+								<Table.Tr key={row.label}>
+									<Table.Td>
+										<Box
+											style={{
+												borderLeft: `2px solid ${COLORS.gold}`,
+												paddingLeft: 4,
+											}}
+										>
+											<Text size="xs" fw={700}>
+												{row.label}
+											</Text>
+											<Text size="xs" c="dimmed" style={{ fontSize: 8 }}>
+												{index === 0 ? "1st - last day" : "Jan 1st - last mo"}
+											</Text>
+										</Box>
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center" }}>
+										{row.unavailabilityTotalTime}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center" }}>
+										{row.unavailabilityTotalEnergy}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center" }}>
+										{row.unavailabilityTarecTime}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center" }}>
+										{row.unavailabilityTarecEnergy}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center" }}>
+										{row.unavailabilitySgreTime}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center" }}>
+										{row.unavailabilitySgreEnergy}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center", fontWeight: 700 }}>
+										{row.electricalLosses.toLocaleString()}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center", fontWeight: 700 }}>
+										{row.powerBoost.toLocaleString()}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center", fontWeight: 700 }}>
+										{row.avgTurbinePerformance}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center", fontWeight: 700 }}>
+										{row.mtbf}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center", fontWeight: 700 }}>
+										{row.mttr}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "center", fontWeight: 700 }}>
+										{row.mtti}
+									</Table.Td>
+								</Table.Tr>
+							))}
+						</Table.Tbody>
+					</Table>
+				</Table.ScrollContainer>
+			</Paper>
 
 			{/* --- SECTIONS --- */}
 			<ProductionSection
@@ -274,7 +279,7 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 				onAnalysisChange={handleCommentsChange}
 			/>
 			<ConsumptionSection />
-		</div>
+		</Stack>
 	);
 };
 

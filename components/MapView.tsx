@@ -1,13 +1,24 @@
 import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
-import type React from "react";
+import React from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { renderToStaticMarkup } from "react-dom/server";
 import { turbineCoordinates } from "../data/turbineCoordinates";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
+import {
+	IconCircleCheck,
+	IconInfoCircle,
+	IconCircleX,
+	IconPlayerPause,
+	IconTool,
+	IconAlertTriangle,
+	IconHandStop,
+} from "@tabler/icons-react";
+import { Stack, Text, Group, Badge } from "@mantine/core";
 
 import "leaflet/dist/leaflet.css";
-import "./MapView.css";
+import "./MapView.css"; // Keeping for basic map container styles if needed, but will try to inline
 
 import { useTheme } from "../contexts/ThemeContext";
 
@@ -16,8 +27,14 @@ interface MapViewProps {
 	onTurbineSelect?: (turbineId: string) => void;
 }
 
-// Custom icon for turbine markers
-const createTurbineIcon = (status: TurbineStatus) => {
+// Memoize icon creation to avoid re-rendering static markup repeatedly
+const iconCache: Record<string, L.DivIcon> = {};
+
+const getTurbineIcon = (status: TurbineStatus) => {
+	if (iconCache[status]) {
+		return iconCache[status];
+	}
+
 	const statusColors = {
 		[TurbineStatus.Producing]: "#10b981", // green
 		[TurbineStatus.Available]: "#3b82f6", // blue
@@ -29,41 +46,130 @@ const createTurbineIcon = (status: TurbineStatus) => {
 		[TurbineStatus.Curtailment]: "#6366f1", // indigo
 	};
 
-	const statusIcons = {
-		[TurbineStatus.Producing]: "fa-circle-check",
-		[TurbineStatus.Available]: "fa-circle-info",
-		[TurbineStatus.Offline]: "fa-circle-xmark",
-		[TurbineStatus.Stopped]: "fa-circle-pause",
-		[TurbineStatus.Maintenance]: "fa-wrench",
-		[TurbineStatus.Fault]: "fa-triangle-exclamation",
-		[TurbineStatus.Warning]: "fa-exclamation-triangle",
-		[TurbineStatus.Curtailment]: "fa-hand",
+	const getIcon = (status: TurbineStatus) => {
+		const props = { size: 14, color: "white" };
+		switch (status) {
+			case TurbineStatus.Producing:
+				return <IconCircleCheck {...props} />;
+			case TurbineStatus.Available:
+				return <IconInfoCircle {...props} />;
+			case TurbineStatus.Offline:
+				return <IconCircleX {...props} />;
+			case TurbineStatus.Stopped:
+				return <IconPlayerPause {...props} />;
+			case TurbineStatus.Maintenance:
+				return <IconTool {...props} />;
+			case TurbineStatus.Fault:
+				return <IconAlertTriangle {...props} />;
+			case TurbineStatus.Warning:
+				return <IconAlertTriangle {...props} />;
+			case TurbineStatus.Curtailment:
+				return <IconHandStop {...props} />;
+			default:
+				return <IconInfoCircle {...props} />;
+		}
 	};
 
-	return L.divIcon({
-		html: `
-			<div 
-				style="
-					background-color: ${statusColors[status]};
-					width: 24px;
-					height: 24px;
-					border-radius: 50%;
-					border: 2px solid white;
-					box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-					display: flex;
-					align-items: center;
-					justify-content: center;
-				"
-			>
-				<i class="fa-solid ${statusIcons[status]}" style="color: white; font-size: 12px;"></i>
-			</div>
-		`,
-		className: "turbine-marker",
+	const iconHtml = renderToStaticMarkup(
+		<div
+			style={{
+				backgroundColor: statusColors[status],
+				width: "24px",
+				height: "24px",
+				borderRadius: "50%",
+				border: "2px solid white",
+				boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+			}}
+		>
+			{getIcon(status)}
+		</div>,
+	);
+
+	const icon = L.divIcon({
+		html: iconHtml,
+		className: "turbine-marker-custom",
 		iconSize: [28, 28],
 		iconAnchor: [14, 14],
 		popupAnchor: [0, -14],
 	});
+
+	iconCache[status] = icon;
+	return icon;
 };
+
+const TurbineMarker = React.memo<{
+	turbine: Turbine & { latitude?: number; longitude?: number };
+	onSelect?: (id: string) => void;
+}>(({ turbine, onSelect }) => {
+	const icon = getTurbineIcon(turbine.status);
+
+	return (
+		<Marker
+			position={[turbine.latitude || 0, turbine.longitude || 0]}
+			icon={icon}
+			eventHandlers={{
+				click: () => onSelect?.(turbine.id),
+			}}
+		>
+			<Popup>
+				<Stack gap="xs" p={0}>
+					<Text fw={700} size="sm">
+						{turbine.id}
+					</Text>
+					<Group gap="xs">
+						<Text size="xs" c="dimmed">
+							Status:
+						</Text>
+						<Badge
+							size="xs"
+							variant="light"
+							color={
+								turbine.status === TurbineStatus.Producing
+									? "green"
+									: turbine.status === TurbineStatus.Available
+										? "blue"
+										: turbine.status === TurbineStatus.Offline
+											? "red"
+											: turbine.status === TurbineStatus.Stopped
+												? "yellow"
+												: turbine.status === TurbineStatus.Maintenance
+													? "violet"
+													: "gray"
+							}
+						>
+							{turbine.status}
+						</Badge>
+					</Group>
+					{turbine.activePower !== null && (
+						<Text size="xs">
+							Power:{" "}
+							<span style={{ fontWeight: 600 }}>
+								{turbine.activePower.toFixed(1)} MW
+							</span>
+						</Text>
+					)}
+					{turbine.windSpeed !== null && (
+						<Text size="xs">
+							Wind:{" "}
+							<span style={{ fontWeight: 600 }}>
+								{turbine.windSpeed.toFixed(1)} m/s
+							</span>
+						</Text>
+					)}
+					{turbine.temperature !== null && (
+						<Text size="xs">
+							Temp:{" "}
+							<span style={{ fontWeight: 600 }}>{turbine.temperature}°C</span>
+						</Text>
+					)}
+				</Stack>
+			</Popup>
+		</Marker>
+	);
+});
 
 const MapView: React.FC<MapViewProps> = ({ turbines, onTurbineSelect }) => {
 	const { isDarkMode } = useTheme();
@@ -82,19 +188,23 @@ const MapView: React.FC<MapViewProps> = ({ turbines, onTurbineSelect }) => {
 		: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 	// Add coordinates to turbines
-	const turbinesWithCoords = turbines
-		.map((turbine) => {
-			const coords = turbineCoordinates[turbine.id];
-			return {
-				...turbine,
-				latitude: coords?.lat,
-				longitude: coords?.lng,
-			};
-		})
-		.filter((turbine) => turbine.latitude && turbine.longitude);
+	const turbinesWithCoords = React.useMemo(
+		() =>
+			turbines
+				.map((turbine) => {
+					const coords = turbineCoordinates[turbine.id];
+					return {
+						...turbine,
+						latitude: coords?.lat,
+						longitude: coords?.lng,
+					};
+				})
+				.filter((turbine) => turbine.latitude && turbine.longitude),
+		[turbines],
+	);
 
 	return (
-		<div className="map-container">
+		<div style={{ height: "100%", width: "100%" }}>
 			<MapContainer
 				center={center}
 				zoom={zoom}
@@ -102,34 +212,15 @@ const MapView: React.FC<MapViewProps> = ({ turbines, onTurbineSelect }) => {
 			>
 				<TileLayer attribution={attribution} url={tileUrl} />
 				{turbinesWithCoords.map((turbine) => (
-					<Marker
+					<TurbineMarker
 						key={turbine.id}
-						position={[turbine.latitude || 0, turbine.longitude || 0]}
-						icon={createTurbineIcon(turbine.status)}
-						eventHandlers={{
-							click: () => onTurbineSelect?.(turbine.id),
-						}}
-					>
-						<Popup>
-							<div className="turbine-popup">
-								<h3>{turbine.id}</h3>
-								<p>Status: {turbine.status}</p>
-								{turbine.activePower !== null && (
-									<p>Active Power: {turbine.activePower.toFixed(1)} MW</p>
-								)}
-								{turbine.windSpeed !== null && (
-									<p>Wind Speed: {turbine.windSpeed.toFixed(1)} m/s</p>
-								)}
-								{turbine.temperature !== null && (
-									<p>Temperature: {turbine.temperature}°C</p>
-								)}
-							</div>
-						</Popup>
-					</Marker>
+						turbine={turbine}
+						onSelect={onTurbineSelect}
+					/>
 				))}
 			</MapContainer>
 		</div>
 	);
 };
 
-export default MapView;
+export default React.memo(MapView);

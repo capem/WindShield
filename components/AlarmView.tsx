@@ -1,6 +1,21 @@
-import type React from "react";
+import React from "react";
 import { useMemo, useState } from "react";
 import type { AvailabilityAlarm } from "../availabilityTypes";
+import {
+	Stack,
+	Group,
+	Select,
+	TextInput,
+	Table,
+	UnstyledButton,
+	Text,
+	Paper,
+} from "@mantine/core";
+import {
+	IconSortAscending,
+	IconSortDescending,
+	IconArrowsSort,
+} from "@tabler/icons-react";
 
 interface AlarmViewProps {
 	data: AvailabilityAlarm[];
@@ -67,12 +82,14 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 
 	const getSortIcon = (key: keyof AvailabilityAlarm) => {
 		if (!sortConfig || sortConfig.key !== key) {
-			return <i className="fa-solid fa-sort ml-2"></i>;
+			return (
+				<IconArrowsSort size={14} style={{ marginLeft: 4, opacity: 0.5 }} />
+			);
 		}
 		return sortConfig.direction === "asc" ? (
-			<i className="fa-solid fa-sort-up ml-2"></i>
+			<IconSortAscending size={14} style={{ marginLeft: 4 }} />
 		) : (
-			<i className="fa-solid fa-sort-down ml-2"></i>
+			<IconSortDescending size={14} style={{ marginLeft: 4 }} />
 		);
 	};
 
@@ -87,41 +104,26 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 	};
 
 	return (
-		<div>
+		<Stack gap="md">
 			{/* Filters */}
-			<div className="mb-4 flex flex-wrap gap-4">
-				<div>
-					<label
-						htmlFor="alarm-type"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						Alarm Type
-					</label>
-					<select
-						id="alarm-type"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
+			<Paper p="md" radius="md" withBorder shadow="sm">
+				<Group align="flex-end">
+					<Select
+						label="Alarm Type"
+						placeholder="Select type"
+						data={[
+							{ value: "all", label: "All Alarms" },
+							{ value: "excusable", label: "Excusable" },
+							{ value: "non-excusable", label: "Non-Excusable" },
+						]}
 						value={filter.alarmType}
-						onChange={(e) =>
-							setFilter({ ...filter, alarmType: e.target.value })
+						onChange={(value) =>
+							setFilter({ ...filter, alarmType: value || "all" })
 						}
-					>
-						<option value="all">All Alarms</option>
-						<option value="excusable">Excusable</option>
-						<option value="non-excusable">Non-Excusable</option>
-					</select>
-				</div>
-
-				<div>
-					<label
-						htmlFor="start-date"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						Start Date
-					</label>
-					<input
-						id="start-date"
+					/>
+					<TextInput
+						label="Start Date"
 						type="date"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
 						value={filter.dateRange.start}
 						onChange={(e) =>
 							setFilter({
@@ -130,19 +132,9 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 							})
 						}
 					/>
-				</div>
-
-				<div>
-					<label
-						htmlFor="end-date"
-						className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-					>
-						End Date
-					</label>
-					<input
-						id="end-date"
+					<TextInput
+						label="End Date"
 						type="date"
-						className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
 						value={filter.dateRange.end}
 						onChange={(e) =>
 							setFilter({
@@ -151,104 +143,132 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 							})
 						}
 					/>
-				</div>
-			</div>
+				</Group>
+			</Paper>
 
 			{/* Table */}
-			<div className="overflow-x-auto">
-				<table className="w-full text-sm text-left text-slate-600 dark:text-gray-400">
-					<thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
-						<tr>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("timeOn")}
-							>
-								Time On {getSortIcon("timeOn")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("timeOff")}
-							>
-								Time Off {getSortIcon("timeOff")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("duration")}
-							>
-								Duration {getSortIcon("duration")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("alarmName")}
-							>
-								Alarm Name {getSortIcon("alarmName")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("alarmCode")}
-							>
-								Alarm Code {getSortIcon("alarmCode")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("nonExcusableEnergyLost")}
-							>
-								Non-Excusable Energy Lost (kWh){" "}
-								{getSortIcon("nonExcusableEnergyLost")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("excusableEnergyLost")}
-							>
-								Excusable Energy Lost (kWh) {getSortIcon("excusableEnergyLost")}
-							</th>
-							<th
-								scope="col"
-								className="px-6 py-3 cursor-pointer text-right hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-								onClick={() => requestSort("totalEnergyLost")}
-							>
-								Total Energy Lost (kWh) {getSortIcon("totalEnergyLost")}
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{processedData.map((alarm) => (
-							<tr
-								key={alarm.id}
-								className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50 transition-colors"
-							>
-								<td className="px-6 py-4">{formatDate(alarm.timeOn)}</td>
-								<td className="px-6 py-4">
-									{alarm.timeOff ? formatDate(alarm.timeOff) : "Active"}
-								</td>
-								<td className="px-6 py-4">{formatDuration(alarm.duration)}</td>
-								<td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-									{alarm.alarmName}
-								</td>
-								<td className="px-6 py-4">{alarm.alarmCode}</td>
-								<td className="px-6 py-4 text-right">
-									{alarm.nonExcusableEnergyLost.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right">
-									{alarm.excusableEnergyLost.toFixed(2)}
-								</td>
-								<td className="px-6 py-4 text-right font-medium">
-									{alarm.totalEnergyLost.toFixed(2)}
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
-		</div>
+			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
+				<Table.ScrollContainer minWidth={1000}>
+					<Table striped highlightOnHover verticalSpacing="sm">
+						<Table.Thead bg="var(--mantine-color-gray-0)">
+							<Table.Tr>
+								<Table.Th>
+									<UnstyledButton onClick={() => requestSort("timeOn")}>
+										<Group gap={0}>
+											<Text fw={700} size="sm">
+												Time On
+											</Text>
+											{getSortIcon("timeOn")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th>
+									<UnstyledButton onClick={() => requestSort("timeOff")}>
+										<Group gap={0}>
+											<Text fw={700} size="sm">
+												Time Off
+											</Text>
+											{getSortIcon("timeOff")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th>
+									<UnstyledButton onClick={() => requestSort("duration")}>
+										<Group gap={0}>
+											<Text fw={700} size="sm">
+												Duration
+											</Text>
+											{getSortIcon("duration")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th>
+									<UnstyledButton onClick={() => requestSort("alarmName")}>
+										<Group gap={0}>
+											<Text fw={700} size="sm">
+												Alarm Name
+											</Text>
+											{getSortIcon("alarmName")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th>
+									<UnstyledButton onClick={() => requestSort("alarmCode")}>
+										<Group gap={0}>
+											<Text fw={700} size="sm">
+												Alarm Code
+											</Text>
+											{getSortIcon("alarmCode")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("nonExcusableEnergyLost")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Non-Excusable Energy Lost (kWh)
+											</Text>
+											{getSortIcon("nonExcusableEnergyLost")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("excusableEnergyLost")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Excusable Energy Lost (kWh)
+											</Text>
+											{getSortIcon("excusableEnergyLost")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+								<Table.Th style={{ textAlign: "right" }}>
+									<UnstyledButton
+										onClick={() => requestSort("totalEnergyLost")}
+									>
+										<Group gap={0} justify="flex-end">
+											<Text fw={700} size="sm">
+												Total Energy Lost (kWh)
+											</Text>
+											{getSortIcon("totalEnergyLost")}
+										</Group>
+									</UnstyledButton>
+								</Table.Th>
+							</Table.Tr>
+						</Table.Thead>
+						<Table.Tbody>
+							{processedData.map((alarm) => (
+								<Table.Tr key={alarm.id}>
+									<Table.Td>{formatDate(alarm.timeOn)}</Table.Td>
+									<Table.Td>
+										{alarm.timeOff ? formatDate(alarm.timeOff) : "Active"}
+									</Table.Td>
+									<Table.Td>{formatDuration(alarm.duration)}</Table.Td>
+									<Table.Td>
+										<Text fw={500}>{alarm.alarmName}</Text>
+									</Table.Td>
+									<Table.Td>{alarm.alarmCode}</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{alarm.nonExcusableEnergyLost.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right" }}>
+										{alarm.excusableEnergyLost.toFixed(2)}
+									</Table.Td>
+									<Table.Td style={{ textAlign: "right", fontWeight: 700 }}>
+										{alarm.totalEnergyLost.toFixed(2)}
+									</Table.Td>
+								</Table.Tr>
+							))}
+						</Table.Tbody>
+					</Table>
+				</Table.ScrollContainer>
+			</Paper>
+		</Stack>
 	);
 };
 
-export default AlarmView;
+export default React.memo(AlarmView);

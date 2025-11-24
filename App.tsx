@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
 	BrowserRouter,
 	Routes,
@@ -9,6 +9,7 @@ import {
 	useParams,
 	Navigate,
 } from "react-router-dom";
+import { AppShell } from "@mantine/core";
 import AnalyticsView from "./components/AnalyticsView";
 import Header from "./components/Header";
 import SettingsView from "./components/SettingsView";
@@ -201,9 +202,15 @@ function AppContent() {
 	);
 
 	return (
-		<div className="flex h-screen bg-slate-50 text-slate-800 font-sans dark:bg-black dark:text-white transition-theme">
-			<Sidebar isCollapsed={isSidebarCollapsed} />
-			<div className="flex-1 flex flex-col overflow-hidden">
+		<AppShell
+			header={{ height: 64 }}
+			navbar={{
+				width: isSidebarCollapsed ? 80 : 250,
+				breakpoint: "sm",
+			}}
+			padding="md"
+		>
+			<AppShell.Header>
 				<Header
 					onToggleSidebar={handleToggleSidebar}
 					onUploadClick={handleUploadClick}
@@ -211,70 +218,76 @@ function AppContent() {
 					isDarkMode={isDarkMode}
 					onToggleDarkMode={toggleDarkMode}
 				/>
+			</AppShell.Header>
+
+			<AppShell.Navbar p="md">
+				<Sidebar isCollapsed={isSidebarCollapsed} />
+			</AppShell.Navbar>
+
+			<AppShell.Main>
 				<input
 					type="file"
 					ref={fileInputRef}
 					onChange={handleFileChange}
-					className="hidden"
+					style={{ display: "none" }}
 					accept=".csv"
 				/>
-				<main className="flex-1 p-6 overflow-y-auto">
-					<Routes>
-						<Route
-							path="/"
-							element={
-								<Dashboard
-									turbines={turbines}
-									alarms={alarms}
-									currentTime={currentTime}
-									uploadedFileName={uploadedFileName}
-									onSelectTurbine={(id) =>
-										navigate(`/turbine/${encodeURIComponent(id)}`)
-									}
-									isCompactView={isCompactView}
-								/>
-							}
-						/>
-						<Route
-							path="/turbine/:id"
-							element={
-								<TurbineDetailWrapper
-									turbines={turbines}
-									alarms={alarms}
-									onAcknowledgeAlarm={handleAcknowledgeAlarm}
-									historicalDataMap={allHistoricalData || analyticsData}
-								/>
-							}
-						/>
-						<Route
-							path="/analytics"
-							element={
-								<AnalyticsView
-									analyticsData={analyticsData}
-									turbines={turbines}
-									alarms={alarms}
-								/>
-							}
-						/>
-						<Route path="/reports" element={<ReportsView />} />
-						<Route
-							path="/settings"
-							element={
-								<SettingsView
-									isCompactView={isCompactView}
-									setIsCompactView={setIsCompactView}
-									isSidebarCollapsed={isSidebarCollapsed}
-									setIsSidebarCollapsed={setIsSidebarCollapsed}
-									isDarkMode={isDarkMode}
-									setIsDarkMode={toggleDarkMode}
-								/>
-							}
-						/>
-						<Route path="*" element={<Navigate to="/" replace />} />
-					</Routes>
-				</main>
-			</div>
-		</div>
+				<Routes>
+					<Route
+						path="/"
+						element={
+							<Dashboard
+								turbines={turbines}
+								alarms={alarms}
+								currentTime={currentTime}
+								uploadedFileName={uploadedFileName}
+								onSelectTurbine={useCallback(
+									(id) => navigate(`/turbine/${encodeURIComponent(id)}`),
+									[navigate],
+								)}
+								isCompactView={isCompactView}
+							/>
+						}
+					/>
+					<Route
+						path="/turbine/:id"
+						element={
+							<TurbineDetailWrapper
+								turbines={turbines}
+								alarms={alarms}
+								onAcknowledgeAlarm={handleAcknowledgeAlarm}
+								historicalDataMap={allHistoricalData || analyticsData}
+							/>
+						}
+					/>
+					<Route
+						path="/analytics"
+						element={
+							<AnalyticsView
+								analyticsData={analyticsData}
+								turbines={turbines}
+								alarms={alarms}
+							/>
+						}
+					/>
+					<Route path="/reports" element={<ReportsView />} />
+					<Route
+						path="/settings"
+						element={
+							<SettingsView
+								isCompactView={isCompactView}
+								setIsCompactView={setIsCompactView}
+								isSidebarCollapsed={isSidebarCollapsed}
+								setIsSidebarCollapsed={setIsSidebarCollapsed}
+								isDarkMode={isDarkMode}
+								setIsDarkMode={toggleDarkMode}
+							/>
+						}
+					/>
+					<Route path="*" element={<Navigate to="/" replace />} />
+				</Routes>
+			</AppShell.Main>
+		</AppShell>
 	);
 }
 

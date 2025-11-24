@@ -1,9 +1,34 @@
-import type React from "react";
+import React from "react";
 import { useMemo, useState } from "react";
 import { calculateSummaryStats } from "../availabilityDataUtils";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
 import TurbineAvailabilityModal from "./TurbineAvailabilityModal";
+import {
+	Stack,
+	Group,
+	Text,
+	Card,
+	Grid,
+	ThemeIcon,
+	Paper,
+	TextInput,
+	Table,
+	UnstyledButton,
+	Title,
+	Box,
+	Center,
+} from "@mantine/core";
+import {
+	IconClock,
+	IconBolt,
+	IconBattery4,
+	IconBuildingFactory,
+	IconWind,
+	IconSortAscending,
+	IconSortDescending,
+	IconArrowsSort,
+} from "@tabler/icons-react";
 
 // FIX: Define a type for historical data rows to resolve typing errors.
 type HistoricalDataRow = {
@@ -24,36 +49,32 @@ interface AnalyticsViewProps {
 	turbines: Turbine[];
 }
 
-const KpiCard: React.FC<{
+const KpiCard = React.memo<{
 	title: string;
 	value: string;
 	icon: React.ReactNode;
 	color: string;
-}> = ({ title, value, icon, color }) => (
-	<div className="bg-white dark:bg-black p-4 rounded-xl shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 transition-theme">
-		<div
-			className={`p-4 rounded-lg bg-opacity-10 ${color.replace("text-", "bg-").replace("-500", "-100")} dark:bg-opacity-20`}
-		>
-			<div
-				className={`${color} text-3xl w-8 h-8 flex items-center justify-center`}
-			>
+}>(({ title, value, icon, color }) => (
+	<Card shadow="sm" padding="lg" radius="md" withBorder>
+		<Group>
+			<ThemeIcon size={48} radius="md" variant="light" color={color}>
 				{icon}
+			</ThemeIcon>
+			<div>
+				<Text size="sm" c="dimmed" fw={500}>
+					{title}
+				</Text>
+				<Text size="xl" fw={700}>
+					{value}
+				</Text>
 			</div>
-		</div>
-		<div>
-			<p className="text-sm text-slate-500 dark:text-gray-400 font-medium">
-				{title}
-			</p>
-			<p className="text-2xl font-bold text-slate-800 dark:text-white">
-				{value}
-			</p>
-		</div>
-	</div>
-);
+		</Group>
+	</Card>
+));
 
-const AvailabilityChart: React.FC<{
+const AvailabilityChart = React.memo<{
 	data: { date: string; time: number; energy: number }[];
-}> = ({ data }) => {
+}>(({ data }) => {
 	const width = 500;
 	const height = 180; // Make chart more compact
 	const padding = { top: 10, right: 0, bottom: 30, left: 35 };
@@ -98,14 +119,16 @@ const AvailabilityChart: React.FC<{
 			setHoverData(null);
 		}
 	};
-
 	const handleMouseLeave = () => {
 		setHoverData(null);
 	};
 
 	return (
-		<div className="relative">
-			<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+		<div style={{ position: "relative" }}>
+			<svg
+				viewBox={`0 0 ${width} ${height}`}
+				style={{ width: "100%", height: "auto" }}
+			>
 				<title>Availability Chart</title>
 				{/* Y-axis */}
 				{[0, 25, 50, 75, 100].map((y) => (
@@ -123,8 +146,8 @@ const AvailabilityChart: React.FC<{
 								padding.bottom -
 								(y / 100) * (height - padding.top - padding.bottom)
 							}
-							className="stroke-slate-200 dark:stroke-gray-800"
 							strokeDasharray="2,2"
+							style={{ stroke: "var(--mantine-color-gray-3)" }}
 						/>
 						<text
 							x={padding.left - 8}
@@ -135,7 +158,7 @@ const AvailabilityChart: React.FC<{
 							}
 							textAnchor="end"
 							alignmentBaseline="middle"
-							className="text-[5px] fill-slate-500 dark:fill-gray-400"
+							style={{ fontSize: 5, fill: "var(--mantine-color-dimmed)" }}
 						>
 							{y}%
 						</text>
@@ -161,28 +184,21 @@ const AvailabilityChart: React.FC<{
 
 					// The bars under the mouse are highlighted, the rest are dimmed.
 					const timeBarColor = isHovered
-						? "fill-cyan-500"
-						: "fill-cyan-300 dark:fill-cyan-700";
+						? "var(--mantine-color-cyan-5)"
+						: "var(--mantine-color-cyan-3)";
 					const energyBarColor = isHovered
-						? "fill-violet-600"
-						: "fill-violet-400 dark:fill-violet-800";
-					const opacity = hoverData
-						? isHovered
-							? "opacity-100"
-							: "opacity-30"
-						: "opacity-100";
+						? "var(--mantine-color-violet-6)"
+						: "var(--mantine-color-violet-4)";
+					const opacity = hoverData ? (isHovered ? 1 : 0.3) : 1;
 
 					return (
-						<g
-							key={d.date}
-							className={`${opacity} transition-opacity duration-200`}
-						>
+						<g key={d.date} style={{ opacity, transition: "opacity 0.2s" }}>
 							<rect
 								x={bar1X}
 								y={timeY}
 								width={barWidth}
 								height={Math.max(0, height - padding.bottom - timeY)}
-								className={timeBarColor}
+								fill={timeBarColor}
 								rx="2"
 							/>
 							<rect
@@ -190,7 +206,7 @@ const AvailabilityChart: React.FC<{
 								y={energyY}
 								width={barWidth}
 								height={Math.max(0, height - padding.bottom - energyY)}
-								className={energyBarColor}
+								fill={energyBarColor}
 								rx="2"
 							/>
 						</g>
@@ -207,7 +223,7 @@ const AvailabilityChart: React.FC<{
 							x={x}
 							y={height - padding.bottom + 15}
 							textAnchor="middle"
-							className="text-[5px] fill-slate-500 dark:fill-gray-400"
+							style={{ fontSize: 5, fill: "var(--mantine-color-dimmed)" }}
 						>
 							{new Date(d.date).toLocaleDateString("en-US", {
 								month: "short",
@@ -221,8 +237,11 @@ const AvailabilityChart: React.FC<{
 				{/* Hover interactions */}
 				<button
 					type="button"
-					className="absolute border-0 bg-transparent cursor-pointer"
 					style={{
+						position: "absolute",
+						border: 0,
+						background: "transparent",
+						cursor: "pointer",
 						left: `${padding.left}px`,
 						top: `${padding.top}px`,
 						width: `${chartAreaWidth}px`,
@@ -239,7 +258,7 @@ const AvailabilityChart: React.FC<{
 							y1={padding.top}
 							x2={hoverData.x}
 							y2={height - padding.bottom}
-							className="stroke-slate-400 dark:stroke-gray-600"
+							stroke="var(--mantine-color-gray-5)"
 							strokeWidth="1"
 							strokeDasharray="3,3"
 						/>
@@ -247,39 +266,52 @@ const AvailabilityChart: React.FC<{
 				)}
 			</svg>
 			{hoverData && (
-				<div
-					className="absolute p-2 text-xs bg-gray-900 text-white rounded-md shadow-lg pointer-events-none transition-opacity dark:bg-black ring-1 ring-gray-800 transition-theme"
+				<Paper
+					shadow="md"
+					p="xs"
+					radius="sm"
+					withBorder
 					style={{
+						position: "absolute",
 						left: `${(hoverData.x / width) * 100}%`,
 						top: `${padding.top}px`,
 						transform: `translate(-50%, -105%)`,
+						pointerEvents: "none",
+						zIndex: 10,
 					}}
 				>
-					<p className="font-bold mb-1 text-center whitespace-nowrap">
+					<Text size="xs" fw={700} ta="center" mb={4}>
 						{new Date(hoverData.date).toLocaleDateString("en-US", {
 							month: "short",
 							day: "numeric",
 							timeZone: "UTC",
 						})}
-					</p>
-					<div className="flex items-center gap-2">
-						<div className="w-2 h-2 rounded-sm bg-cyan-400"></div>Time:{" "}
-						<span className="font-semibold">{hoverData.time.toFixed(1)}%</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<div className="w-2 h-2 rounded-sm bg-violet-500"></div>Energy:{" "}
-						<span className="font-semibold">
-							{hoverData.energy.toFixed(1)}%
-						</span>
-					</div>
-					<div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900 dark:border-t-black"></div>
-				</div>
+					</Text>
+					<Group gap="xs" mb={2}>
+						<Box w={8} h={8} bg="cyan.4" style={{ borderRadius: 2 }} />
+						<Text size="xs">
+							Time:{" "}
+							<span style={{ fontWeight: 600 }}>
+								{hoverData.time.toFixed(1)}%
+							</span>
+						</Text>
+					</Group>
+					<Group gap="xs">
+						<Box w={8} h={8} bg="violet.5" style={{ borderRadius: 2 }} />
+						<Text size="xs">
+							Energy:{" "}
+							<span style={{ fontWeight: 600 }}>
+								{hoverData.energy.toFixed(1)}%
+							</span>
+						</Text>
+					</Group>
+				</Paper>
 			)}
 		</div>
 	);
-};
+});
 
-const TurbinePerformanceTable: React.FC<{
+const TurbinePerformanceTable = React.memo<{
 	data: Array<{
 		id: string;
 		timeAvailability: number;
@@ -294,7 +326,7 @@ const TurbinePerformanceTable: React.FC<{
 		availabilityPercentage: string;
 	}>;
 	onTurbineClick: (turbineId: string) => void;
-}> = ({ data, onTurbineClick }) => {
+}>(({ data, onTurbineClick }) => {
 	const [sortConfig, setSortConfig] = useState<{
 		key: string;
 		direction: "asc" | "desc";
@@ -304,8 +336,10 @@ const TurbinePerformanceTable: React.FC<{
 		const sortableItems = [...data];
 		if (sortConfig !== null) {
 			sortableItems.sort((a, b) => {
+				// @ts-ignore
 				if (a[sortConfig.key] < b[sortConfig.key])
 					return sortConfig.direction === "asc" ? -1 : 1;
+				// @ts-ignore
 				if (a[sortConfig.key] > b[sortConfig.key])
 					return sortConfig.direction === "asc" ? 1 : -1;
 				return 0;
@@ -328,148 +362,218 @@ const TurbinePerformanceTable: React.FC<{
 
 	const getSortIcon = (key: string) => {
 		if (!sortConfig || sortConfig.key !== key) {
-			return <i className="fa-solid fa-sort sort-icon ml-2"></i>;
+			return (
+				<IconArrowsSort size={14} style={{ marginLeft: 4, opacity: 0.5 }} />
+			);
 		}
-		if (sortConfig.direction === "asc") {
-			return <i className="fa-solid fa-sort-up sort-icon active ml-2"></i>;
-		}
-		return <i className="fa-solid fa-sort-down sort-icon active ml-2"></i>;
+		return sortConfig.direction === "asc" ? (
+			<IconSortAscending size={14} style={{ marginLeft: 4 }} />
+		) : (
+			<IconSortDescending size={14} style={{ marginLeft: 4 }} />
+		);
 	};
 
 	return (
-		<div className="bg-white dark:bg-black rounded-lg shadow-sm overflow-hidden transition-theme overflow-x-auto">
-			<table className="w-full text-sm text-left text-slate-600 dark:text-gray-400 min-w-max">
-				<thead className="bg-slate-50 dark:bg-gray-900 text-xs text-slate-700 dark:text-gray-300 uppercase">
-					<tr>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer whitespace-nowrap"
-							onClick={() => requestSort("id")}
-						>
-							Turbine ID {getSortIcon("id")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("timeAvailability")}
-						>
-							Time Availability {getSortIcon("timeAvailability")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("energyAvailability")}
-						>
-							Energy Availability {getSortIcon("energyAvailability")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("totalProduction")}
-						>
-							Total Production (MWh) {getSortIcon("totalProduction")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("downTime")}
-						>
-							Downtime (Hours) {getSortIcon("downTime")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("totalEnergyProduced")}
-						>
-							Energy Produced (kWh) {getSortIcon("totalEnergyProduced")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("totalLoss")}
-						>
-							Total Loss (kWh) {getSortIcon("totalLoss")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("totalNonExcusableLoss")}
-						>
-							Non-Excusable Loss (kWh) {getSortIcon("totalNonExcusableLoss")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("totalExcusableLoss")}
-						>
-							Excusable Loss (kWh) {getSortIcon("totalExcusableLoss")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("totalUndefinedLoss")}
-						>
-							Undefined Loss (kWh) {getSortIcon("totalUndefinedLoss")}
-						</th>
-						<th
-							scope="col"
-							className="px-6 py-3 cursor-pointer text-right whitespace-nowrap"
-							onClick={() => requestSort("availabilityPercentage")}
-						>
-							Availability (%) {getSortIcon("availabilityPercentage")}
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					{sortedData.map((turbine) => (
-						<tr
-							key={turbine.id}
-							className="border-b dark:border-gray-800 bg-white dark:bg-black hover:bg-slate-50 dark:hover:bg-gray-900/50 cursor-pointer"
-							onClick={() => {
-								console.log("Turbine clicked:", turbine.id);
-								onTurbineClick(turbine.id);
-							}}
-						>
-							<td className="px-6 py-4 font-bold text-slate-800 dark:text-white whitespace-nowrap">
-								{turbine.id}
-							</td>
-							<td className="px-6 py-4 text-right font-medium whitespace-nowrap">
-								{turbine.timeAvailability.toFixed(2)}%
-							</td>
-							<td className="px-6 py-4 text-right font-medium whitespace-nowrap">
-								{turbine.energyAvailability.toFixed(2)}%
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap">
-								{turbine.totalProduction.toFixed(1)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap">
-								{turbine.downTime.toFixed(1)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap">
-								{turbine.totalEnergyProduced.toFixed(2)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap text-red-600 dark:text-red-400 font-medium">
-								{turbine.totalLoss.toFixed(2)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap text-orange-600 dark:text-orange-400 font-medium">
-								{turbine.totalNonExcusableLoss.toFixed(2)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap text-yellow-600 dark:text-yellow-400 font-medium">
-								{turbine.totalExcusableLoss.toFixed(2)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-400 font-medium">
-								{turbine.totalUndefinedLoss.toFixed(2)}
-							</td>
-							<td className="px-6 py-4 text-right whitespace-nowrap text-green-600 dark:text-green-400 font-medium">
-								{turbine.availabilityPercentage}%
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+		<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
+			<Table.ScrollContainer minWidth={1200}>
+				<Table striped highlightOnHover verticalSpacing="sm">
+					<Table.Thead bg="var(--mantine-color-gray-0)">
+						<Table.Tr>
+							<Table.Th>
+								<UnstyledButton onClick={() => requestSort("id")}>
+									<Group gap={0}>
+										<Text fw={700} size="sm">
+											Turbine ID
+										</Text>
+										{getSortIcon("id")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton onClick={() => requestSort("timeAvailability")}>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Time Availability
+										</Text>
+										{getSortIcon("timeAvailability")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton
+									onClick={() => requestSort("energyAvailability")}
+								>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Energy Availability
+										</Text>
+										{getSortIcon("energyAvailability")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton onClick={() => requestSort("totalProduction")}>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Total Production (MWh)
+										</Text>
+										{getSortIcon("totalProduction")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton onClick={() => requestSort("downTime")}>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Downtime (Hours)
+										</Text>
+										{getSortIcon("downTime")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton
+									onClick={() => requestSort("totalEnergyProduced")}
+								>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Energy Produced (kWh)
+										</Text>
+										{getSortIcon("totalEnergyProduced")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton onClick={() => requestSort("totalLoss")}>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Total Loss (kWh)
+										</Text>
+										{getSortIcon("totalLoss")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton
+									onClick={() => requestSort("totalNonExcusableLoss")}
+								>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Non-Excusable Loss (kWh)
+										</Text>
+										{getSortIcon("totalNonExcusableLoss")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton
+									onClick={() => requestSort("totalExcusableLoss")}
+								>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Excusable Loss (kWh)
+										</Text>
+										{getSortIcon("totalExcusableLoss")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton
+									onClick={() => requestSort("totalUndefinedLoss")}
+								>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Undefined Loss (kWh)
+										</Text>
+										{getSortIcon("totalUndefinedLoss")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+							<Table.Th style={{ textAlign: "right" }}>
+								<UnstyledButton
+									onClick={() => requestSort("availabilityPercentage")}
+								>
+									<Group gap={0} justify="flex-end">
+										<Text fw={700} size="sm">
+											Availability (%)
+										</Text>
+										{getSortIcon("availabilityPercentage")}
+									</Group>
+								</UnstyledButton>
+							</Table.Th>
+						</Table.Tr>
+					</Table.Thead>
+					<Table.Tbody>
+						{sortedData.map((turbine) => (
+							<Table.Tr
+								key={turbine.id}
+								style={{ cursor: "pointer" }}
+								onClick={() => onTurbineClick(turbine.id)}
+							>
+								<Table.Td fw={700}>{turbine.id}</Table.Td>
+								<Table.Td style={{ textAlign: "right" }}>
+									{turbine.timeAvailability.toFixed(2)}%
+								</Table.Td>
+								<Table.Td style={{ textAlign: "right" }}>
+									{turbine.energyAvailability.toFixed(2)}%
+								</Table.Td>
+								<Table.Td style={{ textAlign: "right" }}>
+									{turbine.totalProduction.toFixed(1)}
+								</Table.Td>
+								<Table.Td style={{ textAlign: "right" }}>
+									{turbine.downTime.toFixed(1)}
+								</Table.Td>
+								<Table.Td style={{ textAlign: "right" }}>
+									{turbine.totalEnergyProduced.toFixed(2)}
+								</Table.Td>
+								<Table.Td
+									style={{
+										textAlign: "right",
+										color: "var(--mantine-color-red-6)",
+									}}
+								>
+									{turbine.totalLoss.toFixed(2)}
+								</Table.Td>
+								<Table.Td
+									style={{
+										textAlign: "right",
+										color: "var(--mantine-color-orange-6)",
+									}}
+								>
+									{turbine.totalNonExcusableLoss.toFixed(2)}
+								</Table.Td>
+								<Table.Td
+									style={{
+										textAlign: "right",
+										color: "var(--mantine-color-yellow-6)",
+									}}
+								>
+									{turbine.totalExcusableLoss.toFixed(2)}
+								</Table.Td>
+								<Table.Td
+									style={{
+										textAlign: "right",
+										color: "var(--mantine-color-gray-6)",
+									}}
+								>
+									{turbine.totalUndefinedLoss.toFixed(2)}
+								</Table.Td>
+								<Table.Td
+									style={{
+										textAlign: "right",
+										color: "var(--mantine-color-green-6)",
+									}}
+								>
+									{turbine.availabilityPercentage}%
+								</Table.Td>
+							</Table.Tr>
+						))}
+					</Table.Tbody>
+				</Table>
+			</Table.ScrollContainer>
+		</Paper>
 	);
-};
+});
 
 const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 	historicalData,
@@ -483,14 +587,16 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 	);
 	const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
 
-	// Function to handle turbine row clicks
-	const handleTurbineClick = (turbineId: string) => {
-		setSelectedTurbineForAvailability(turbineId);
-	};
-
 	// State for turbine availability modal
 	const [selectedTurbineForAvailability, setSelectedTurbineForAvailability] =
 		useState<string | null>(null);
+	const [modalTurbineId, setModalTurbineId] = useState<string>("");
+
+	// Function to handle turbine row clicks
+	const handleTurbineClick = React.useCallback((turbineId: string) => {
+		setModalTurbineId(turbineId);
+		setSelectedTurbineForAvailability(turbineId);
+	}, []);
 
 	const dateFilteredData = useMemo(() => {
 		if (!historicalData) return [];
@@ -749,119 +855,119 @@ const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 		});
 	}, [dateFilteredData, turbines]);
 
-	return (
-		<div className="animate-fade-in space-y-6">
-			<h1 className="text-3xl font-bold text-slate-900 dark:text-white transition-theme">
-				Analytics
-			</h1>
+	const handleModalClose = React.useCallback(() => {
+		setSelectedTurbineForAvailability(null);
+	}, []);
 
-			<div className="bg-white dark:bg-black rounded-lg shadow-sm p-4 flex flex-wrap items-center gap-4 transition-theme">
-				<label
-					htmlFor="start-date"
-					className="font-semibold text-slate-700 dark:text-gray-300"
-				>
-					Date Range:
-				</label>
-				<div className="flex items-center gap-2">
-					<input
+	return (
+		<Stack gap="lg" className="animate-fade-in">
+			<Title order={1}>Analytics</Title>
+
+			<Paper p="md" radius="md" withBorder shadow="sm">
+				<Group align="flex-end">
+					<Text fw={600}>Date Range:</Text>
+					<TextInput
 						type="date"
-						id="start-date"
 						value={startDate}
 						onChange={(e) => setStartDate(e.target.value)}
-						className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
 					/>
-					<span className="text-slate-500">-</span>
-					<input
+					<Text c="dimmed">-</Text>
+					<TextInput
 						type="date"
-						id="end-date"
 						value={endDate}
 						onChange={(e) => setEndDate(e.target.value)}
-						className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-theme"
 					/>
-				</div>
-			</div>
+				</Group>
+			</Paper>
 
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				<KpiCard
-					title="Time-Based Availability"
-					value={`${availabilityMetrics.time.toFixed(2)}%`}
-					icon={<i className="fa-regular fa-clock"></i>}
-					color="text-cyan-500"
-				/>
-				<KpiCard
-					title="Energy-Based Availability"
-					value={`${availabilityMetrics.energy.toFixed(2)}%`}
-					icon={<i className="fa-solid fa-bolt"></i>}
-					color="text-violet-500"
-				/>
-				<KpiCard
-					title="Energy Lost"
-					value={`${(availabilityMetrics.production / 1000).toFixed(2)} GWh`}
-					icon={<i className="fa-solid fa-battery-quarter"></i>}
-					color="text-red-500"
-				/>
-			</div>
+			<Grid gutter="md">
+				<Grid.Col span={{ base: 12, md: 4 }}>
+					<KpiCard
+						title="Time-Based Availability"
+						value={`${availabilityMetrics.time.toFixed(2)}%`}
+						icon={<IconClock size={24} />}
+						color="cyan"
+					/>
+				</Grid.Col>
+				<Grid.Col span={{ base: 12, md: 4 }}>
+					<KpiCard
+						title="Energy-Based Availability"
+						value={`${availabilityMetrics.energy.toFixed(2)}%`}
+						icon={<IconBolt size={24} />}
+						color="violet"
+					/>
+				</Grid.Col>
+				<Grid.Col span={{ base: 12, md: 4 }}>
+					<KpiCard
+						title="Energy Lost"
+						value={`${(availabilityMetrics.production / 1000).toFixed(2)} GWh`}
+						icon={<IconBattery4 size={24} />}
+						color="red"
+					/>
+				</Grid.Col>
+				<Grid.Col span={{ base: 12, md: 6 }}>
+					<KpiCard
+						title="Total Production"
+						value={`${(availabilityMetrics.production).toFixed(2)} MWh`}
+						icon={<IconBuildingFactory size={24} />}
+						color="green"
+					/>
+				</Grid.Col>
+				<Grid.Col span={{ base: 12, md: 6 }}>
+					<KpiCard
+						title="Potential Production"
+						value={`${(availabilityMetrics.production / (availabilityMetrics.energy / 100)).toFixed(2)} MWh`}
+						icon={<IconWind size={24} />}
+						color="blue"
+					/>
+				</Grid.Col>
+			</Grid>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<KpiCard
-					title="Total Production"
-					value={`${(availabilityMetrics.production).toFixed(2)} MWh`}
-					icon={<i className="fa-solid fa-industry"></i>}
-					color="text-green-500"
-				/>
-				<KpiCard
-					title="Potential Production"
-					value={`${(availabilityMetrics.production / (availabilityMetrics.energy / 100)).toFixed(2)} MWh`}
-					icon={<i className="fa-solid fa-wind"></i>}
-					color="text-blue-500"
-				/>
-			</div>
-
-			<div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6">
-				<h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+			<Paper p="lg" radius="md" withBorder shadow="sm">
+				<Title order={2} size="h3" mb="md">
 					Availability Trend
-				</h2>
-				<div className="flex items-center gap-4 text-sm mb-4">
-					<div className="flex items-center gap-2">
-						<div className="w-3 h-3 rounded-sm bg-cyan-400"></div>
-						<span className="text-slate-600 dark:text-slate-300">
+				</Title>
+				<Group mb="md">
+					<Group gap="xs">
+						<Box w={12} h={12} bg="cyan.4" style={{ borderRadius: 2 }} />
+						<Text size="sm" c="dimmed">
 							Time-Based
-						</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<div className="w-3 h-3 rounded-sm bg-violet-500"></div>
-						<span className="text-slate-600 dark:text-slate-300">
+						</Text>
+					</Group>
+					<Group gap="xs">
+						<Box w={12} h={12} bg="violet.5" style={{ borderRadius: 2 }} />
+						<Text size="sm" c="dimmed">
 							Energy-Based
-						</span>
-					</div>
-				</div>
+						</Text>
+					</Group>
+				</Group>
 				{dailyChartData.length > 0 ? (
 					<AvailabilityChart data={dailyChartData} />
 				) : (
-					<p className="text-center text-slate-500 dark:text-slate-400 py-10">
-						No data available for the selected range.
-					</p>
+					<Center py="xl">
+						<Text c="dimmed">No data available for the selected range.</Text>
+					</Center>
 				)}
-			</div>
+			</Paper>
 
-			<div>
-				<h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">
+			<Box>
+				<Title order={2} size="h3" mb="md">
 					Turbine Performance
-				</h2>
+				</Title>
 				<TurbinePerformanceTable
 					data={turbineTableData}
 					onTurbineClick={handleTurbineClick}
 				/>
-			</div>
+			</Box>
 
 			{/* Turbine Availability Modal */}
 			<TurbineAvailabilityModal
-				turbineId={selectedTurbineForAvailability || ""}
+				turbineId={modalTurbineId}
 				isOpen={selectedTurbineForAvailability !== null}
-				onClose={() => setSelectedTurbineForAvailability(null)}
+				onClose={handleModalClose}
 			/>
-		</div>
+		</Stack>
 	);
 };
 
-export default AnalyticsView;
+export default React.memo(AnalyticsView);
