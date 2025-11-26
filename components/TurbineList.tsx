@@ -1,19 +1,20 @@
-import React, { useMemo } from "react";
-import { Table, Group, Text, ThemeIcon, Badge, rem } from "@mantine/core";
+import { Badge, Group, Text, ThemeIcon, rem } from "@mantine/core";
 import {
-	IconWind,
+	IconAlertCircle,
+	IconAlertTriangle,
 	IconCheck,
+	IconHandStop,
 	IconInfoCircle,
 	IconPlayerPause,
-	IconX,
-	IconTool,
-	IconAlertTriangle,
-	IconAlertCircle,
-	IconHandStop,
 	IconQuestionMark,
+	IconTool,
+	IconWind,
+	IconX,
 } from "@tabler/icons-react";
-import type { Turbine } from "../types";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import React, { useMemo, useRef } from "react";
 import { TurbineStatus } from "../types";
+import type { Turbine } from "../types";
 
 interface TurbineListProps {
 	turbines: Turbine[];
@@ -25,7 +26,8 @@ const TurbineRow = React.memo<{
 	turbine: Turbine;
 	zone: string;
 	onSelect: (id: string) => void;
-}>(({ turbine, zone, onSelect }) => {
+	style: React.CSSProperties;
+}>(({ turbine, zone, onSelect, style }) => {
 	const getStatusColor = (status: TurbineStatus) => {
 		switch (status) {
 			case TurbineStatus.Producing:
@@ -76,12 +78,25 @@ const TurbineRow = React.memo<{
 	const StatusIcon = getStatusIcon(turbine.status);
 
 	return (
-		<Table.Tr
+		<button
+			type="button"
+			style={{
+				...style,
+				display: "flex",
+				alignItems: "center",
+				paddingLeft: "var(--mantine-spacing-md)",
+				paddingRight: "var(--mantine-spacing-md)",
+				background: "transparent",
+				border: "none",
+				borderBottom: "1px solid var(--mantine-color-default-border)",
+				width: "100%",
+				textAlign: "left",
+				cursor: "pointer",
+			}}
 			onClick={() => onSelect(turbine.id)}
-			style={{ cursor: "pointer" }}
 			className="turbine-row-hover"
 		>
-			<Table.Td>
+			<div style={{ flex: 2, minWidth: 200 }}>
 				<Group gap="sm">
 					<ThemeIcon variant="light" color="violet" size="lg" radius="md">
 						<IconWind style={{ width: rem(20), height: rem(20) }} />
@@ -95,8 +110,8 @@ const TurbineRow = React.memo<{
 						</Text>
 					</div>
 				</Group>
-			</Table.Td>
-			<Table.Td>
+			</div>
+			<div style={{ flex: 1.5, minWidth: 150 }}>
 				<Badge
 					color={statusColor}
 					variant="light"
@@ -106,30 +121,30 @@ const TurbineRow = React.memo<{
 				>
 					{turbine.status}
 				</Badge>
-			</Table.Td>
-			<Table.Td style={{ textAlign: "right" }}>
+			</div>
+			<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
 				<Text fz="sm" fw={500} style={{ fontFamily: "monospace" }}>
 					{turbine.activePower !== null
 						? (turbine.activePower * 1000).toFixed(0)
 						: "-"}
 				</Text>
-			</Table.Td>
-			<Table.Td style={{ textAlign: "right" }}>
+			</div>
+			<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
 				<Text fz="sm" fw={500} style={{ fontFamily: "monospace" }}>
 					{turbine.windSpeed !== null ? turbine.windSpeed.toFixed(1) : "-"}
 				</Text>
-			</Table.Td>
-			<Table.Td style={{ textAlign: "right" }}>
+			</div>
+			<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
 				<Text fz="sm" fw={500} style={{ fontFamily: "monospace" }}>
 					{turbine.temperature !== null ? turbine.temperature.toFixed(1) : "-"}
 				</Text>
-			</Table.Td>
-			<Table.Td style={{ textAlign: "right" }}>
+			</div>
+			<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
 				<Text fz="sm" fw={500} style={{ fontFamily: "monospace" }}>
 					{turbine.rpm !== null ? turbine.rpm.toFixed(1) : "-"}
 				</Text>
-			</Table.Td>
-		</Table.Tr>
+			</div>
+		</button>
 	);
 });
 
@@ -138,6 +153,8 @@ const TurbineList: React.FC<TurbineListProps> = ({
 	onSelect,
 	layout,
 }) => {
+	const parentRef = useRef<HTMLDivElement>(null);
+
 	const turbineZoneMap = useMemo(() => {
 		const map: Record<string, string> = {};
 		const entries = Object.entries(layout) as [
@@ -154,31 +171,78 @@ const TurbineList: React.FC<TurbineListProps> = ({
 		return map;
 	}, [layout]);
 
+	const rowVirtualizer = useVirtualizer({
+		count: turbines.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize: () => 60,
+		overscan: 5,
+	});
+
 	return (
-		<Table.ScrollContainer minWidth={800}>
-			<Table verticalSpacing="sm" highlightOnHover>
-				<Table.Thead>
-					<Table.Tr>
-						<Table.Th>Turbine</Table.Th>
-						<Table.Th>Status</Table.Th>
-						<Table.Th style={{ textAlign: "right" }}>Power (kW)</Table.Th>
-						<Table.Th style={{ textAlign: "right" }}>Wind (m/s)</Table.Th>
-						<Table.Th style={{ textAlign: "right" }}>Temp (°C)</Table.Th>
-						<Table.Th style={{ textAlign: "right" }}>RPM</Table.Th>
-					</Table.Tr>
-				</Table.Thead>
-				<Table.Tbody>
-					{turbines.map((turbine) => (
-						<TurbineRow
-							key={turbine.id}
-							turbine={turbine}
-							zone={turbineZoneMap[turbine.id] || "Unknown Zone"}
-							onSelect={onSelect}
-						/>
-					))}
-				</Table.Tbody>
-			</Table>
-		</Table.ScrollContainer>
+		<div style={{ height: "100%", width: "100%", minHeight: 500 }}>
+			<div
+				style={{
+					display: "flex",
+					padding: "var(--mantine-spacing-sm) var(--mantine-spacing-md)",
+					borderBottom: "2px solid var(--mantine-color-default-border)",
+					fontWeight: 700,
+					fontSize: "var(--mantine-font-size-sm)",
+					color: "var(--mantine-color-dimmed)",
+				}}
+			>
+				<div style={{ flex: 2, minWidth: 200 }}>Turbine</div>
+				<div style={{ flex: 1.5, minWidth: 150 }}>Status</div>
+				<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
+					Power (kW)
+				</div>
+				<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
+					Wind (m/s)
+				</div>
+				<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>
+					Temp (°C)
+				</div>
+				<div style={{ flex: 1, textAlign: "right", minWidth: 100 }}>RPM</div>
+			</div>
+			<div
+				ref={parentRef}
+				style={{
+					height: "calc(100% - 40px)",
+					overflow: "auto",
+				}}
+			>
+				<div
+					style={{
+						height: `${rowVirtualizer.getTotalSize()}px`,
+						width: "100%",
+						position: "relative",
+					}}
+				>
+					{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+						const turbine = turbines[virtualRow.index];
+						return (
+							<div
+								key={virtualRow.key}
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: `${virtualRow.size}px`,
+									transform: `translateY(${virtualRow.start}px)`,
+								}}
+							>
+								<TurbineRow
+									turbine={turbine}
+									zone={turbineZoneMap[turbine.id] || "Unknown Zone"}
+									onSelect={onSelect}
+									style={{ height: "100%" }}
+								/>
+							</div>
+						);
+					})}
+				</div>
+			</div>
+		</div>
 	);
 };
 

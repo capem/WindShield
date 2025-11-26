@@ -1,5 +1,6 @@
-import React from "react";
-import { Box, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { SimpleGrid, Text, Title } from "@mantine/core";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import React, { useMemo, useRef } from "react";
 import TurbineCard from "./TurbineCard";
 import { AlarmSeverity, type Alarm, type Turbine } from "../types";
 
@@ -10,55 +11,140 @@ interface TurbineGridViewProps {
 	isCompactView: boolean;
 }
 
+// Define types for our flattened list items
+type GridItem =
+	| { type: "zone-header"; name: string }
+	| { type: "line-header"; name: string }
+	| { type: "turbine-row"; turbines: Turbine[] };
+
 const TurbineGridView: React.FC<TurbineGridViewProps> = ({
 	layout,
 	filteredTurbines,
 	alarms,
 	isCompactView,
 }) => {
+	const parentRef = useRef<HTMLDivElement>(null);
+
+	// Flatten the data structure for virtualization
+	const flattenedData = useMemo(() => {
+		const items: GridItem[] = [];
+		const turbinesMap = new Map(filteredTurbines.map((t) => [t.id, t]));
+
+		(
+			Object.entries(layout) as [string, { name: string; ids: number[] }[]][]
+		).forEach(([zoneName, lines]) => {
+			let hasZoneTurbines = false;
+			const zoneItems: GridItem[] = [];
+
+			lines.forEach((line) => {
+				const lineTurbines = line.ids
+					.map((id) => turbinesMap.get(`T ${String(id).padStart(3, "0")}`))
+					.filter((t): t is Turbine => !!t);
+
+				if (lineTurbines.length > 0) {
+					hasZoneTurbines = true;
+					zoneItems.push({ type: "line-header", name: line.name });
+
+					// Chunk turbines into rows of 6 (xl)
+					const chunkSize = 6;
+					for (let i = 0; i < lineTurbines.length; i += chunkSize) {
+						zoneItems.push({
+							type: "turbine-row",
+							turbines: lineTurbines.slice(i, i + chunkSize),
+						});
+					}
+				}
+			});
+
+			if (hasZoneTurbines) {
+				items.push({ type: "zone-header", name: zoneName });
+				items.push(...zoneItems);
+			}
+		});
+
+		return items;
+	}, [layout, filteredTurbines]);
+
+	// Helper to determine item size
+	const getItemSize = (index: number) => {
+		const item = flattenedData[index];
+		if (item.type === "zone-header") return 60;
+		if (item.type === "line-header") return 40;
+		// Turbine row height depends on compact view
+		return isCompactView ? 140 : 220;
+	};
+
+	const rowVirtualizer = useVirtualizer({
+		count: flattenedData.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize: getItemSize,
+		overscan: 3,
+	});
+
 	return (
-		<Stack gap="xl">
-			{(
-				Object.entries(layout) as [string, { name: string; ids: number[] }[]][]
-			).map(([zoneName, lines]) => {
-				const visibleLines = lines
-					.map((line) => {
-						const lineTurbines = line.ids
-							.map((id) =>
-								filteredTurbines.find(
-									(t) => t.id === `T ${String(id).padStart(3, "0")}`,
-								),
-							)
-							.filter((t): t is Turbine => !!t);
-						return { ...line, turbines: lineTurbines };
-					})
-					.filter((line) => line.turbines.length > 0);
+		<div style={{ height: "100%", width: "100%", minHeight: 500 }}>
+			<div
+				ref={parentRef}
+				style={{
+					height: "100%",
+					overflow: "auto",
+				}}
+			>
+				<div
+					style={{
+						height: `${rowVirtualizer.getTotalSize()}px`,
+						width: "100%",
+						position: "relative",
+					}}
+				>
+					{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+						const item = flattenedData[virtualRow.index];
 
-				if (visibleLines.length === 0) return null;
+						return (
+							<div
+								key={virtualRow.key}
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: `${virtualRow.size}px`,
+									transform: `translateY(${virtualRow.start}px)`,
+								}}
+							>
+								{item.type === "zone-header" && (
+									<Title
+										order={4}
+										mb="sm"
+										style={{
+											borderBottom: "1px solid var(--mantine-color-gray-3)",
+											paddingTop: 16,
+										}}
+										pb="xs"
+									>
+										{item.name}
+									</Title>
+								)}
 
-				return (
-					<Box key={zoneName}>
-						<Title
-							order={4}
-							mb="sm"
-							style={{
-								borderBottom: "1px solid var(--mantine-color-gray-3)",
-							}}
-							pb="xs"
-						>
-							{zoneName}
-						</Title>
-						<Stack gap="md">
-							{visibleLines.map((line) => (
-								<Box key={line.name}>
-									<Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="xs">
-										{line.name}
+								{item.type === "line-header" && (
+									<Text
+										size="xs"
+										fw={700}
+										c="dimmed"
+										tt="uppercase"
+										mb="xs"
+										mt="sm"
+									>
+										{item.name}
 									</Text>
+								)}
+
+								{item.type === "turbine-row" && (
 									<SimpleGrid
 										cols={{ base: 1, sm: 2, md: 4, lg: 5, xl: 6 }}
 										spacing="sm"
 									>
-										{line.turbines.map((turbine) => {
+										{item.turbines.map((turbine) => {
 											const activeAlarms = alarms.filter(
 												(a) => a.turbineId === turbine.id && !a.timeOff,
 											);
@@ -90,13 +176,13 @@ const TurbineGridView: React.FC<TurbineGridViewProps> = ({
 											);
 										})}
 									</SimpleGrid>
-								</Box>
-							))}
-						</Stack>
-					</Box>
-				);
-			})}
-		</Stack>
+								)}
+							</div>
+						);
+					})}
+				</div>
+			</div>
+		</div>
 	);
 };
 

@@ -1,6 +1,7 @@
 import type React from "react";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 
 interface ThemeContextType {
 	isDarkMode: boolean;
@@ -85,11 +86,66 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 	}, []);
 
 	const toggleDarkMode = () => {
-		setIsDarkMode(!isDarkMode);
+		if (!document.startViewTransition) {
+			setIsDarkMode(!isDarkMode);
+			return;
+		}
+
+		// Disable all CSS transitions during the theme change
+		const css = document.createElement("style");
+		css.appendChild(
+			document.createTextNode(
+				`* {
+					-webkit-transition: none !important;
+					-moz-transition: none !important;
+					-o-transition: none !important;
+					-ms-transition: none !important;
+					transition: none !important;
+				}`,
+			),
+		);
+		document.head.appendChild(css);
+
+		const transition = document.startViewTransition(() => {
+			flushSync(() => {
+				setIsDarkMode(!isDarkMode);
+			});
+		});
+
+		transition.finished.then(() => {
+			document.head.removeChild(css);
+		});
 	};
 
 	const setDarkMode = (isDark: boolean) => {
-		setIsDarkMode(isDark);
+		if (!document.startViewTransition) {
+			setIsDarkMode(isDark);
+			return;
+		}
+
+		const css = document.createElement("style");
+		css.appendChild(
+			document.createTextNode(
+				`* {
+					-webkit-transition: none !important;
+					-moz-transition: none !important;
+					-o-transition: none !important;
+					-ms-transition: none !important;
+					transition: none !important;
+				}`,
+			),
+		);
+		document.head.appendChild(css);
+
+		const transition = document.startViewTransition(() => {
+			flushSync(() => {
+				setIsDarkMode(isDark);
+			});
+		});
+
+		transition.finished.then(() => {
+			document.head.removeChild(css);
+		});
 	};
 
 	return (

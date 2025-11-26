@@ -71,7 +71,6 @@ function AppContent() {
 	const [alarms, setAlarms] = useState<Alarm[]>(() =>
 		generateInitialAlarms(initialTurbines),
 	);
-	const [currentTime, setCurrentTime] = useState(new Date());
 	const [isCompactView, setIsCompactView] = useState(false);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 	const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
@@ -88,9 +87,7 @@ function AppContent() {
 	const location = useLocation();
 
 	useEffect(() => {
-		const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 		setAnalyticsData(generateMockAnalyticsData(initialTurbines));
-		return () => clearInterval(timer);
 	}, []);
 
 	// Scroll to top on route change
@@ -241,7 +238,6 @@ function AppContent() {
 							<Dashboard
 								turbines={turbines}
 								alarms={alarms}
-								currentTime={currentTime}
 								uploadedFileName={uploadedFileName}
 								onSelectTurbine={useCallback(
 									(id) => navigate(`/turbine/${encodeURIComponent(id)}`),
