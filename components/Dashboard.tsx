@@ -1,6 +1,5 @@
 import {
 	Box,
-	Card,
 	Center,
 	Grid,
 	Group,
@@ -56,26 +55,38 @@ const SummaryCard = React.memo(
 		icon: React.ReactNode;
 		color: string;
 	}) => (
-		<Card shadow="sm" padding="xs" radius="md" withBorder>
-			<Group justify="space-between" align="flex-start" wrap="nowrap">
-				<Stack gap={0}>
-					<Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+		<Paper
+			shadow="sm"
+			radius="md"
+			p="lg"
+			withBorder
+			className="transition-all hover:shadow-md"
+		>
+			<Group wrap="nowrap">
+				<ThemeIcon
+					size={48}
+					radius="md"
+					variant="light"
+					color={color}
+					style={{ flexShrink: 0 }}
+				>
+					{icon}
+				</ThemeIcon>
+				<Stack gap={2}>
+					<Text size="xs" c="dimmed" tt="uppercase" fw={700} lts={0.5}>
 						{title}
 					</Text>
 					<Group align="baseline" gap={4}>
-						<Text size="xl" fw={700}>
+						<Text size="1.5rem" fw={700} lh={1}>
 							{value}
 						</Text>
-						<Text size="xs" c="dimmed" fw={500}>
+						<Text size="sm" c="dimmed" fw={500}>
 							{unit}
 						</Text>
 					</Group>
 				</Stack>
-				<ThemeIcon size="lg" radius="md" variant="light" color={color}>
-					{icon}
-				</ThemeIcon>
 			</Group>
-		</Card>
+		</Paper>
 	),
 );
 
@@ -142,41 +153,47 @@ const TurbineStatusSummaryCard = React.memo(
 			{
 				name: "Curtailment",
 				count: counts.curtailment,
-				icon: IconChartLine, // Placeholder for curtailment
+				icon: IconChartLine,
 				color: "indigo",
 			},
 		];
 
 		return (
-			<Card
+			<Paper
 				shadow="sm"
-				padding="xs"
 				radius="md"
+				p="lg"
 				withBorder
 				className={className}
 				h="100%"
 			>
-				<Text size="xs" c="dimmed" tt="uppercase" fw={700} mb="xs">
-					Turbine Status
-				</Text>
-				<SimpleGrid cols={2} spacing="xs" verticalSpacing={4}>
+				<Group justify="space-between" mb="md">
+					<Text size="sm" fw={700} c="dimmed" tt="uppercase" lts={0.5}>
+						Turbine Status
+					</Text>
+					<ThemeIcon variant="light" color="gray" size="sm" radius="xl">
+						<IconInfoCircle style={{ width: rem(12), height: rem(12) }} />
+					</ThemeIcon>
+				</Group>
+
+				<SimpleGrid cols={2} spacing="md" verticalSpacing="xs">
 					{statusItems.map((item) => (
 						<Group key={item.name} justify="space-between" wrap="nowrap">
-							<Group gap={6} wrap="nowrap">
+							<Group gap={8} wrap="nowrap">
 								<Box c={item.color}>
-									<item.icon style={{ width: rem(14), height: rem(14) }} />
+									<item.icon style={{ width: rem(16), height: rem(16) }} />
 								</Box>
-								<Text size="xs" fw={600} c="dimmed">
+								<Text size="sm" fw={500} c="dimmed">
 									{item.name}
 								</Text>
 							</Group>
-							<Text size="xs" fw={700}>
+							<Text size="sm" fw={700}>
 								{item.count}
 							</Text>
 						</Group>
 					))}
 				</SimpleGrid>
-			</Card>
+			</Paper>
 		);
 	},
 );
@@ -318,14 +335,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 				title: "Active Power",
 				value: totalActivePower.toFixed(1),
 				unit: "MW",
-				icon: <IconBolt style={{ width: rem(20), height: rem(20) }} />,
-				color: "violet",
+				icon: <IconBolt style={{ width: rem(24), height: rem(24) }} />,
+				color: "blue",
 			},
 			{
 				title: "Reactive Power",
 				value: totalReactivePower.toFixed(1),
 				unit: "MVar",
-				icon: <IconBolt style={{ width: rem(20), height: rem(20) }} />,
+				icon: <IconBolt style={{ width: rem(24), height: rem(24) }} />,
 				color: "cyan",
 			},
 		],
@@ -338,14 +355,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 				title: "Avg Wind Speed",
 				value: averageWindSpeed.toFixed(1),
 				unit: "m/s",
-				icon: <IconWind style={{ width: rem(20), height: rem(20) }} />,
-				color: "pink",
+				icon: <IconWind style={{ width: rem(24), height: rem(24) }} />,
+				color: "teal",
 			},
 			{
 				title: "Avg Temperature",
 				value: averageTemperature.toFixed(0),
 				unit: "°C",
-				icon: <IconTemperature style={{ width: rem(20), height: rem(20) }} />,
+				icon: <IconTemperature style={{ width: rem(24), height: rem(24) }} />,
 				color: "orange",
 			},
 		],
@@ -358,14 +375,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 				title: "Load Factor",
 				value: loadFactor.toFixed(1),
 				unit: "%",
-				icon: <IconGauge style={{ width: rem(20), height: rem(20) }} />,
-				color: "grape",
+				icon: <IconGauge style={{ width: rem(24), height: rem(24) }} />,
+				color: "violet",
 			},
 			{
 				title: "Production",
 				value: productionTodayMWh.toFixed(1),
 				unit: "MWh",
-				icon: <IconChartLine style={{ width: rem(20), height: rem(20) }} />,
+				icon: <IconChartLine style={{ width: rem(24), height: rem(24) }} />,
 				color: "green",
 			},
 		],
@@ -402,10 +419,17 @@ const Dashboard: React.FC<DashboardProps> = ({
 	}, [viewMode]);
 
 	return (
-		<Stack h="100%" gap="md">
-			<Title order={2}>Dashboard</Title>
+		<Stack h="100%" gap="lg">
+			<Group justify="space-between" align="center">
+				<Title order={2} fw={800} c="dimmed">
+					Dashboard
+				</Title>
+				<Text size="sm" c="dimmed" fw={500}>
+					{formattedDate} • {formattedTime}
+				</Text>
+			</Group>
 
-			<Grid>
+			<Grid gutter="md">
 				<Grid.Col span={{ base: 12, lg: 9 }}>
 					<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
 						{summaryDataTop.map((data) => (
@@ -431,8 +455,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 				withBorder
 				style={{ flex: 1, display: "flex", flexDirection: "column" }}
 			>
-				<Group justify="space-between" mb="md">
-					<Group>
+				<Group justify="space-between" mb="md" align="center">
+					<Group gap="md" style={{ flex: 1 }}>
 						<TextInput
 							placeholder="Search turbine..."
 							leftSection={
@@ -440,6 +464,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 							}
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
+							style={{ flex: 1, maxWidth: 300 }}
 						/>
 						<Select
 							value={statusFilter}
@@ -452,66 +477,52 @@ const Dashboard: React.FC<DashboardProps> = ({
 								})),
 							]}
 							allowDeselect={false}
+							w={200}
 						/>
 					</Group>
 
-					<SegmentedControl
-						value={viewMode}
-						onChange={setViewMode}
-						data={[
-							{
-								value: "grid",
-								label: (
-									<Center>
-										<IconLayoutGrid
-											style={{ width: rem(16), height: rem(16) }}
-										/>
-									</Center>
-								),
-							},
-							{
-								value: "list",
-								label: (
-									<Center>
-										<IconList style={{ width: rem(16), height: rem(16) }} />
-									</Center>
-								),
-							},
-							{
-								value: "map",
-								label: (
-									<Center>
-										<IconMap style={{ width: rem(16), height: rem(16) }} />
-									</Center>
-								),
-							},
-						]}
-					/>
-				</Group>
-
-				<Group justify="space-between" mb="md">
-					<Text size="xs" c="dimmed">
-						{uploadedFileName ? (
-							<>
-								Displaying data from{" "}
-								<Text span c="violet" fw={700}>
+					<Group gap="md">
+						{uploadedFileName && (
+							<Text size="xs" c="dimmed">
+								Data source:{" "}
+								<Text span c="blue" fw={600}>
 									{uploadedFileName}
 								</Text>
-							</>
-						) : (
-							<>
-								{formattedDate} at {formattedTime}
-							</>
+							</Text>
 						)}
-					</Text>
-					<Text size="xs" c="dimmed">
-						Last updated:{" "}
-						{currentTime.toLocaleTimeString("fr-FR", {
-							hour: "2-digit",
-							minute: "2-digit",
-							second: "2-digit",
-						})}
-					</Text>
+						<SegmentedControl
+							value={viewMode}
+							onChange={setViewMode}
+							data={[
+								{
+									value: "grid",
+									label: (
+										<Center>
+											<IconLayoutGrid
+												style={{ width: rem(16), height: rem(16) }}
+											/>
+										</Center>
+									),
+								},
+								{
+									value: "list",
+									label: (
+										<Center>
+											<IconList style={{ width: rem(16), height: rem(16) }} />
+										</Center>
+									),
+								},
+								{
+									value: "map",
+									label: (
+										<Center>
+											<IconMap style={{ width: rem(16), height: rem(16) }} />
+										</Center>
+									),
+								},
+							]}
+						/>
+					</Group>
 				</Group>
 
 				<Box style={{ flex: 1, position: "relative" }}>

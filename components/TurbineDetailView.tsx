@@ -1,43 +1,42 @@
-import React, { useMemo, useState } from "react";
 import {
-	Grid,
-	Card,
-	Stack,
-	Group,
-	Title,
-	Text,
 	Badge,
-	Button,
-	ActionIcon,
-	ThemeIcon,
-	Table,
-	SegmentedControl,
 	Box,
-	rem,
-	Paper,
-	RingProgress,
+	Button,
+	Card,
 	Center,
+	Grid,
+	Group,
+	Paper,
+	rem,
+	RingProgress,
+	SegmentedControl,
 	SimpleGrid,
+	Stack,
+	Table,
+	Text,
+	ThemeIcon,
+	Title,
 } from "@mantine/core";
 import {
+	IconAlertTriangle,
 	IconArrowLeft,
+	IconArrowsShuffle,
 	IconBolt,
 	IconChartLine,
-	IconWaveSine,
-	IconWind,
+	IconCheck,
 	IconCompass,
-	IconTemperature,
-	IconArrowsShuffle,
-	IconGauge,
-	IconTag,
-	IconFilter,
 	IconDownload,
+	IconGauge,
+	IconInfoCircle,
 	IconSortAscending,
 	IconSortDescending,
-	IconCheck,
-	IconAlertTriangle,
-	IconInfoCircle,
+	IconTag,
+	IconTemperature,
+	IconWaveSine,
+	IconWind,
 } from "@tabler/icons-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 import type { Alarm, Turbine } from "../types";
 import { AlarmSeverity, TurbineStatus } from "../types";
 
@@ -308,8 +307,9 @@ const HistoricalChart: React.FC<{
 					<Stack
 						gap={0}
 						align="flex-end"
+						className="transition-theme"
 						style={{
-							borderLeft: "1px solid var(--mantine-color-gray-3)",
+							borderLeft: "1px solid var(--border)",
 							paddingLeft: 8,
 						}}
 					>
@@ -329,6 +329,7 @@ const HistoricalChart: React.FC<{
 					style={{ width: "100%", height: "100%", overflow: "visible" }}
 					preserveAspectRatio="none"
 				>
+					<title>{title} Chart</title>
 					<defs>
 						<linearGradient
 							id={`gradient-${title}`}
@@ -373,10 +374,19 @@ const HistoricalChart: React.FC<{
 						</g>
 					)}
 				</svg>
-				<div
-					style={{ position: "absolute", inset: 0, cursor: "crosshair" }}
+				<button
+					type="button"
+					style={{
+						position: "absolute",
+						inset: 0,
+						cursor: "crosshair",
+						background: "transparent",
+						border: "none",
+						padding: 0,
+					}}
 					onMouseMove={handleMouseMove}
 					onMouseLeave={handleMouseLeave}
+					aria-label={`${title} chart interaction area`}
 				/>
 				{hoverData && (
 					<Paper
@@ -614,7 +624,8 @@ const AlarmHistory: React.FC<{
 		<Card shadow="sm" padding="md" radius="md" withBorder>
 			<Box
 				p="md"
-				style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}
+				className="transition-theme"
+				style={{ borderBottom: "1px solid var(--border)" }}
 			>
 				<Group justify="space-between">
 					<Group gap="xl">
@@ -649,7 +660,9 @@ const AlarmHistory: React.FC<{
 						<SegmentedControl
 							size="xs"
 							value={filter}
-							onChange={(val) => setFilter(val as any)}
+							onChange={(val) =>
+								setFilter(val as "all" | "active" | "critical")
+							}
 							data={[
 								{ label: "All", value: "all" },
 								{ label: "Active", value: "active" },
@@ -835,9 +848,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 						right={0}
 						w={300}
 						h={300}
+						className="transition-theme"
 						style={{
 							background:
-								"radial-gradient(circle, var(--mantine-color-violet-1) 0%, transparent 70%)",
+								"radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)",
 							transform: "translate(30%, -30%)",
 							pointerEvents: "none",
 						}}
@@ -948,7 +962,10 @@ const TurbineDetailView: React.FC<TurbineDetailViewProps> = ({
 							radius="md"
 							withBorder
 							h="100%"
-							bg="var(--mantine-color-violet-0)"
+							className="transition-theme"
+							style={{
+								backgroundColor: "rgba(139, 92, 246, 0.05)",
+							}}
 						>
 							<Title order={4} mb="md">
 								Performance

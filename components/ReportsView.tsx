@@ -1,16 +1,15 @@
-import { useCallback, useState } from "react";
 import {
-	Stack,
-	Group,
-	Title,
-	Text,
 	Badge,
-	Table,
-	Paper,
 	Box,
 	Divider,
-	rem,
+	Group,
+	Paper,
+	Stack,
+	Table,
+	Text,
+	Title,
 } from "@mantine/core";
+import { useCallback, useState } from "react";
 import AlarmsSection from "./reports/AlarmsSection";
 import ConsumptionSection from "./reports/ConsumptionSection";
 import EnergyLossSection from "./reports/EnergyLossSection";
@@ -107,7 +106,7 @@ Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101
 			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
 				<Table.ScrollContainer minWidth={800}>
 					<Table withTableBorder withColumnBorders striped highlightOnHover>
-						<Table.Thead bg="var(--mantine-color-gray-0)">
+						<Table.Thead style={{ backgroundColor: "var(--bg-tertiary)" }}>
 							<Table.Tr>
 								<Table.Th w={80}>Key Fig.</Table.Th>
 								<Table.Th

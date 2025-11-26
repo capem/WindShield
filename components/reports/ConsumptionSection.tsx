@@ -1,3 +1,4 @@
+import { Badge, Box, Card, Grid, Title } from "@mantine/core";
 import React from "react";
 import {
 	Bar,
@@ -12,7 +13,6 @@ import {
 	YAxis,
 	ZAxis,
 } from "recharts";
-import { Grid, Card, Title, Box, Badge } from "@mantine/core";
 import { COLORS, CustomTooltip } from "./Shared";
 import { BOOST_DATA, CONSUMPTION_DATA, TURBINE_MAP_DATA } from "./reportsData";
 
@@ -30,17 +30,17 @@ const ConsumptionSection = React.memo(() => {
 							<BarChart data={CONSUMPTION_DATA}>
 								<CartesianGrid
 									strokeDasharray="3 3"
-									stroke="#e2e8f0"
+									stroke="var(--border-light)"
 									vertical={false}
 								/>
 								<XAxis
 									dataKey="month"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 								/>
 								<YAxis
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 								/>
@@ -68,7 +68,10 @@ const ConsumptionSection = React.memo(() => {
 							<ScatterChart
 								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
 							>
-								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="var(--border-light)"
+								/>
 								<XAxis type="number" dataKey="x" name="Long" hide />
 								<YAxis type="number" dataKey="y" name="Lat" hide />
 								<ZAxis
@@ -125,17 +128,17 @@ const ConsumptionSection = React.memo(() => {
 							<BarChart data={BOOST_DATA}>
 								<CartesianGrid
 									strokeDasharray="3 3"
-									stroke="#e2e8f0"
+									stroke="var(--border-light)"
 									vertical={false}
 								/>
 								<XAxis
 									dataKey="month"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 								/>
 								<YAxis
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 								/>
@@ -163,7 +166,10 @@ const ConsumptionSection = React.memo(() => {
 							<ScatterChart
 								margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
 							>
-								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="var(--border-light)"
+								/>
 								<XAxis type="number" dataKey="x" name="Long" hide />
 								<YAxis type="number" dataKey="y" name="Lat" hide />
 								<ZAxis

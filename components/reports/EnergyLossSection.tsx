@@ -1,3 +1,4 @@
+import { Box, Card, Title } from "@mantine/core";
 import React from "react";
 import {
 	Bar,
@@ -8,7 +9,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Card, Title, Box } from "@mantine/core";
 import { COLORS, CustomTooltip } from "./Shared";
 import { ENERGY_LOSS_DATA } from "./reportsData";
 
@@ -23,12 +23,12 @@ const EnergyLossSection = React.memo(() => {
 					<BarChart data={ENERGY_LOSS_DATA}>
 						<CartesianGrid
 							strokeDasharray="3 3"
-							stroke="#e2e8f0"
+							stroke="var(--border-light)"
 							vertical={false}
 						/>
 						<XAxis
 							dataKey="turbine"
-							tick={{ fontSize: 9, fill: "#94a3b8" }}
+							tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 							interval={0}
 							angle={-90}
 							textAnchor="end"
@@ -37,7 +37,7 @@ const EnergyLossSection = React.memo(() => {
 							axisLine={false}
 						/>
 						<YAxis
-							tick={{ fontSize: 9, fill: "#94a3b8" }}
+							tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 							tickLine={false}
 							axisLine={false}
 						/>

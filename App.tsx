@@ -1,31 +1,36 @@
+import { AppShell, MantineProvider } from "@mantine/core";
 import type React from "react";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	BrowserRouter,
-	Routes,
-	Route,
-	useNavigate,
-	useLocation,
-	useParams,
 	Navigate,
+	Route,
+	Routes,
+	useLocation,
+	useNavigate,
+	useParams,
 } from "react-router-dom";
-import { AppShell } from "@mantine/core";
 import AnalyticsView from "./components/AnalyticsView";
+import Dashboard from "./components/Dashboard";
 import Header from "./components/Header";
+import ReportsView from "./components/ReportsView";
 import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
 import TurbineDetailView from "./components/TurbineDetailView";
-import ReportsView from "./components/ReportsView";
-import Dashboard from "./components/Dashboard";
-import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import {
+	ThemeConsumer,
+	ThemeProvider,
+	useTheme,
+} from "./contexts/ThemeContext";
+import {
+	allTurbineIds,
 	generateInitialAlarms,
 	generateMockAnalyticsData,
 	initialTurbines,
 	mapCsvRowToTurbine,
 	parseCSV,
-	allTurbineIds,
 } from "./data/mockData";
+import { theme } from "./theme";
 import { TurbineStatus, type Alarm, type Turbine } from "./types";
 
 // Wrapper for TurbineDetailView to handle routing params
@@ -45,11 +50,6 @@ const TurbineDetailWrapper: React.FC<{
 	}
 
 	const turbineAlarms = alarms.filter((a) => a.turbineId === turbine.id);
-	// Cast the historical data to the expected type if needed, or ensure types match
-	// TurbineDetailView expects Array<Record<string, string>> but we have unknown.
-	// We might need to cast or map it.
-	// Looking at TurbineDetailView props: historicalData?: Array<Record<string, string>>;
-	// Our data has unknown values. Let's cast for now or map to string.
 	const historicalData = historicalDataMap?.[turbine.id] as
 		| Array<Record<string, string>>
 		| undefined;
@@ -188,7 +188,7 @@ function AppContent() {
 
 			setTurbines(finalTurbines);
 			setAllHistoricalData(dataByTurbine);
-			setAnalyticsData(dataByTurbine); // Also use uploaded data for analytics
+			setAnalyticsData(dataByTurbine);
 			setUploadedFileName(file.name);
 			setAlarms(generateInitialAlarms(finalTurbines));
 		};
@@ -203,6 +203,7 @@ function AppContent() {
 
 	return (
 		<AppShell
+			layout="alt"
 			header={{ height: 64 }}
 			navbar={{
 				width: isSidebarCollapsed ? 80 : 250,
@@ -215,13 +216,14 @@ function AppContent() {
 					onToggleSidebar={handleToggleSidebar}
 					onUploadClick={handleUploadClick}
 					unacknowledgedAlarms={unacknowledgedAlarms}
-					isDarkMode={isDarkMode}
-					onToggleDarkMode={toggleDarkMode}
 				/>
 			</AppShell.Header>
 
 			<AppShell.Navbar p="md">
-				<Sidebar isCollapsed={isSidebarCollapsed} />
+				<Sidebar
+					isCollapsed={isSidebarCollapsed}
+					onToggle={handleToggleSidebar}
+				/>
 			</AppShell.Navbar>
 
 			<AppShell.Main>
@@ -295,7 +297,16 @@ function App() {
 	return (
 		<BrowserRouter>
 			<ThemeProvider>
-				<AppContent />
+				<ThemeConsumer>
+					{({ isDarkMode }) => (
+						<MantineProvider
+							theme={theme}
+							forceColorScheme={isDarkMode ? "dark" : "light"}
+						>
+							<AppContent />
+						</MantineProvider>
+					)}
+				</ThemeConsumer>
 			</ThemeProvider>
 		</BrowserRouter>
 	);

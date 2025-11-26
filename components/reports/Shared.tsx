@@ -1,5 +1,4 @@
-import React from "react";
-import { Paper, Text, Group, ColorSwatch, Stack, Box } from "@mantine/core";
+import { ColorSwatch, Group, Paper, Stack, Text } from "@mantine/core";
 
 // --- TAREC COLOR PALETTE ---
 export const COLORS = {
@@ -35,7 +34,7 @@ export const CustomTooltip = ({
 				radius="md"
 				withBorder
 				style={{
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
+					backgroundColor: "var(--bg-secondary)",
 					backdropFilter: "blur(4px)",
 				}}
 			>

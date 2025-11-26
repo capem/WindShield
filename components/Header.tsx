@@ -1,24 +1,16 @@
-import React from "react";
 import {
-	Group,
 	ActionIcon,
-	TextInput,
 	Burger,
 	Button,
-	HoverCard,
-	Text,
 	Code,
+	Group,
+	HoverCard,
 	Indicator,
 	rem,
+	Text,
 } from "@mantine/core";
-import {
-	IconSearch,
-	IconUpload,
-	IconSun,
-	IconMoon,
-	IconBell,
-	IconUser,
-} from "@tabler/icons-react";
+import { IconBell, IconUpload, IconUser } from "@tabler/icons-react";
+import type React from "react";
 import type { Alarm } from "../types";
 import { AlarmSeverity } from "../types";
 
@@ -26,16 +18,12 @@ interface HeaderProps {
 	onToggleSidebar: () => void;
 	onUploadClick: () => void;
 	unacknowledgedAlarms: Alarm[];
-	isDarkMode: boolean;
-	onToggleDarkMode: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
 	onToggleSidebar,
 	onUploadClick,
 	unacknowledgedAlarms,
-	isDarkMode,
-	onToggleDarkMode,
 }) => {
 	const count = unacknowledgedAlarms.length;
 	let iconColor = "gray";
@@ -68,16 +56,7 @@ const Header: React.FC<HeaderProps> = ({
 					hiddenFrom="sm"
 					size="sm"
 				/>
-				<TextInput
-					placeholder="Search"
-					leftSection={
-						<IconSearch
-							style={{ width: rem(16), height: rem(16) }}
-							stroke={1.5}
-						/>
-					}
-					visibleFrom="xs"
-				/>
+				{/* Logo moved to Sidebar */}
 			</Group>
 
 			<Group>
@@ -125,23 +104,6 @@ const Header: React.FC<HeaderProps> = ({
 						</Group>
 					</HoverCard.Dropdown>
 				</HoverCard>
-
-				<ActionIcon
-					variant="subtle"
-					color="gray"
-					onClick={onToggleDarkMode}
-					size="lg"
-					aria-label="Toggle color scheme"
-				>
-					{isDarkMode ? (
-						<IconSun style={{ width: rem(20), height: rem(20) }} stroke={1.5} />
-					) : (
-						<IconMoon
-							style={{ width: rem(20), height: rem(20) }}
-							stroke={1.5}
-						/>
-					)}
-				</ActionIcon>
 
 				<Indicator
 					color={iconColor}

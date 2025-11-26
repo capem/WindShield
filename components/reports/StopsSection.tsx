@@ -1,3 +1,4 @@
+import { Box, Card, Grid, Textarea, Title } from "@mantine/core";
 import React from "react";
 import {
 	Bar,
@@ -11,7 +12,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Grid, Card, Text, Textarea, Title, Box } from "@mantine/core";
 import { COLORS, CustomTooltip } from "./Shared";
 import { SPARES_DATA, STOPS_DATA } from "./reportsData";
 
@@ -33,12 +33,12 @@ const StopsCharts = React.memo(() => {
 							<ComposedChart data={STOPS_DATA}>
 								<CartesianGrid
 									strokeDasharray="3 3"
-									stroke="#e2e8f0"
+									stroke="var(--border-light)"
 									vertical={false}
 								/>
 								<XAxis
 									dataKey="turbine"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									interval={0}
 									angle={-45}
 									textAnchor="end"
@@ -48,7 +48,7 @@ const StopsCharts = React.memo(() => {
 								/>
 								<YAxis
 									yAxisId="left"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 									label={{
@@ -56,13 +56,13 @@ const StopsCharts = React.memo(() => {
 										angle: -90,
 										position: "insideLeft",
 										fontSize: 9,
-										fill: "#94a3b8",
+										fill: "var(--text-muted)",
 									}}
 								/>
 								<YAxis
 									yAxisId="right"
 									orientation="right"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 									label={{
@@ -70,7 +70,7 @@ const StopsCharts = React.memo(() => {
 										angle: 90,
 										position: "insideRight",
 										fontSize: 9,
-										fill: "#94a3b8",
+										fill: "var(--text-muted)",
 									}}
 								/>
 								<Tooltip content={<CustomTooltip />} />
@@ -116,21 +116,21 @@ const StopsCharts = React.memo(() => {
 								layout="vertical"
 							>
 								<CartesianGrid
-									stroke="#e2e8f0"
+									stroke="var(--border-light)"
 									strokeDasharray="3 3"
 									horizontal={true}
 									vertical={false}
 								/>
 								<XAxis
 									type="number"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 								/>
 								<YAxis
 									dataKey="part"
 									type="category"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									width={80}
 									tickLine={false}
 									axisLine={false}
@@ -178,7 +178,7 @@ const StopsSection = React.memo(
 							radius="md"
 							withBorder
 							h={256}
-							bg="var(--mantine-color-gray-0)"
+							bg="var(--bg-tertiary)"
 						>
 							<Title
 								order={6}

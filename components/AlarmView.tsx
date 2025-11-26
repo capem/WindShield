@@ -1,21 +1,20 @@
-import React from "react";
-import { useMemo, useState } from "react";
-import type { AvailabilityAlarm } from "../availabilityTypes";
 import {
-	Stack,
 	Group,
-	Select,
-	TextInput,
-	Table,
-	UnstyledButton,
-	Text,
 	Paper,
+	Select,
+	Stack,
+	Table,
+	Text,
+	TextInput,
+	UnstyledButton,
 } from "@mantine/core";
 import {
+	IconArrowsSort,
 	IconSortAscending,
 	IconSortDescending,
-	IconArrowsSort,
 } from "@tabler/icons-react";
+import React, { useMemo, useState } from "react";
+import type { AvailabilityAlarm } from "../availabilityTypes";
 
 interface AlarmViewProps {
 	data: AvailabilityAlarm[];
@@ -150,7 +149,7 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
 				<Table.ScrollContainer minWidth={1000}>
 					<Table striped highlightOnHover verticalSpacing="sm">
-						<Table.Thead bg="var(--mantine-color-gray-0)">
+						<Table.Thead style={{ backgroundColor: "var(--bg-tertiary)" }}>
 							<Table.Tr>
 								<Table.Th>
 									<UnstyledButton onClick={() => requestSort("timeOn")}>

@@ -1,23 +1,22 @@
-import React from "react";
-import { useMemo, useState } from "react";
-import type { TimestampData } from "../availabilityTypes";
 import {
-	Stack,
 	Group,
-	TextInput,
-	Select,
 	NumberInput,
-	Table,
 	Pagination,
-	UnstyledButton,
-	Text,
 	Paper,
+	Select,
+	Stack,
+	Table,
+	Text,
+	TextInput,
+	UnstyledButton,
 } from "@mantine/core";
 import {
+	IconArrowsSort,
 	IconSortAscending,
 	IconSortDescending,
-	IconArrowsSort,
 } from "@tabler/icons-react";
+import React, { useMemo, useState } from "react";
+import type { TimestampData } from "../availabilityTypes";
 
 interface TimestampViewProps {
 	data: TimestampData[];
@@ -180,7 +179,7 @@ const TimestampView: React.FC<TimestampViewProps> = ({ data }) => {
 			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
 				<Table.ScrollContainer minWidth={1200}>
 					<Table striped highlightOnHover verticalSpacing="sm">
-						<Table.Thead bg="var(--mantine-color-gray-0)">
+						<Table.Thead style={{ backgroundColor: "var(--bg-tertiary)" }}>
 							<Table.Tr>
 								<Table.Th>
 									<UnstyledButton onClick={() => requestSort("timestamp")}>

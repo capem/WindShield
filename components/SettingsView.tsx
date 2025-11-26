@@ -1,20 +1,19 @@
+import {
+	Box,
+	Center,
+	Group,
+	Paper,
+	SegmentedControl,
+	Stack,
+	Switch,
+	Text,
+	ThemeIcon,
+	Title,
+	UnstyledButton,
+} from "@mantine/core";
+import { IconMoon, IconSun, IconWindmill } from "@tabler/icons-react";
 import type React from "react";
 import { useTheme } from "../contexts/ThemeContext";
-import {
-	Stack,
-	Group,
-	Switch,
-	SegmentedControl,
-	Paper,
-	Title,
-	Text,
-	UnstyledButton,
-	Card,
-	ThemeIcon,
-	Center,
-	Box,
-} from "@mantine/core";
-import { IconSun, IconMoon, IconWindmill } from "@tabler/icons-react";
 
 // Props for the main component
 interface SettingsViewProps {
@@ -36,7 +35,8 @@ const SettingRow: React.FC<{
 		justify="space-between"
 		align="center"
 		py="md"
-		style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}
+		className="transition-theme"
+		style={{ borderBottom: "1px solid var(--border)" }}
 	>
 		<div>
 			<Text fw={600} size="md">
@@ -59,14 +59,15 @@ const CardSizePreview: React.FC<{
 	<Stack align="center" gap="xs">
 		<UnstyledButton
 			onClick={onClick}
+			className="transition-theme"
 			style={{
 				width: 160,
 				height: 144,
 				borderRadius: 8,
-				border: `2px solid ${isSelected ? "var(--mantine-color-violet-5)" : "var(--mantine-color-gray-3)"}`,
+				border: `2px solid ${isSelected ? "var(--accent)" : "var(--border)"}`,
 				backgroundColor: isSelected
-					? "var(--mantine-color-violet-0)"
-					: "var(--mantine-color-body)",
+					? "rgba(139, 92, 246, 0.08)"
+					: "var(--bg-secondary)",
 				display: "flex",
 				flexDirection: "column",
 				alignItems: "center",
@@ -102,7 +103,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 					order={3}
 					mb="md"
 					pb="xs"
-					style={{ borderBottom: "2px solid var(--mantine-color-violet-2)" }}
+					className="transition-theme"
+					style={{ borderBottom: "2px solid var(--accent)" }}
 				>
 					Appearance
 				</Title>
@@ -139,7 +141,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 
 				<Box
 					py="md"
-					style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}
+					className="transition-theme"
+					style={{ borderBottom: "1px solid var(--border)" }}
 				>
 					<Stack gap="xs" mb="md">
 						<Text fw={600} size="md">

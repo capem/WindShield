@@ -1,34 +1,33 @@
-import React from "react";
-import { useMemo, useState } from "react";
+import {
+	Box,
+	Card,
+	Center,
+	Grid,
+	Group,
+	Paper,
+	Stack,
+	Table,
+	Text,
+	TextInput,
+	ThemeIcon,
+	Title,
+	UnstyledButton,
+} from "@mantine/core";
+import {
+	IconArrowsSort,
+	IconBattery4,
+	IconBolt,
+	IconBuildingFactory,
+	IconClock,
+	IconSortAscending,
+	IconSortDescending,
+	IconWind,
+} from "@tabler/icons-react";
+import React, { useMemo, useState } from "react";
 import { calculateSummaryStats } from "../availabilityDataUtils";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
 import TurbineAvailabilityModal from "./TurbineAvailabilityModal";
-import {
-	Stack,
-	Group,
-	Text,
-	Card,
-	Grid,
-	ThemeIcon,
-	Paper,
-	TextInput,
-	Table,
-	UnstyledButton,
-	Title,
-	Box,
-	Center,
-} from "@mantine/core";
-import {
-	IconClock,
-	IconBolt,
-	IconBattery4,
-	IconBuildingFactory,
-	IconWind,
-	IconSortAscending,
-	IconSortDescending,
-	IconArrowsSort,
-} from "@tabler/icons-react";
 
 // FIX: Define a type for historical data rows to resolve typing errors.
 type HistoricalDataRow = {
@@ -147,7 +146,7 @@ const AvailabilityChart = React.memo<{
 								(y / 100) * (height - padding.top - padding.bottom)
 							}
 							strokeDasharray="2,2"
-							style={{ stroke: "var(--mantine-color-gray-3)" }}
+							style={{ stroke: "var(--border-light)" }}
 						/>
 						<text
 							x={padding.left - 8}
@@ -158,7 +157,7 @@ const AvailabilityChart = React.memo<{
 							}
 							textAnchor="end"
 							alignmentBaseline="middle"
-							style={{ fontSize: 5, fill: "var(--mantine-color-dimmed)" }}
+							style={{ fontSize: 5, fill: "var(--text-muted)" }}
 						>
 							{y}%
 						</text>
@@ -223,7 +222,7 @@ const AvailabilityChart = React.memo<{
 							x={x}
 							y={height - padding.bottom + 15}
 							textAnchor="middle"
-							style={{ fontSize: 5, fill: "var(--mantine-color-dimmed)" }}
+							style={{ fontSize: 5, fill: "var(--text-muted)" }}
 						>
 							{new Date(d.date).toLocaleDateString("en-US", {
 								month: "short",
@@ -258,7 +257,7 @@ const AvailabilityChart = React.memo<{
 							y1={padding.top}
 							x2={hoverData.x}
 							y2={height - padding.bottom}
-							stroke="var(--mantine-color-gray-5)"
+							stroke="var(--border)"
 							strokeWidth="1"
 							strokeDasharray="3,3"
 						/>
@@ -336,12 +335,10 @@ const TurbinePerformanceTable = React.memo<{
 		const sortableItems = [...data];
 		if (sortConfig !== null) {
 			sortableItems.sort((a, b) => {
-				// @ts-ignore
-				if (a[sortConfig.key] < b[sortConfig.key])
-					return sortConfig.direction === "asc" ? -1 : 1;
-				// @ts-ignore
-				if (a[sortConfig.key] > b[sortConfig.key])
-					return sortConfig.direction === "asc" ? 1 : -1;
+				const aValue = a[sortConfig.key as keyof typeof a];
+				const bValue = b[sortConfig.key as keyof typeof b];
+				if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+				if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
 				return 0;
 			});
 		}
@@ -377,7 +374,7 @@ const TurbinePerformanceTable = React.memo<{
 		<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
 			<Table.ScrollContainer minWidth={1200}>
 				<Table striped highlightOnHover verticalSpacing="sm">
-					<Table.Thead bg="var(--mantine-color-gray-0)">
+					<Table.Thead style={{ backgroundColor: "var(--bg-tertiary)" }}>
 						<Table.Tr>
 							<Table.Th>
 								<UnstyledButton onClick={() => requestSort("id")}>

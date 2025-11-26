@@ -1,3 +1,4 @@
+import { Box, Card, Grid, Textarea, Title } from "@mantine/core";
 import React from "react";
 import {
 	Bar,
@@ -15,7 +16,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Grid, Card, Text, Textarea, Title, Box } from "@mantine/core";
 import { COLORS, CustomTooltip } from "./Shared";
 import {
 	LOCAL_FACTOR_DATA,
@@ -41,12 +41,12 @@ const ProductionCharts = React.memo(() => {
 							<ComposedChart data={PRODUCTION_DATA}>
 								<CartesianGrid
 									strokeDasharray="3 3"
-									stroke="#e2e8f0"
+									stroke="var(--border-light)"
 									vertical={false}
 								/>
 								<XAxis
 									dataKey="month"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									interval={0}
 									angle={-45}
 									textAnchor="end"
@@ -56,7 +56,7 @@ const ProductionCharts = React.memo(() => {
 								/>
 								<YAxis
 									yAxisId="left"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 									label={{
@@ -64,13 +64,13 @@ const ProductionCharts = React.memo(() => {
 										angle: -90,
 										position: "insideLeft",
 										fontSize: 9,
-										fill: "#94a3b8",
+										fill: "var(--text-muted)",
 									}}
 								/>
 								<YAxis
 									yAxisId="right"
 									orientation="right"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									tickLine={false}
 									axisLine={false}
 									label={{
@@ -78,7 +78,7 @@ const ProductionCharts = React.memo(() => {
 										angle: 90,
 										position: "insideRight",
 										fontSize: 9,
-										fill: "#94a3b8",
+										fill: "var(--text-muted)",
 									}}
 								/>
 								<Tooltip content={<CustomTooltip />} />
@@ -120,12 +120,12 @@ const ProductionCharts = React.memo(() => {
 							<ComposedChart data={LOCAL_FACTOR_DATA}>
 								<CartesianGrid
 									strokeDasharray="3 3"
-									stroke="#e2e8f0"
+									stroke="var(--border-light)"
 									vertical={false}
 								/>
 								<XAxis
 									dataKey="month"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									interval={0}
 									angle={-45}
 									textAnchor="end"
@@ -134,7 +134,7 @@ const ProductionCharts = React.memo(() => {
 									axisLine={false}
 								/>
 								<YAxis
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									domain={[90, 100]}
 									tickLine={false}
 									axisLine={false}
@@ -179,15 +179,15 @@ const ProductionCharts = React.memo(() => {
 								outerRadius="70%"
 								data={WIND_ROSE_DATA}
 							>
-								<PolarGrid stroke="#e2e8f0" />
+								<PolarGrid stroke="var(--border-light)" />
 								<PolarAngleAxis
 									dataKey="subject"
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 								/>
 								<PolarRadiusAxis
 									angle={30}
 									domain={[0, 150]}
-									tick={{ fontSize: 9, fill: "#94a3b8" }}
+									tick={{ fontSize: 9, fill: "var(--text-muted)" }}
 									axisLine={false}
 								/>
 								<Radar
@@ -222,7 +222,7 @@ const ProductionSection = React.memo(
 							radius="md"
 							withBorder
 							h={256}
-							bg="var(--mantine-color-gray-0)"
+							bg="var(--bg-tertiary)"
 						>
 							<Title
 								order={6}
