@@ -1,5 +1,6 @@
-import React from "react";
-import { useMemo, useState } from "react";
+import { Group, Modal, Tabs, Text, ThemeIcon } from "@mantine/core";
+import { IconBell, IconClock, IconWind } from "@tabler/icons-react";
+import React, { useMemo, useState } from "react";
 import {
 	generateAlarmData,
 	generateTimestampData,
@@ -7,8 +8,6 @@ import {
 import type { TurbineAvailabilityModalProps } from "../availabilityTypes";
 import AlarmView from "./AlarmView";
 import TimestampView from "./TimestampView";
-import { Modal, Tabs, Group, Text } from "@mantine/core";
-import { IconBell, IconClock } from "@tabler/icons-react";
 
 const TurbineAvailabilityModal: React.FC<TurbineAvailabilityModalProps> = ({
 	turbineId,
@@ -22,28 +21,42 @@ const TurbineAvailabilityModal: React.FC<TurbineAvailabilityModalProps> = ({
 	const alarmData = useMemo(() => generateAlarmData(turbineId), [turbineId]);
 	const timestampData = useMemo(() => generateTimestampData(), []);
 
-	// Keep content mounted to avoid re-rendering heavy views when switching tabs
 	return (
 		<Modal
 			opened={isOpen}
 			onClose={onClose}
 			title={
-				<Text fw={700} size="lg">
-					Turbine {turbineId} Availability Analysis
-				</Text>
+				<Group>
+					<ThemeIcon size="lg" variant="light" color="cyan">
+						<IconWind size={20} />
+					</ThemeIcon>
+					<div>
+						<Text fw={700} size="lg">
+							Turbine {turbineId} Availability Analysis
+						</Text>
+						<Text size="xs" c="dimmed">
+							Detailed performance and alarm logs
+						</Text>
+					</div>
+				</Group>
 			}
-			size="xl"
+			size="90%"
 			padding="lg"
 			overlayProps={{
 				backgroundOpacity: 0.55,
+				blur: 3,
 			}}
-			transitionProps={{ duration: 0 }}
+			styles={{
+				body: { height: "80vh", display: "flex", flexDirection: "column" },
+				content: { height: "90vh", display: "flex", flexDirection: "column" },
+			}}
 			keepMounted
 		>
 			<Tabs
 				value={activeView}
 				onChange={(value) => setActiveView(value || "alarm")}
 				keepMounted={true}
+				style={{ flex: 1, display: "flex", flexDirection: "column" }}
 			>
 				<Tabs.List mb="md">
 					<Tabs.Tab value="alarm" leftSection={<IconBell size={16} />}>
@@ -54,11 +67,11 @@ const TurbineAvailabilityModal: React.FC<TurbineAvailabilityModalProps> = ({
 					</Tabs.Tab>
 				</Tabs.List>
 
-				<Tabs.Panel value="alarm">
+				<Tabs.Panel value="alarm" style={{ flex: 1, minHeight: 0 }}>
 					<AlarmView data={alarmData} />
 				</Tabs.Panel>
 
-				<Tabs.Panel value="timestamp">
+				<Tabs.Panel value="timestamp" style={{ flex: 1, minHeight: 0 }}>
 					<TimestampView data={timestampData} />
 				</Tabs.Panel>
 			</Tabs>

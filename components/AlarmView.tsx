@@ -1,18 +1,25 @@
 import {
+	Badge,
+	Box,
+	Button,
+	Grid,
 	Group,
 	Paper,
 	Select,
 	Stack,
-	Table,
 	Text,
 	TextInput,
-	UnstyledButton,
+	ThemeIcon,
 } from "@mantine/core";
 import {
-	IconArrowsSort,
-	IconSortAscending,
-	IconSortDescending,
+	IconAlertCircle,
+	IconAlertTriangle,
+	IconCalendar,
+	IconClock,
+	IconSearch,
+	IconSettings,
 } from "@tabler/icons-react";
+import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import React, { useMemo, useState } from "react";
 import type { AvailabilityAlarm } from "../availabilityTypes";
 
@@ -20,15 +27,21 @@ interface AlarmViewProps {
 	data: AvailabilityAlarm[];
 }
 
+const PAGE_SIZE = 15;
+
 const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
-	const [sortConfig, setSortConfig] = useState<{
-		key: keyof AvailabilityAlarm;
-		direction: "asc" | "desc";
-	} | null>({ key: "timeOn", direction: "desc" });
+	const [page, setPage] = useState(1);
+	const [sortStatus, setSortStatus] = useState<
+		DataTableSortStatus<AvailabilityAlarm>
+	>({
+		columnAccessor: "timeOn",
+		direction: "desc",
+	});
 
 	const [filter, setFilter] = useState({
 		alarmType: "all",
 		dateRange: { start: "", end: "" },
+		search: "",
 	});
 
 	// Apply sorting and filtering
@@ -52,48 +65,47 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 			);
 		}
 
-		// Apply sorting
-		if (sortConfig !== null) {
-			filteredData.sort((a, b) => {
-				const aValue = a[sortConfig.key];
-				const bValue = b[sortConfig.key];
-
-				if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-				if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-				return 0;
-			});
-		}
-
-		return filteredData;
-	}, [data, filter, sortConfig]);
-
-	const requestSort = (key: keyof AvailabilityAlarm) => {
-		let direction: "asc" | "desc" = "asc";
-		if (
-			sortConfig &&
-			sortConfig.key === key &&
-			sortConfig.direction === "asc"
-		) {
-			direction = "desc";
-		}
-		setSortConfig({ key, direction });
-	};
-
-	const getSortIcon = (key: keyof AvailabilityAlarm) => {
-		if (!sortConfig || sortConfig.key !== key) {
-			return (
-				<IconArrowsSort size={14} style={{ marginLeft: 4, opacity: 0.5 }} />
+		if (filter.search) {
+			const query = filter.search.toLowerCase();
+			filteredData = filteredData.filter(
+				(alarm) =>
+					alarm.alarmName.toLowerCase().includes(query) ||
+					alarm.alarmCode.toString().includes(query),
 			);
 		}
-		return sortConfig.direction === "asc" ? (
-			<IconSortAscending size={14} style={{ marginLeft: 4 }} />
-		) : (
-			<IconSortDescending size={14} style={{ marginLeft: 4 }} />
-		);
-	};
+
+		// Apply sorting
+		const { columnAccessor, direction } = sortStatus;
+		filteredData.sort((a, b) => {
+			const aValue = a[columnAccessor as keyof AvailabilityAlarm];
+			const bValue = b[columnAccessor as keyof AvailabilityAlarm];
+
+			// Handle nulls
+			if (aValue === null) return 1;
+			if (bValue === null) return -1;
+
+			if (aValue < bValue) return direction === "asc" ? -1 : 1;
+			if (aValue > bValue) return direction === "asc" ? 1 : -1;
+			return 0;
+		});
+
+		return filteredData;
+	}, [data, filter, sortStatus]);
+
+	// Pagination
+	const paginatedData = useMemo(() => {
+		const from = (page - 1) * PAGE_SIZE;
+		const to = from + PAGE_SIZE;
+		return processedData.slice(from, to);
+	}, [processedData, page]);
 
 	const formatDate = (date: Date) => {
-		return new Date(date).toLocaleString();
+		return new Date(date).toLocaleString("en-US", {
+			month: "short",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
 	};
 
 	const formatDuration = (hours: number) => {
@@ -103,10 +115,18 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 	};
 
 	return (
-		<Stack gap="md">
+		<Stack gap="md" h="100%">
 			{/* Filters */}
 			<Paper p="md" radius="md" withBorder shadow="sm">
 				<Group align="flex-end">
+					<TextInput
+						label="Search"
+						placeholder="Alarm name or code..."
+						leftSection={<IconSearch size={16} />}
+						value={filter.search}
+						onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+						style={{ flex: 1 }}
+					/>
 					<Select
 						label="Alarm Type"
 						placeholder="Select type"
@@ -119,152 +139,218 @@ const AlarmView: React.FC<AlarmViewProps> = ({ data }) => {
 						onChange={(value) =>
 							setFilter({ ...filter, alarmType: value || "all" })
 						}
+						w={200}
 					/>
-					<TextInput
-						label="Start Date"
-						type="date"
-						value={filter.dateRange.start}
-						onChange={(e) =>
-							setFilter({
-								...filter,
-								dateRange: { ...filter.dateRange, start: e.target.value },
-							})
-						}
-					/>
-					<TextInput
-						label="End Date"
-						type="date"
-						value={filter.dateRange.end}
-						onChange={(e) =>
-							setFilter({
-								...filter,
-								dateRange: { ...filter.dateRange, end: e.target.value },
-							})
-						}
-					/>
+					<Group gap="xs">
+						<TextInput
+							label="Start Date"
+							type="date"
+							value={filter.dateRange.start}
+							onChange={(e) =>
+								setFilter({
+									...filter,
+									dateRange: { ...filter.dateRange, start: e.target.value },
+								})
+							}
+						/>
+						<TextInput
+							label="End Date"
+							type="date"
+							value={filter.dateRange.end}
+							onChange={(e) =>
+								setFilter({
+									...filter,
+									dateRange: { ...filter.dateRange, end: e.target.value },
+								})
+							}
+						/>
+					</Group>
 				</Group>
 			</Paper>
 
-			{/* Table */}
-			<Paper radius="md" withBorder shadow="sm" style={{ overflow: "hidden" }}>
-				<Table.ScrollContainer minWidth={1000}>
-					<Table striped highlightOnHover verticalSpacing="sm">
-						<Table.Thead style={{ backgroundColor: "var(--bg-tertiary)" }}>
-							<Table.Tr>
-								<Table.Th>
-									<UnstyledButton onClick={() => requestSort("timeOn")}>
-										<Group gap={0}>
-											<Text fw={700} size="sm">
-												Time On
-											</Text>
-											{getSortIcon("timeOn")}
+			{/* Data Table */}
+			<Paper
+				radius="md"
+				withBorder
+				shadow="sm"
+				style={{ flex: 1, display: "flex", flexDirection: "column" }}
+			>
+				<DataTable
+					withTableBorder={false}
+					borderRadius="md"
+					striped
+					highlightOnHover
+					records={paginatedData}
+					totalRecords={processedData.length}
+					recordsPerPage={PAGE_SIZE}
+					page={page}
+					onPageChange={setPage}
+					sortStatus={sortStatus}
+					onSortStatusChange={setSortStatus}
+					idAccessor="id"
+					emptyState={paginatedData.length === 0 ? undefined : <Box />}
+					columns={[
+						{
+							accessor: "timeOn",
+							title: "Time On",
+							sortable: true,
+							render: ({ timeOn }) => (
+								<Group gap="xs">
+									<IconCalendar size={14} style={{ opacity: 0.5 }} />
+									<Text size="sm">{formatDate(timeOn)}</Text>
+								</Group>
+							),
+						},
+						{
+							accessor: "timeOff",
+							title: "Time Off",
+							sortable: true,
+							render: ({ timeOff }) => (
+								<Text
+									size="sm"
+									c={!timeOff ? "green" : undefined}
+									fw={!timeOff ? 700 : 400}
+								>
+									{timeOff ? formatDate(timeOff) : "Active"}
+								</Text>
+							),
+						},
+						{
+							accessor: "duration",
+							title: "Duration",
+							sortable: true,
+							render: ({ duration }) => (
+								<Group gap="xs">
+									<IconClock size={14} style={{ opacity: 0.5 }} />
+									<Text size="sm">{formatDuration(duration)}</Text>
+								</Group>
+							),
+						},
+						{
+							accessor: "alarmName",
+							title: "Alarm Name",
+							sortable: true,
+							render: ({ alarmName }) => (
+								<Text size="sm" fw={500}>
+									{alarmName}
+								</Text>
+							),
+						},
+						{
+							accessor: "alarmCode",
+							title: "Code",
+							sortable: true,
+							width: 100,
+						},
+						{
+							accessor: "totalEnergyLost",
+							title: "Energy Lost",
+							sortable: true,
+							textAlign: "right",
+							render: ({ totalEnergyLost }) => (
+								<Text size="sm" fw={700}>
+									{totalEnergyLost.toFixed(2)} kWh
+								</Text>
+							),
+						},
+					]}
+					rowExpansion={{
+						allowMultiple: false,
+						content: ({ record }: { record: AvailabilityAlarm }) => (
+							<Paper
+								p="md"
+								bg="var(--mantine-color-body)"
+								withBorder
+								my="xs"
+								mx="md"
+							>
+								<Grid>
+									<Grid.Col span={8}>
+										<Group mb="md">
+											<ThemeIcon
+												size="lg"
+												radius="md"
+												variant="light"
+												color="red"
+											>
+												<IconAlertTriangle size={20} />
+											</ThemeIcon>
+											<div>
+												<Text size="lg" fw={700}>
+													{record.alarmName}
+												</Text>
+												<Text size="xs" c="dimmed">
+													Code: {record.alarmCode} • ID: {record.id}
+												</Text>
+											</div>
+											{record.timeOff === null && (
+												<Badge color="green" variant="light">
+													Active Alarm
+												</Badge>
+											)}
 										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th>
-									<UnstyledButton onClick={() => requestSort("timeOff")}>
-										<Group gap={0}>
-											<Text fw={700} size="sm">
-												Time Off
-											</Text>
-											{getSortIcon("timeOff")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th>
-									<UnstyledButton onClick={() => requestSort("duration")}>
-										<Group gap={0}>
-											<Text fw={700} size="sm">
-												Duration
-											</Text>
-											{getSortIcon("duration")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th>
-									<UnstyledButton onClick={() => requestSort("alarmName")}>
-										<Group gap={0}>
-											<Text fw={700} size="sm">
-												Alarm Name
-											</Text>
-											{getSortIcon("alarmName")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th>
-									<UnstyledButton onClick={() => requestSort("alarmCode")}>
-										<Group gap={0}>
-											<Text fw={700} size="sm">
-												Alarm Code
-											</Text>
-											{getSortIcon("alarmCode")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th style={{ textAlign: "right" }}>
-									<UnstyledButton
-										onClick={() => requestSort("nonExcusableEnergyLost")}
+
+										<Grid>
+											<Grid.Col span={4}>
+												<Text size="xs" c="dimmed">
+													Non-Excusable Loss
+												</Text>
+												<Text fw={600} c="red.6">
+													{record.nonExcusableEnergyLost.toFixed(2)} kWh
+												</Text>
+											</Grid.Col>
+											<Grid.Col span={4}>
+												<Text size="xs" c="dimmed">
+													Excusable Loss
+												</Text>
+												<Text fw={600} c="yellow.6">
+													{record.excusableEnergyLost.toFixed(2)} kWh
+												</Text>
+											</Grid.Col>
+											<Grid.Col span={4}>
+												<Text size="xs" c="dimmed">
+													Total Loss
+												</Text>
+												<Text fw={700}>
+													{record.totalEnergyLost.toFixed(2)} kWh
+												</Text>
+											</Grid.Col>
+										</Grid>
+									</Grid.Col>
+									<Grid.Col
+										span={4}
+										style={{
+											borderLeft:
+												"1px solid var(--mantine-color-default-border)",
+										}}
 									>
-										<Group gap={0} justify="flex-end">
-											<Text fw={700} size="sm">
-												Non-Excusable Energy Lost (kWh)
+										<Stack align="flex-start" justify="center" h="100%" pl="md">
+											<Text size="sm" fw={500} mb="xs">
+												Actions
 											</Text>
-											{getSortIcon("nonExcusableEnergyLost")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th style={{ textAlign: "right" }}>
-									<UnstyledButton
-										onClick={() => requestSort("excusableEnergyLost")}
-									>
-										<Group gap={0} justify="flex-end">
-											<Text fw={700} size="sm">
-												Excusable Energy Lost (kWh)
-											</Text>
-											{getSortIcon("excusableEnergyLost")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-								<Table.Th style={{ textAlign: "right" }}>
-									<UnstyledButton
-										onClick={() => requestSort("totalEnergyLost")}
-									>
-										<Group gap={0} justify="flex-end">
-											<Text fw={700} size="sm">
-												Total Energy Lost (kWh)
-											</Text>
-											{getSortIcon("totalEnergyLost")}
-										</Group>
-									</UnstyledButton>
-								</Table.Th>
-							</Table.Tr>
-						</Table.Thead>
-						<Table.Tbody>
-							{processedData.map((alarm) => (
-								<Table.Tr key={alarm.id}>
-									<Table.Td>{formatDate(alarm.timeOn)}</Table.Td>
-									<Table.Td>
-										{alarm.timeOff ? formatDate(alarm.timeOff) : "Active"}
-									</Table.Td>
-									<Table.Td>{formatDuration(alarm.duration)}</Table.Td>
-									<Table.Td>
-										<Text fw={500}>{alarm.alarmName}</Text>
-									</Table.Td>
-									<Table.Td>{alarm.alarmCode}</Table.Td>
-									<Table.Td style={{ textAlign: "right" }}>
-										{alarm.nonExcusableEnergyLost.toFixed(2)}
-									</Table.Td>
-									<Table.Td style={{ textAlign: "right" }}>
-										{alarm.excusableEnergyLost.toFixed(2)}
-									</Table.Td>
-									<Table.Td style={{ textAlign: "right", fontWeight: 700 }}>
-										{alarm.totalEnergyLost.toFixed(2)}
-									</Table.Td>
-								</Table.Tr>
-							))}
-						</Table.Tbody>
-					</Table>
-				</Table.ScrollContainer>
+											<Button
+												variant="light"
+												color="cyan"
+												leftSection={<IconSettings size={16} />}
+												fullWidth
+											>
+												Adjust Alarm
+											</Button>
+											<Button
+												variant="subtle"
+												color="gray"
+												leftSection={<IconAlertCircle size={16} />}
+												fullWidth
+											>
+												View Details
+											</Button>
+										</Stack>
+									</Grid.Col>
+								</Grid>
+							</Paper>
+						),
+					}}
+				/>
 			</Paper>
 		</Stack>
 	);
