@@ -7,6 +7,8 @@ interface MaintenanceSectionProps {
 	onAnalysisChange: (value: string) => void;
 }
 
+import { MAINTENANCE_DATA } from "../../data/mockdata/reports";
+
 const MaintenanceLists = React.memo(() => {
 	return (
 		<>
@@ -29,11 +31,9 @@ const MaintenanceLists = React.memo(() => {
 								Preventive:
 							</Text>
 							<List size="xs" spacing={2} withPadding>
-								<List.Item>Ground inspections (All)</List.Item>
-								<List.Item>NDT (All Zones)</List.Item>
-								<List.Item>Blade and T&H Zero (selected)</List.Item>
-								<List.Item>One-Stop inspections</List.Item>
-								<List.Item>HV pylon and OH line annual check</List.Item>
+								{MAINTENANCE_DATA.turbine.preventive.map((item) => (
+									<List.Item key={item}>{item}</List.Item>
+								))}
 							</List>
 						</Box>
 						<Box>
@@ -41,9 +41,9 @@ const MaintenanceLists = React.memo(() => {
 								Corrective:
 							</Text>
 							<List size="xs" spacing={2} withPadding>
-								<List.Item>Cursor 34 verification</List.Item>
-								<List.Item>MTTI = 0.5 hours</List.Item>
-								<List.Item>MTTR = 1.50 hours</List.Item>
+								{MAINTENANCE_DATA.turbine.corrective.map((item) => (
+									<List.Item key={item}>{item}</List.Item>
+								))}
 							</List>
 						</Box>
 					</Box>
@@ -72,12 +72,9 @@ const MaintenanceLists = React.memo(() => {
 								Preventive:
 							</Text>
 							<List size="xs" spacing={2} withPadding>
-								<List.Item>
-									Degreasing and lubrication of columns (NORTH 4.0 & 20-10)
-								</List.Item>
-								<List.Item>Type B maintenance (TAH)</List.Item>
-								<List.Item>High Pylon test</List.Item>
-								<List.Item>MTTM = 2.85 hours</List.Item>
+								{MAINTENANCE_DATA.substations.preventive.map((item) => (
+									<List.Item key={item}>{item}</List.Item>
+								))}
 							</List>
 						</Box>
 						<Box>
@@ -85,10 +82,9 @@ const MaintenanceLists = React.memo(() => {
 								Corrective:
 							</Text>
 							<List size="xs" spacing={2} withPadding>
-								<List.Item>
-									Alignment/doubling of section switches (NORTH)
-								</List.Item>
-								<List.Item>MTTR = 10.05 hours</List.Item>
+								{MAINTENANCE_DATA.substations.corrective.map((item) => (
+									<List.Item key={item}>{item}</List.Item>
+								))}
 							</List>
 						</Box>
 					</Box>
@@ -117,9 +113,9 @@ const MaintenanceLists = React.memo(() => {
 								Preventive:
 							</Text>
 							<List size="xs" spacing={2} withPadding>
-								<List.Item>Regulatory checks of PPDMs</List.Item>
-								<List.Item>Type A, B, PPM fire inspections</List.Item>
-								<List.Item>Inspection of 30kV booths (2024)</List.Item>
+								{MAINTENANCE_DATA.ppdms.preventive.map((item) => (
+									<List.Item key={item}>{item}</List.Item>
+								))}
 							</List>
 						</Box>
 						<Box>
@@ -127,8 +123,9 @@ const MaintenanceLists = React.memo(() => {
 								Corrective:
 							</Text>
 							<List size="xs" spacing={2} withPadding>
-								<List.Item>Checks for buried cables (Line 1)</List.Item>
-								<List.Item>No Downtime</List.Item>
+								{MAINTENANCE_DATA.ppdms.corrective.map((item) => (
+									<List.Item key={item}>{item}</List.Item>
+								))}
 							</List>
 						</Box>
 					</Box>

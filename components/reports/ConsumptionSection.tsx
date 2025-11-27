@@ -14,7 +14,11 @@ import {
 	ZAxis,
 } from "recharts";
 import { COLORS, CustomTooltip } from "./Shared";
-import { BOOST_DATA, CONSUMPTION_DATA, TURBINE_MAP_DATA } from "./reportsData";
+import {
+	BOOST_DATA,
+	CONSUMPTION_DATA,
+	TURBINE_MAP_DATA,
+} from "../../data/mockdata/reports";
 
 const ConsumptionSection = React.memo(() => {
 	return (

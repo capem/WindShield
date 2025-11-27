@@ -29,8 +29,8 @@ import {
 } from "@tabler/icons-react";
 import React, { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { layout } from "../data/mockData";
-import { turbineCoordinates } from "../data/turbineCoordinates";
+import { layout } from "../data/mockdata/turbines";
+import { turbineCoordinates } from "../data/mockdata/coordinates";
 import { TurbineStatus, type Alarm, type Turbine } from "../types";
 import DashboardSummary from "./DashboardSummary";
 import MapView from "./MapView";

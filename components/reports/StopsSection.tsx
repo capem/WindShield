@@ -13,7 +13,7 @@ import {
 	YAxis,
 } from "recharts";
 import { COLORS, CustomTooltip } from "./Shared";
-import { SPARES_DATA, STOPS_DATA } from "./reportsData";
+import { SPARES_DATA, STOPS_DATA } from "../../data/mockdata/reports";
 
 interface StopsSectionProps {
 	analysisText: string;

@@ -10,7 +10,7 @@ import {
 	YAxis,
 } from "recharts";
 import { COLORS, CustomTooltip } from "./Shared";
-import { ENERGY_LOSS_DATA } from "./reportsData";
+import { ENERGY_LOSS_DATA } from "../../data/mockdata/reports";
 
 const EnergyLossSection = React.memo(() => {
 	return (

@@ -184,3 +184,67 @@ export const TURBINE_MAP_DATA = Array.from({ length: 50 }, (_, i) => ({
 	z: Math.random() * 100, // Value for color
 	id: `T${i + 1}`,
 }));
+
+// Mock analysis text for reports
+export const INITIAL_ANALYSIS_TEXT = {
+	production: `The load factor for October was 33%.
+In October 2025, the wind farm prevented CO2 emissions of around 35k tonnes (*).
+The availability target was achieved (>98%) during October.
+
+The predominant wind directions are:
+- NNE: 30%
+- NE: 25%
+- ENE: 7%
+
+The wind speed is representing 100% of the time for the farm:
+- [3, 7]: 24%
+- [7, 11]: 30%`,
+	alarms: `The total downtime corresponds to 5.05%, broken down mainly into the following categories:
+System (2.47%): TAREC (1097 - Remote stop - Owner) and TAREC (1001 - Manual stop) are the main alarms of the month.
+Hydraulics (1.45%): The name of the alarm (2101 - Hydraulic level error) is a common error.
+Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101 - Converter fault external).`,
+	stops: `The spare downtime converges to 5.05%, broken down mainly into the following categories:
+System (2.47%): TAREC (1097 - Remote stop - Owner) and TAREC (1001 - Manual stop) are the main alarms of the month.
+Hydraulics (1.45%): The name of the alarm (2101 - Hydraulic level error) is a common error.
+Converter (0.74%): Low voltage induced the turbines to return in the alarm (3101 - Converter fault external).`,
+	comments: `TAREC is consolidating its position among the best wind farms in terms of energy.
+- Reviewing of the estimation (MWh) & Turbine
+- Reviewing of the HMI display panel and installation of signage`,
+};
+
+export const MAINTENANCE_DATA = {
+	turbine: {
+		preventive: [
+			"Ground inspections (All)",
+			"NDT (All Zones)",
+			"Blade and T&H Zero (selected)",
+			"One-Stop inspections",
+			"HV pylon and OH line annual check",
+		],
+		corrective: [
+			"Cursor 34 verification",
+			"MTTI = 0.5 hours",
+			"MTTR = 1.50 hours",
+		],
+	},
+	substations: {
+		preventive: [
+			"Degreasing and lubrication of columns (NORTH 4.0 & 20-10)",
+			"Type B maintenance (TAH)",
+			"High Pylon test",
+			"MTTM = 2.85 hours",
+		],
+		corrective: [
+			"Alignment/doubling of section switches (NORTH)",
+			"MTTR = 10.05 hours",
+		],
+	},
+	ppdms: {
+		preventive: [
+			"Regulatory checks of PPDMs",
+			"Type A, B, PPM fire inspections",
+			"Inspection of 30kV booths (2024)",
+		],
+		corrective: ["Checks for buried cables (Line 1)", "No Downtime"],
+	},
+};

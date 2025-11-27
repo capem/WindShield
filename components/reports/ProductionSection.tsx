@@ -21,7 +21,7 @@ import {
 	LOCAL_FACTOR_DATA,
 	PRODUCTION_DATA,
 	WIND_ROSE_DATA,
-} from "./reportsData";
+} from "../../data/mockdata/reports";
 
 interface ProductionSectionProps {
 	analysisText: string;

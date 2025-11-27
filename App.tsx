@@ -29,7 +29,7 @@ import {
 	initialTurbines,
 	mapCsvRowToTurbine,
 	parseCSV,
-} from "./data/mockData";
+} from "./data/mockdata/turbines";
 import { theme } from "./theme";
 import { TurbineStatus, type Alarm, type Turbine } from "./types";
 

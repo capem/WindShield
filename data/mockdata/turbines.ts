@@ -3,7 +3,7 @@ import {
 	TurbineStatus,
 	type Alarm,
 	type Turbine,
-} from "../types";
+} from "../../types";
 
 // --- CSV PARSING & DATA MAPPING UTILITIES ---
 

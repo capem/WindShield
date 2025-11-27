@@ -3,7 +3,7 @@ import L from "leaflet";
 import React from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
-import { turbineCoordinates } from "../data/turbineCoordinates";
+import { turbineCoordinates } from "../data/mockdata/coordinates";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
 import {
