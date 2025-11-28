@@ -4,20 +4,19 @@ import {
 	Grid,
 	Group,
 	Paper,
+	rem,
 	SegmentedControl,
 	Select,
 	SimpleGrid,
-	Stack,
 	Text,
 	TextInput,
 	ThemeIcon,
-	rem,
 } from "@mantine/core";
 import {
 	IconAlertCircle,
 	IconAlertTriangle,
-	IconCheck,
 	IconChartLine,
+	IconCheck,
 	IconInfoCircle,
 	IconLayoutGrid,
 	IconList,
@@ -29,9 +28,9 @@ import {
 } from "@tabler/icons-react";
 import React, { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { layout } from "../data/mockdata/turbines";
 import { turbineCoordinates } from "../data/mockdata/coordinates";
-import { TurbineStatus, type Alarm, type Turbine } from "../types";
+import { layout } from "../data/mockdata/turbines";
+import { type Alarm, type Turbine, TurbineStatus } from "../types";
 import DashboardSummary from "./DashboardSummary";
 import MapView from "./MapView";
 import TurbineGridView from "./TurbineGridView";

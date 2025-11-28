@@ -31,7 +31,7 @@ import {
 	parseCSV,
 } from "./data/mockdata/turbines";
 import { theme } from "./theme";
-import { TurbineStatus, type Alarm, type Turbine } from "./types";
+import { type Alarm, type Turbine, TurbineStatus } from "./types";
 
 // Wrapper for TurbineDetailView to handle routing params
 const TurbineDetailWrapper: React.FC<{

@@ -12,8 +12,8 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { COLORS, CustomTooltip } from "./Shared";
 import { SPARES_DATA, STOPS_DATA } from "../../data/mockdata/reports";
+import { COLORS, CustomTooltip } from "./Shared";
 
 interface StopsSectionProps {
 	analysisText: string;

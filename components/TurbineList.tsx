@@ -1,4 +1,4 @@
-import { Badge, Group, Text, ThemeIcon, rem } from "@mantine/core";
+import { Badge, Group, rem, Text, ThemeIcon } from "@mantine/core";
 import {
 	IconAlertCircle,
 	IconAlertTriangle,
@@ -13,8 +13,8 @@ import {
 } from "@tabler/icons-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useMemo, useRef } from "react";
-import { TurbineStatus } from "../types";
 import type { Turbine } from "../types";
+import { TurbineStatus } from "../types";
 
 interface TurbineListProps {
 	turbines: Turbine[];

@@ -4,13 +4,13 @@ import {
 	Divider,
 	Group,
 	NavLink,
+	rem,
 	ScrollArea,
 	Stack,
 	Text,
 	ThemeIcon,
 	Tooltip,
 	UnstyledButton,
-	rem,
 } from "@mantine/core";
 import {
 	IconBook,

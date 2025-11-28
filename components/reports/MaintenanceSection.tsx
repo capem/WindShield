@@ -1,6 +1,6 @@
+import { Box, Card, Grid, List, Text, Textarea, Title } from "@mantine/core";
 import React from "react";
 import { COLORS } from "./Shared";
-import { Grid, Card, Text, Textarea, Title, List, Box } from "@mantine/core";
 
 interface MaintenanceSectionProps {
 	analysisText: string;

@@ -1,21 +1,21 @@
+import { Badge, Group, Stack, Text } from "@mantine/core";
+import {
+	IconAlertTriangle,
+	IconCircleCheck,
+	IconCircleX,
+	IconHandStop,
+	IconInfoCircle,
+	IconPlayerPause,
+	IconTool,
+} from "@tabler/icons-react";
 import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import React from "react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { turbineCoordinates } from "../data/mockdata/coordinates";
 import type { Turbine } from "../types";
 import { TurbineStatus } from "../types";
-import {
-	IconCircleCheck,
-	IconInfoCircle,
-	IconCircleX,
-	IconPlayerPause,
-	IconTool,
-	IconAlertTriangle,
-	IconHandStop,
-} from "@tabler/icons-react";
-import { Stack, Text, Group, Badge } from "@mantine/core";
 
 import "leaflet/dist/leaflet.css";
 import "./MapView.css"; // Keeping for basic map container styles if needed, but will try to inline

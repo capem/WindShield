@@ -10,6 +10,7 @@ import {
 	Title,
 } from "@mantine/core";
 import { useCallback, useState } from "react";
+import { INITIAL_ANALYSIS_TEXT, KPI_DATA } from "../data/mockdata/reports";
 import AlarmsSection from "./reports/AlarmsSection";
 import ConsumptionSection from "./reports/ConsumptionSection";
 import EnergyLossSection from "./reports/EnergyLossSection";
@@ -17,7 +18,6 @@ import MaintenanceSection from "./reports/MaintenanceSection";
 import ProductionSection from "./reports/ProductionSection";
 import { COLORS } from "./reports/Shared";
 import StopsSection from "./reports/StopsSection";
-import { INITIAL_ANALYSIS_TEXT, KPI_DATA } from "../data/mockdata/reports";
 
 const ReportsView = () => {
 	const [analysisText, setAnalysisText] = useState(INITIAL_ANALYSIS_TEXT);

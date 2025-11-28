@@ -13,12 +13,12 @@ import {
 	YAxis,
 	ZAxis,
 } from "recharts";
-import { COLORS, CustomTooltip } from "./Shared";
 import {
 	BOOST_DATA,
 	CONSUMPTION_DATA,
 	TURBINE_MAP_DATA,
 } from "../../data/mockdata/reports";
+import { COLORS, CustomTooltip } from "./Shared";
 
 const ConsumptionSection = React.memo(() => {
 	return (

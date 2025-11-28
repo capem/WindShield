@@ -1,8 +1,8 @@
 import { SimpleGrid, Text, Title } from "@mantine/core";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useMemo, useRef } from "react";
+import { type Alarm, AlarmSeverity, type Turbine } from "../types";
 import TurbineCard from "./TurbineCard";
-import { AlarmSeverity, type Alarm, type Turbine } from "../types";
 
 interface TurbineGridViewProps {
 	layout: Record<string, { name: string; ids: number[] }[]>;

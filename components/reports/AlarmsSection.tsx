@@ -11,11 +11,11 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { COLORS, CustomTooltip } from "./Shared";
 import {
 	ALARM_CATEGORY_DATA,
 	ALARM_CODE_DATA,
 } from "../../data/mockdata/reports";
+import { COLORS, CustomTooltip } from "./Shared";
 
 interface AlarmsSectionProps {
 	analysisText: string;

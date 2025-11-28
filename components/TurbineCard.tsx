@@ -1,7 +1,7 @@
+import { Badge, Box, Card, Center, Group, Stack, Text } from "@mantine/core";
+import { IconAlertTriangle, IconInfoCircle } from "@tabler/icons-react";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Card, Text, Badge, Group, Stack, Box, Center } from "@mantine/core";
-import { IconAlertTriangle, IconInfoCircle } from "@tabler/icons-react";
 import type { Turbine } from "../types";
 import { AlarmSeverity, TurbineStatus } from "../types";
 

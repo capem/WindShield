@@ -1,12 +1,11 @@
 import {
-	Grid,
 	Group,
 	Paper,
+	rem,
 	SimpleGrid,
 	Stack,
 	Text,
 	ThemeIcon,
-	rem,
 } from "@mantine/core";
 import {
 	IconBolt,
@@ -16,7 +15,7 @@ import {
 	IconWind,
 } from "@tabler/icons-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { TurbineStatus, type Turbine } from "../types";
+import { type Turbine, TurbineStatus } from "../types";
 
 const SummaryCard = React.memo(
 	({

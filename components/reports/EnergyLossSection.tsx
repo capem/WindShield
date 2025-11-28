@@ -9,8 +9,8 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { COLORS, CustomTooltip } from "./Shared";
 import { ENERGY_LOSS_DATA } from "../../data/mockdata/reports";
+import { COLORS, CustomTooltip } from "./Shared";
 
 const EnergyLossSection = React.memo(() => {
 	return (

@@ -16,12 +16,12 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { COLORS, CustomTooltip } from "./Shared";
 import {
 	LOCAL_FACTOR_DATA,
 	PRODUCTION_DATA,
 	WIND_ROSE_DATA,
 } from "../../data/mockdata/reports";
+import { COLORS, CustomTooltip } from "./Shared";
 
 interface ProductionSectionProps {
 	analysisText: string;

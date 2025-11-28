@@ -1,5 +1,5 @@
 {
-  "name": "Turbine Grid Monitor",
-  "description": "A dashboard for monitoring and managing a grid of industrial wind turbines.",
-  "requestFramePermissions": []
+	"name": "Turbine Grid Monitor",
+	"description": "A dashboard for monitoring and managing a grid of industrial wind turbines.",
+	"requestFramePermissions": []
 }
