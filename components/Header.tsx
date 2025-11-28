@@ -6,13 +6,16 @@ import {
 	Group,
 	HoverCard,
 	Indicator,
+	Popover,
 	rem,
 	Text,
 } from "@mantine/core";
 import { IconBell, IconUpload, IconUser } from "@tabler/icons-react";
 import type React from "react";
+import { useState } from "react";
 import type { Alarm } from "../types";
 import { AlarmSeverity } from "../types";
+import NotificationPanel from "./NotificationPanel";
 
 interface HeaderProps {
 	onToggleSidebar: () => void;
@@ -25,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({
 	onUploadClick,
 	unacknowledgedAlarms,
 }) => {
+	const [notificationOpened, setNotificationOpened] = useState(false);
 	const count = unacknowledgedAlarms.length;
 	let iconColor = "gray";
 	let hasCritical = false;
@@ -105,27 +109,45 @@ const Header: React.FC<HeaderProps> = ({
 					</HoverCard.Dropdown>
 				</HoverCard>
 
-				<Indicator
-					color={iconColor}
-					disabled={count === 0}
-					label={count}
-					size={16}
-					offset={4}
-					withBorder
-					processing={hasCritical}
+				<Popover
+					width={380}
+					position="bottom-end"
+					shadow="md"
+					opened={notificationOpened}
+					onChange={setNotificationOpened}
 				>
-					<ActionIcon
-						variant="subtle"
-						color="gray"
-						size="lg"
-						aria-label="Notifications"
-					>
-						<IconBell
-							style={{ width: rem(20), height: rem(20) }}
-							stroke={1.5}
+					<Popover.Target>
+						<Indicator
+							color={iconColor}
+							disabled={count === 0}
+							label={count}
+							size={16}
+							offset={4}
+							withBorder
+							processing={hasCritical}
+						>
+							<ActionIcon
+								variant="subtle"
+								color="gray"
+								size="lg"
+								aria-label="Notifications"
+								onClick={() => setNotificationOpened((o) => !o)}
+							>
+								<IconBell
+									style={{ width: rem(20), height: rem(20) }}
+									stroke={1.5}
+								/>
+							</ActionIcon>
+						</Indicator>
+					</Popover.Target>
+					<Popover.Dropdown p={0}>
+						<NotificationPanel
+							alarms={unacknowledgedAlarms}
+							opened={notificationOpened}
+							onClose={() => setNotificationOpened(false)}
 						/>
-					</ActionIcon>
-				</Indicator>
+					</Popover.Dropdown>
+				</Popover>
 
 				<ActionIcon
 					variant="subtle"
