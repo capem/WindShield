@@ -122,10 +122,22 @@ const TurbineStatusSummaryCard = React.memo(
 					</ThemeIcon>
 				</Group>
 
-				<SimpleGrid cols={2} spacing="md" verticalSpacing="xs">
+				<SimpleGrid
+					cols={{ base: 1, sm: 2, md: 1 }}
+					spacing={{ base: "xs", sm: "sm", md: "md" }}
+					verticalSpacing="xs"
+				>
 					{statusItems.map((item) => (
-						<Group key={item.name} justify="space-between" wrap="nowrap">
-							<Group gap={8} wrap="nowrap">
+						<Group
+							key={item.name}
+							style={{
+								width: "100%",
+								justifyContent: "space-between",
+								flexWrap: "wrap",
+							}}
+							align="center"
+						>
+							<Group style={{ minWidth: 0, gap: rem(8), alignItems: "center" }}>
 								<Box c={item.color}>
 									<item.icon style={{ width: rem(16), height: rem(16) }} />
 								</Box>
@@ -133,7 +145,7 @@ const TurbineStatusSummaryCard = React.memo(
 									{item.name}
 								</Text>
 							</Group>
-							<Text size="sm" fw={700}>
+							<Text size="sm" fw={700} style={{ marginLeft: rem(8) }}>
 								{item.count}
 							</Text>
 						</Group>

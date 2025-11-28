@@ -204,7 +204,11 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({ turbines }) => {
 	);
 
 	return (
-		<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+		<SimpleGrid
+			cols={{ base: 1, sm: 2, md: 2 }}
+			spacing={{ base: "xs", sm: "sm", md: "md" }}
+			verticalSpacing="xs"
+		>
 			{summaryDataTop.map((data) => (
 				<SummaryCard key={data.title} {...data} />
 			))}
